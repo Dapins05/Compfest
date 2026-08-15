@@ -1,14 +1,31 @@
 import random
 import time
-from fastapi import APIRouter, UploadFile, File
+from fastapi import APIRouter, UploadFile, File, HTTPException
 
 from app.schemas import InspectionResult, Defect, BBox, AnomalyResult
+from app.config import settings
 
 router = APIRouter()
 
 
 @router.post("/inspect", response_model=InspectionResult)
 async def inspect_image(file: UploadFile = File(...)):
+    # Validasi tipe file
+    if file.content_type not in settings.ALLOWED_CONTENT_TYPES:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Tipe file {file.content_type} tidak didukung. Gunakan JPG atau PNG.",
+        )
+
+    # Validasi ukuran file
+    contents = await file.read()
+    size_mb = len(contents) / (1024 * 1024)
+    if size_mb > settings.MAX_FILE_SIZE_MB:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Ukuran file {size_mb:.1f}MB melebihi batas {settings.MAX_FILE_SIZE_MB}MB.",
+        )
+
     start = time.time()
 
     # ⚠️ MOCK — hasil acak, akan diganti pipeline AI asli oleh Anggota 1 nanti
@@ -31,7 +48,7 @@ async def inspect_image(file: UploadFile = File(...)):
         confidence=0.9 if verdict != "REVIEW" else 0.55,
         batch_code="B240815-021",
         defects=defects,
-        anomaly=AnomalyResult(score=0.3, threshold=0.75, heatmap_base64=None),
+        anomaly=AnomalyResult(score=0.3, threshold=settings.T_ANOMALY, heatmap_base64=None),
         annotated_image_base64="data:image/jpeg;base64,mock",
         model_version="mock-v0",
         latency_ms=int((time.time() - start) * 1000),
