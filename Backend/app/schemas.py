@@ -32,3 +32,15 @@ class InspectionResult(BaseModel):
     annotated_image_base64: str
     model_version: str
     latency_ms: int
+
+class SampleImage(BaseModel):
+    name: str
+    url: str
+
+
+class ModelInfo(BaseModel):
+    model_name: str
+    version: str
+    dataset: str
+    trained_at: str | None = None
+    metrics: dict[str, float] = {}
