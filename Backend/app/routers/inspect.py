@@ -1,6 +1,8 @@
+import io
 import random
 import time
 from fastapi import APIRouter, UploadFile, File, HTTPException
+from PIL import Image, UnidentifiedImageError
 
 from app.schemas import InspectionResult, Defect, BBox, AnomalyResult
 from app.config import settings
@@ -24,6 +26,23 @@ async def inspect_image(file: UploadFile = File(...)):
         raise HTTPException(
             status_code=400,
             detail=f"Ukuran file {size_mb:.1f}MB melebihi batas {settings.MAX_FILE_SIZE_MB}MB.",
+        )
+
+    # Validasi file kosong
+    if len(contents) == 0:
+        raise HTTPException(
+            status_code=400,
+            detail="File gambar kosong.",
+        )
+
+    # Validasi gambar bisa dibuka (bukan file korup/rusak)
+    try:
+        image = Image.open(io.BytesIO(contents))
+        image.verify()
+    except UnidentifiedImageError:
+        raise HTTPException(
+            status_code=400,
+            detail="File tidak bisa dibaca sebagai gambar. Kemungkinan file rusak atau korup.",
         )
 
     start = time.time()
