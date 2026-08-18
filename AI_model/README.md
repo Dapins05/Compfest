@@ -131,6 +131,13 @@ python scripts/export_onnx.py
 Menghasilkan `models/onnx/` dan mengukur latensi di CPU sebagai median beserta
 persentil ke-95 dari 100 pengulangan.
 
+## Menjalankan Uji
+
+```bash
+pip install -e .
+pytest
+```
+
 Keluaran: `models/finetuned/detect/`, `reports/metrics/detection_comparison.json`,
 `reports/figures/detection_comparison.png`.
 ```
@@ -167,8 +174,8 @@ python -c "import torch; print(torch.cuda.is_available(), torch.cuda.get_device_
 | 6 | Anomaly Detection + Ambang EVT | selesai |
 | 7 | Lapisan Statistik & Kalibrasi | selesai |
 | 8 | Lapisan Privasi | belum |
-| 9 | Decision Engine + Ekspor ONNX | sebagian |
-| 10 | Integrasi & Laporan Evaluasi | belum |
+| 9 | Decision Engine + Ekspor ONNX | selesai |
+| 10 | Integrasi & Laporan Evaluasi | selesai |
 
 Rincian tiap step ada di [AI_MODEL_PLAN.md](./AI_MODEL_PLAN.md) bagian 4.
 
