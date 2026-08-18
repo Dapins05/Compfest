@@ -1,0 +1,10 @@
+{
+  "weights_best": "C:\\compfest\\AI_model\\models\\finetuned\\seg\\weights\\best.pt",
+  "weights_last": "C:\\compfest\\AI_model\\models\\finetuned\\seg\\weights\\last.pt",
+  "run_dir": "C:\\compfest\\AI_model\\models\\finetuned\\seg",
+  "epochs_requested": 250,
+  "epochs_completed": 250,
+  "results_csv": "C:\\compfest\\AI_model\\models\\finetuned\\seg\\results.csv",
+  "finished_on": "2026-08-18",
+  "section": "segmentation"
+}

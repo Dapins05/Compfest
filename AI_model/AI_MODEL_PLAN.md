@@ -59,7 +59,7 @@ Tiap langkah dirancang agar selesai sebagai satu unit kerja yang berdiri sendiri
 | **2** | **Akuisisi & Preprocessing Dataset** | Dataset terunduh, format YOLO, split terkunci + validasi statistik | 3 jam | H-7  |
 | **3** | Generator Cacat Sintetik | Penambah data + penyeimbang kelas (diizinkan panitia) | 3 jam | H-9 |
 | **4** | **Baseline + Fine-Tune Detection** | Model detect terlatih + **uji McNemar** vs baseline | 4 jam | H-7 selesai |
-| **5** | Fine-Tune Segmentation | Model seg + perhitungan luas cacat % | 3 jam¹ | H-8 |
+| **5** | **Fine-Tune Segmentation** | Model seg + perhitungan luas cacat % | 3 jam | H-7 selesai |
 | **6** | Anomaly Detection + Ambang EVT | EfficientAD + ambang berbasis Extreme Value Theory | 4 jam¹ | H-8 |
 | **7** | Lapisan Statistik & Kalibrasi | Conformal prediction, temperature scaling, ambang sensitif biaya | 3 jam | H-7 |
 | **8** | Lapisan Privasi | EXIF scrub, face blur, ephemeral buffer, hash audit | 2 jam | H-7 |
@@ -218,19 +218,35 @@ Rincian lengkap beserta keterbatasannya ada di
 
 ---
 
-### Step 5 - Fine-Tune Segmentation
+### Step 5 - Fine-Tune Segmentation `[SELESAI 18 Agu 2026]`
 
-**Tujuan:** mask presisi  menghitung `luas_cacat / luas_produk × 100%`.
-
-**Yang dibuat:** ```
-src/visionqc_ai/training/train_seg.py
-src/visionqc_ai/inference/segmenter.py     # termasuk perhitungan luas
-scripts/train_segmentation.py
-reports/metrics/segmentation_comparison.json
+**Dibuat:**
+```
+src/visionqc_ai/evaluation/segmentation_eval.py
+scripts/compare_segmentation.py
+models/finetuned/seg/    reports/metrics/segmentation_comparison.json
+reports/figures/{segmentation_comparison,segmentation_pr_curve,segmentation_confusion_matrix}.png
 ```
 
-Prosedur baseline  fine-tune  uji signifikansi **sama persis** dengan Step 4.
-Metrik utama: mask mAP50 dan IoU. Ditambah **selang kepercayaan bootstrap untuk estimasi luas cacat** - sehingga sistem bisa melaporkan "luas cacat 3,4% ± 0,3%" bukan angka telanjang.
+Training memakai ulang `scripts/train_detection.py` dengan bagian
+`segmentation`, sehingga tidak ada kode training yang digandakan.
+
+**Hasil pada test set** (75 instance, ambang IoU mask 0,5):
+
+| Metrik | Baseline pra-latih | Sesudah fine-tune |
+|---|---|---|
+| Recall mask | 0,0000 | **0,6000** [0,4681 ; 0,7101] |
+| IoU mask rerata | 0,0000 | **0,7847** |
+| MCC tingkat gambar | 0,097 | **0,838** |
+| Galat luas cacat | 15,37 poin persen | **0,37 poin persen** |
+
+Uji McNemar: 45 instance membaik, 0 memburuk, khi-kuadrat 43,022,
+p = 5,41 x 10^-11. Cohen's h = 1,772 yang tergolong besar.
+
+Berjalan penuh 250 epoch tanpa berhenti awal, bobot terbaik epoch 203,
+memakan waktu 66,8 menit.
+
+Rincian lengkap di [EXPERIMENTS.md bagian 4](./EXPERIMENTS.md).
 
 ---
 
