@@ -1,0 +1,64 @@
+# requirements.txt — Modul AI VisionQC
+# Python 3.11 · CUDA 12.1 · NVIDIA RTX 3050 Laptop
+#
+# PENTING — PyTorch harus dipasang LEBIH DULU dengan indeks CUDA, jangan dari PyPI biasa:
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
+# Baru kemudian:
+#   pip install -r requirements.txt
+#
+# Verifikasi GPU terbaca:
+#   python -c "import torch; print(torch.cuda.is_available(), torch.cuda.get_device_name(0))"
+
+# ── Inti deep learning ────────────────────────────────────────
+torch>=2.2.0
+torchvision>=0.17.0
+ultralytics>=8.3.0              # YOLO11 detect + segment
+
+# ── Anomaly detection ─────────────────────────────────────────
+anomalib>=1.1.0                 # EfficientAD, PaDiM, PatchCore
+
+# ── OCR ───────────────────────────────────────────────────────
+paddlepaddle>=2.6.0
+paddleocr>=2.7.0
+
+# ── Runtime inferensi ─────────────────────────────────────────
+onnx>=1.16.0
+onnxruntime>=1.18.0             # CPU — agar panitia tidak wajib punya GPU
+onnxslim>=0.1.31
+
+# ── Pengolahan citra ──────────────────────────────────────────
+opencv-python-headless>=4.9.0
+pillow>=10.2.0
+albumentations>=1.4.0           # augmentasi + basis cacat sintetik
+scikit-image>=0.22.0            # Perlin noise, deformasi untuk cacat sintetik
+
+# ── Statistik  (STATISTICS.md) ────────────────────────────────
+numpy>=1.26.0
+scipy>=1.12.0                   # uji χ², KS, GPD/EVT, Wasserstein, McNemar
+scikit-learn>=1.4.0             # kalibrasi, metrik, MCC, kappa Cohen
+statsmodels>=0.14.0             # McNemar eksak, selang proporsi, SPC
+pandas>=2.2.0
+
+# ── Visualisasi ───────────────────────────────────────────────
+matplotlib>=3.8.0
+seaborn>=0.13.0
+
+# ── Kontrak & konfigurasi ─────────────────────────────────────
+pydantic>=2.6.0                 # skema InspectionResult — sinkron dengan Backend
+pyyaml>=6.0.1
+
+# ── Utilitas ──────────────────────────────────────────────────
+tqdm>=4.66.0
+rich>=13.7.0
+
+# ── Pengembangan ──────────────────────────────────────────────
+pytest>=8.0.0
+ruff>=0.3.0
+
+# ── CATATAN ───────────────────────────────────────────────────
+# - `conformal` tidak butuh pustaka khusus — split conformal cukup ~40 baris
+#   memakai numpy, dan menulisnya sendiri jauh lebih mudah dijelaskan di proposal.
+# - `piexif` tidak dipakai; pembersihan EXIF dilakukan dengan re-encode piksel
+#   saja (pendekatan daftar-tolak menyeluruh, lihat PRIVACY.md §3.1).
+# - paddlepaddle cukup versi CPU — OCR sengaja tidak memakai GPU agar VRAM
+#   tersisa untuk model utama.
