@@ -288,6 +288,31 @@ def main() -> int:
     )
 
     log.info("")
+    log.info("  sapuan alpha (cakupan dan biaya menahan keputusan):")
+    log.info("  %6s %10s %10s %12s", "alpha", "cakupan", "review", "cakupan normal")
+    alpha_sweep = []
+    for candidate in (0.01, 0.05, 0.10, 0.15, 0.20):
+        q = calibrate(calib_calibrated, calib_labels, alpha=candidate, mode="mondrian")
+        c = evaluate_coverage(test_calibrated, test_labels, q)
+        alpha_sweep.append(
+            {
+                "alpha": candidate,
+                "coverage": c.empirical_coverage,
+                "review_rate": c.review_rate,
+                "normal_coverage": c.per_class_coverage.get(0, 0.0),
+                "quantiles": {str(k): v for k, v in q.quantiles.items()},
+            }
+        )
+        log.info(
+            "  %6.2f %10.4f %10.4f %12.4f%s",
+            candidate,
+            c.empirical_coverage,
+            c.review_rate,
+            c.per_class_coverage.get(0, 0.0),
+            "  <- dipakai" if abs(candidate - alpha) < 1e-9 else "",
+        )
+
+    log.info("")
     log.info("[4/4] Ambang sensitif biaya")
     best = optimal_threshold(
         calib_calibrated, calib_labels, costs, prevalence=prevalence
@@ -354,7 +379,8 @@ def main() -> int:
         "calibration_on_test_set": {k: v.to_dict() for k, v in on_test.items()},
         "calibration_before": before.to_dict(),
         "calibration_after": after.to_dict(),
-        "conformal": quantiles.to_dict() | {"coverage": coverage.to_dict()},
+        "conformal": quantiles.to_dict()
+        | {"coverage": coverage.to_dict(), "alpha_sweep": alpha_sweep},
         "cost": costs.to_dict()
         | comparison
         | {"assumed_defect_prevalence": prevalence},
