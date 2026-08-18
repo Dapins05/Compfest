@@ -6,8 +6,8 @@ mewajibkan: *"Model wajib di fine tune sesuai dengan inovasi fitur per tim."*
 Angka yang belum diukur ditulis `belum diukur` dan tidak pernah dikarang.
 Panitia berhak meminta demo langsung dan klarifikasi saat penjurian.
 
-**Status:** Step 2, 4, 5, 6, dan 7 selesai. Deteksi, segmentasi, anomali, serta
-lapisan statistik sudah diukur. Privasi, ONNX, dan integrasi belum.
+**Status:** Step 2, 4, 5, 6, 7, dan 9 selesai. Model sudah dilatih, dikalibrasi,
+diekspor ke ONNX, dan diukur latensinya di CPU. Privasi dan integrasi belum.
 
 ---
 
@@ -635,7 +635,49 @@ diasumsikan, yaitu 3 persen. **Angka 3 persen adalah asumsi** yang belum
 diverifikasi terhadap data lini produksi nyata, dan ditulis di
 `configs/inference.yaml` sebagai asumsi, bukan sebagai hasil pengukuran.
 
-### 6.5 Keterbatasan
+### 6.5 Sapuan alpha
+
+Ambang conformal bergantung pada alpha, sehingga pengaruhnya diukur alih-alih
+diasumsikan. Seluruh baris dihitung pada split uji yang sama.
+
+| alpha | Cakupan | Ditahan ke manusia | Cakupan kelas normal |
+|---|---|---|---|
+| 0,01 | 0,9661 | 0,0847 | 0,7143 |
+| **0,05** | **0,9661** | **0,0847** | **0,7143** |
+| 0,10 | 0,9322 | 0,0339 | 0,7143 |
+| 0,15 | 0,9153 | 0,0678 | 0,7143 |
+| 0,20 | 0,8475 | 0,1525 | 0,7143 |
+
+**Cakupan kelas normal tetap 0,7143 pada seluruh nilai alpha.** Angka itu
+adalah 5 dari 7, dan tidak akan bergerak berapa pun alpha yang dipilih karena
+kelas normal memang hanya punya 7 contoh. Ini menutup kemungkinan bahwa
+masalahnya dapat diselesaikan dengan menyetel alpha: yang dibutuhkan adalah
+lebih banyak gambar normal, bukan alpha yang berbeda.
+
+Alpha tetap dipertahankan pada 0,05 sesuai config. Menurunkannya demi angka
+yang lebih enak dilihat sama saja dengan menyetel parameter pada data uji.
+
+### 6.6 Cacat yang ditemukan saat menguji mesin keputusan
+
+Menguji mesin keputusan pada kasus buatan mengungkap perilaku yang tidak
+diinginkan: **gambar bersih tanpa satu pun deteksi justru menghasilkan REVIEW,
+bukan PASS.**
+
+Penyebabnya dapat ditelusuri sampai angkanya. Gambar tanpa deteksi memperoleh
+peluang terkalibrasi 0,223, sehingga ketidaksesuaian terhadap label cacat
+bernilai 0,7770 sementara kuantilnya 0,7772. Selisihnya 0,0002, dan label
+cacat tetap masuk ke himpunan prediksi.
+
+Kuantil selonggar itu bukan kesalahan hitung melainkan konsekuensi: untuk
+menjamin 95 persen cakupan pada kelas cacat, ambangnya harus cukup longgar
+untuk memuat cacat yang paling sulit dideteksi sekalipun.
+
+Akibatnya kelima gambar yang ditahan pada split uji justru gambar yang bersih.
+Untuk sistem QC, arah kehati-hatian itu terbalik. Perbaikannya bukan menyetel
+alpha, melainkan menambah gambar normal pada set kalibrasi, dan itu dicatat
+sebagai pekerjaan tahap Final.
+
+### 6.7 Keterbatasan
 
 1. Split kalibrasi dan uji masing-masing hanya memuat 7 gambar normal. Angka
    apa pun yang bergantung pada kelas normal, termasuk cakupan per kelas dan
@@ -648,27 +690,52 @@ diverifikasi terhadap data lini produksi nyata, dan ditulis di
 **Gambar pendukung:** `reports/figures/reliability_diagram.png`,
 `conformal_coverage.png`, `cost_curve.png`.
 
-## 7. Latensi & Ukuran Model
+## 7. Latensi dan Ukuran Model
 
-Diukur pada RTX 3050 Laptop, rata-rata 59 gambar test, resolusi 640 px.
+Dihasilkan `scripts/export_onnx.py`; angka lengkap di
+`reports/metrics/latency_benchmark.json`.
 
-| Model | Tahap | Median (ms) | Ukuran bobot |
+Target penyajian adalah **CPU**, bukan GPU. Panitia menjalankan sistem di
+komputer mereka sendiri dan tidak dapat diandalkan memiliki kartu grafis,
+sehingga angka yang bermakna adalah angka CPU.
+
+### 7.1 Latensi ONNX di CPU
+
+Diukur dari 100 pengulangan setelah 10 kali pemanasan, 4 utas, resolusi 640 px.
+
+| Model | Median | Persentil ke-95 | Rentang | Ukuran ONNX |
+|---|---|---|---|---|
+| YOLO11n detect | **62,5 ms** | 119,6 ms | 50,1 - 159,6 ms | 10,12 MB |
+| YOLO11n-seg | **90,9 ms** | 140,3 ms | 78,5 - 160,3 ms | 11,09 MB |
+| **Kedua model** | **153,4 ms** | - | - | 21,21 MB |
+
+Persentil ke-95 hampir dua kali median pada kedua model. Sebaran selebar itu
+wajar pada CPU laptop yang menjalankan proses lain, dan justru karena itu satu
+pengukuran tunggal tidak boleh dikutip sebagai angka latensi.
+
+### 7.2 Perbandingan dengan pengukuran GPU
+
+| Model | PyTorch GPU | ONNX CPU | Rasio |
 |---|---|---|---|
-| YOLO11n detect | PyTorch GPU | **15,0** | 5,5 MB |
-| YOLO11n-seg | PyTorch GPU | **57,6** | 6,0 MB |
-| YOLO11n detect | ONNX CPU | belum diukur | belum diukur |
-| YOLO11n-seg | ONNX CPU | belum diukur | belum diukur |
-| Pipeline penuh | ONNX CPU | belum diukur | - |
+| detect | 15,0 ms | 62,5 ms | 4,2x |
+| seg | 57,6 ms | 90,9 ms | 1,6x |
 
-Rincian per tahap ada di bagian 3.6 dan 4.6. Angka ONNX di CPU adalah target
-penyajian yang sebenarnya dan baru diukur pada Step 9, dilaporkan sebagai
-median dan persentil ke-95 dari 100 kali jalan.
+Angka GPU pada bagian 3.6 dan 4.6 diukur saat evaluasi dan **bukan** angka
+penyajian. Yang wajib dikutip di proposal adalah angka CPU di atas.
+
+### 7.3 Ruang yang tersisa
+
+Sasaran keseluruhan yang ditetapkan PROJECT.md adalah satu detik per gambar di
+CPU. Kedua model inti memakan 153 ms median, menyisakan ruang untuk
+prapemrosesan, skor anomali, OCR, dan penggambaran anotasi. Latensi pipeline
+utuh baru dapat diukur setelah Step 10 dan saat ini masih `belum diukur`.
 
 ## 8. Riwayat Run
 
 | # | Tgl | Model | Perubahan | Hasil | Keputusan |
 |---|---|---|---|---|---|
 | 1 | 2026-08-18 | YOLO11n detect | fine-tune pertama dari bobot COCO, config apa adanya | berhenti awal di epoch 161, terbaik epoch 137, mAP50 val 0,7967 | diterima sebagai model deteksi tahap penyisihan |
+| 5 | 2026-08-18 | Ekspor ONNX | opset 12, imgsz 640, 4 utas | detect 62,5 ms dan seg 90,9 ms median di CPU | diterima; menyisakan ruang untuk sasaran satu detik |
 | 4 | 2026-08-18 | Lapisan keputusan | kalibrasi, conformal, ambang biaya | Platt ECE 0,0391; conformal cakupan 0,9661; ambang biaya tidak menggeneralisasi | Platt dan conformal diterima; ambang operasi tetap 0,50 |
 | 3 | 2026-08-18 | PaDiM anomali | 5 kategori, 200 gambar latih, worker dataloader nol | AUROC 0,848 sampai 0,997; ambang EVT lolos uji KS di semua kategori | diterima; titik operasi 1 persen dinilai terlalu ketat dan diserahkan ke Step 7 |
 | 2 | 2026-08-18 | YOLO11n-seg | fine-tune dari bobot COCO, config apa adanya | berjalan penuh 250 epoch, terbaik epoch 203, mask mAP50 val 0,7899 | diterima; galat luas cacat 0,37 poin persen sudah memadai |
@@ -688,6 +755,7 @@ dan menunjukkan proses kerja yang nyata.)*
 |---|---|---|---|
 | 2026-08-18 | Peringatan ketidakcocokan ABI numpy dan scipy | pemasangan ultralytics menaikkan numpy ke 2.4.6 sementara scipy 1.13 menuntut di bawah 2.3 | scipy dinaikkan ke 1.17.1, seluruh angka statistik dihitung ulang di atas kombinasi yang sah |
 | 2026-08-18 | Recall `gores` hanya 0,556 | objek gores paling kecil ukurannya dan dukungannya hanya 9 instance di test | dicatat sebagai keterbatasan; penambahan sampel menjadi bahan Step 3 |
+| 2026-08-18 | Gambar bersih tanpa deteksi justru masuk REVIEW, bukan PASS | himpunan conformal memuat kedua label karena kuantil kelas cacat 0,7772 sementara ketidaksesuaiannya 0,7770, selisih 0,0002; kuantil selonggar itu muncul karena jaminan 95 persen harus memuat cacat yang paling sulit dideteksi | dinyatakan sebagai keterbatasan; sapuan alpha membuktikan penyebabnya bukan pilihan alpha melainkan jumlah gambar normal yang hanya 7 |
 | 2026-08-18 | Temperature scaling memperburuk ECE, 0,322 menjadi 0,404 | model justru kurang percaya diri karena 88 persen data uji memang cacat; temperature scaling tanpa intersep tidak dapat menggeser skor ke proporsi kelas sebenarnya | diganti Platt scaling yang punya intersep; ECE turun ke 0,0391 |
 | 2026-08-18 | Ambang hasil optimasi biaya lebih mahal daripada ambang 0,50 pada data uji | hanya 7 gambar normal per split sehingga letak minimum biaya tidak stabil | ambang operasi tetap 0,50; keterbatasan dinyatakan di EXPERIMENTS.md |
 | 2026-08-18 | `savings_versus` melaporkan biaya set kalibrasi seolah-olah biaya set uji | fungsi mengembalikan CostPoint yang diterimanya alih-alih menghitung ulang pada data yang dinilai | fungsi diubah agar mengevaluasi kedua ambang pada data yang sama |
