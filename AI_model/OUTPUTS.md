@@ -25,7 +25,7 @@ Dokumen lain punya peran berbeda:
 | 4 | Baseline + Fine-Tune Detection | selesai | 7 modul training & evaluasi, 2 skrip, bobot terlatih, `detection_comparison.json`, 4 gambar |
 | 5 | Fine-Tune Segmentation | selesai | 1 modul evaluasi mask, 1 skrip, bobot terlatih, `segmentation_comparison.json`, 3 gambar |
 | 6 | Anomaly Detection + Ambang EVT | selesai | 2 modul, 1 skrip, 5 model, `anomaly_results.json`, 5 gambar |
-| 7 | Lapisan Statistik & Kalibrasi | belum | belum ada |
+| 7 | Lapisan Statistik & Kalibrasi | selesai | 3 modul, 1 skrip, `calibration_results.json`, 3 gambar |
 | 8 | Lapisan Privasi | belum | belum ada |
 | 9 | Decision Engine + Ekspor ONNX | belum | belum ada |
 | 10 | Integrasi & Laporan Evaluasi | belum | belum ada |
@@ -241,7 +241,37 @@ menjadi dasar peninjauan titik operasi di Step 7.
 
 ---
 
-## 8. Menghasilkan Ulang Semuanya
+## 8. Step 7 - Kalibrasi, Conformal, dan Ambang Biaya
+
+### Kode
+
+| Berkas | Tanggung jawab |
+|---|---|
+| `src/visionqc_ai/statistics/calibration.py` | ECE, MCE, Brier, temperature dan Platt scaling |
+| `src/visionqc_ai/statistics/conformal.py` | conformal split dan Mondrian, pemeriksaan cakupan |
+| `src/visionqc_ai/statistics/cost_sensitive.py` | ambang Bayes, kurva biaya, koreksi prevalensi |
+| `scripts/calibrate_decision.py` | menjalankan ketiganya dan menulis hasilnya |
+
+### Bukti yang tersimpan
+
+| Berkas | Isi |
+|---|---|
+| `reports/metrics/calibration_results.json` | perbandingan tiga metode kalibrasi, kuantil conformal, cakupan, kurva biaya |
+| `reports/figures/reliability_diagram.png` | keandalan sebelum dan sesudah kalibrasi |
+| `reports/figures/conformal_coverage.png` | cakupan empiris dan komposisi keputusan |
+| `reports/figures/cost_curve.png` | biaya per unit terhadap ambang keputusan |
+
+### Angka kunci
+
+Platt scaling menurunkan ECE dari 0,3222 menjadi 0,0391. Conformal prediction
+mencapai cakupan 0,9661 dengan 8,5 persen gambar diserahkan ke manusia. Ambang
+hasil optimasi biaya tidak menggeneralisasi ke split uji sehingga ambang
+operasi tetap 0,50.
+
+
+---
+
+## 9. Menghasilkan Ulang Semuanya
 
 Dari repo bersih, dengan `data/raw/` sudah terisi dataset publik:
 
@@ -261,6 +291,7 @@ python scripts/train_detection.py --data data/processed/seg/data.yaml \
 python scripts/compare_segmentation.py
 
 python scripts/train_anomaly.py         # Step 6, sekitar 2 menit per kategori
+python scripts/calibrate_decision.py    # Step 7, sekitar 1 menit
 ```
 
 Seed dikunci di `configs/dataset.yaml`, sehingga pembagian split akan sama
@@ -269,8 +300,8 @@ sifat nondeterministik operasi CUDA tertentu.
 
 ---
 
-## 9. Yang Belum Ada
+## 10. Yang Belum Ada
 
-Belum ada satu pun keluaran untuk Step 3, 7, 8, 9, dan 10. Seluruh sel
+Belum ada satu pun keluaran untuk Step 3, 8, 9, dan 10. Seluruh sel
 metrik yang berkaitan di `EXPERIMENTS.md` masih bertuliskan `belum diukur` dan
 tidak boleh diisi sebelum ada run yang benar-benar dijalankan.

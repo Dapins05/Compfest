@@ -6,8 +6,8 @@ mewajibkan: *"Model wajib di fine tune sesuai dengan inovasi fitur per tim."*
 Angka yang belum diukur ditulis `belum diukur` dan tidak pernah dikarang.
 Panitia berhak meminta demo langsung dan klarifikasi saat penjurian.
 
-**Status:** Step 2, 4, 5, dan 6 selesai. Deteksi, segmentasi, dan anomali sudah
-dilatih serta diuji. Kalibrasi dan conformal masih `belum diukur`.
+**Status:** Step 2, 4, 5, 6, dan 7 selesai. Deteksi, segmentasi, anomali, serta
+lapisan statistik sudah diukur. Privasi, ONNX, dan integrasi belum.
 
 ---
 
@@ -536,23 +536,117 @@ dari kebiasaan industri, dan data di sini memperlihatkan harganya.
 masing-masing memuat sebaran skor beserta ambangnya dan diagram kuantil-kuantil
 kecocokan GPD.
 
-## 6. Kalibrasi & Conformal
+## 6. Kalibrasi, Conformal, dan Ambang Biaya
 
-| Metrik | Sebelum | Sesudah | Target |
-|---|---|---|---|
-| ECE | belum diukur | belum diukur | < 0,05 |
-| MCE | belum diukur | belum diukur | - |
-| Skor Brier | belum diukur | belum diukur | - |
-| Temperature $T^*$ | - | belum diukur | - |
+Dihasilkan `scripts/calibrate_decision.py`; angka lengkap di
+`reports/metrics/calibration_results.json`. Split val dipakai sebagai set
+kalibrasi dan split test hanya dipakai menguji.
 
-| Conformal (α = 0,05) | Nilai |
+Bagian ini memuat satu keberhasilan dan dua hasil negatif. Ketiganya dilaporkan
+apa adanya karena hasil negatif yang disembunyikan akan runtuh saat ditanya.
+
+### 6.1 Kalibrasi kepercayaan
+
+| Metode | ECE pada kalibrasi | ECE pada uji |
+|---|---|---|
+| tanpa kalibrasi | 0,3124 | 0,3222 |
+| temperature scaling | 0,4111 | **0,4038** (lebih buruk) |
+| **Platt scaling** | **0,0068** | **0,0391** (dipilih) |
+
+| Metrik | Sebelum | Sesudah Platt |
+|---|---|---|
+| ECE | 0,3222 | **0,0391** |
+| MCE | 0,6489 | 0,2228 |
+| Skor Brier | 0,1643 | **0,0365** |
+
+**Temperature scaling gagal, dan alasannya bukan kebetulan.** Diagram keandalan
+memperlihatkan model justru **kurang** percaya diri, bukan terlalu percaya
+diri: pada keyakinan 0,3 sampai 0,4 ketepatan sebenarnya sudah 1,0. Penyebabnya
+88 persen isi test set memang cacat. Temperature scaling hanya memiliki satu
+parameter pengali sehingga dapat melebarkan atau menyempitkan sebaran skor,
+tetapi tidak dapat **menggeser**-nya ke arah proporsi kelas yang sebenarnya.
+
+Platt scaling menambahkan intersep, dan intersep 4,069 itulah yang melakukan
+pergeseran tersebut. ECE 0,0391 memenuhi target di bawah 0,05.
+
+Pemilihan metode dilakukan berdasarkan ECE pada set kalibrasi, bukan pada set
+uji, sehingga angka uji tetap sah dilaporkan.
+
+### 6.2 Conformal prediction
+
+| | Nilai |
 |---|---|
-| Cakupan empiris | belum diukur (target >= 0,95) |
-| Ukuran himpunan rata-rata | belum diukur |
-| Cakupan per kelas (Mondrian) | belum diukur |
+| alpha | 0,05 (jaminan cakupan 95 persen) |
+| Mode | Mondrian, kuantil terpisah per kelas |
+| Kuantil kelas normal | 0,9501 |
+| Kuantil kelas cacat | 0,7772 |
+| **Cakupan empiris** | **0,9661** (jaminan tercapai) |
+| Rerata ukuran himpunan | 1,085 |
+| Keputusan diambil sistem | 91,5 persen |
+| Diserahkan ke manusia | **8,5 persen** |
 
----
+Kelas REVIEW kini punya landasan: sebuah gambar diserahkan ke manusia ketika
+himpunan prediksinya memuat lebih dari satu label, artinya kedua kemungkinan
+masih masuk akal pada tingkat jaminan yang dipilih. Ambangnya tidak dipilih
+tangan melainkan mengikuti dari alpha.
 
+**Namun jaminan per kelas tidak tercapai:**
+
+| Kelas | Cakupan empiris | Jaminan |
+|---|---|---|
+| cacat | 1,000 | 0,95 |
+| **normal** | **0,714** | 0,95 |
+
+Cakupan keseluruhan 0,9661 memenuhi jaminan, tetapi kelas normal hanya 0,714.
+Penyebabnya split kalibrasi hanya memuat 7 gambar normal, sehingga kuantil
+kelas itu dihitung dari sampel yang jauh terlalu kecil. Inilah keterbatasan
+paling serius pada bagian ini dan tidak boleh diklaim sebaliknya.
+
+### 6.3 Ambang sensitif biaya
+
+Dengan biaya cacat lolos Rp 50.000 dan salah tolak Rp 2.000, ambang Bayes-nya
+
+    tau* = 2.000 / (2.000 + 50.000) = 0,0385
+
+| Ambang | Recall | Biaya per unit |
+|---|---|---|
+| 0,96 (minimum empiris pada kalibrasi) | 0,9808 | Rp 583 |
+| 0,50 (pembanding) | 1,0000 | Rp 554 |
+| 0,00 (tolak semua) | 1,0000 | Rp 1.940 |
+
+**Ambang hasil optimasi biaya tidak menggeneralisasi.** Minimum biaya pada set
+kalibrasi jatuh di 0,96, tetapi pada split test ambang itu justru 5,2 persen
+lebih mahal daripada ambang 0,50. Dengan hanya 7 gambar normal per split,
+letak minimum biaya tidak dapat dipercaya. `configs/inference.yaml` karena itu
+memakai 0,50 sebagai ambang operasi, bukan 0,96.
+
+Yang tetap kokoh adalah perbandingan terhadap kebijakan menolak semua produk:
+keduanya sekitar 3,5 kali lebih murah.
+
+### 6.4 Koreksi prevalensi
+
+Perhitungan biaya pertama menyimpulkan bahwa ambang terbaik adalah nol, yaitu
+menolak seluruh produk. Kesimpulan itu benar secara aritmetika tetapi hanya
+berlaku pada data uji yang 88 persen isinya cacat.
+
+Lini produksi sungguhan berperilaku sebaliknya. Karena itu perhitungan biaya
+menimbang ulang kedua kelas agar proporsi cacatnya sesuai nilai yang
+diasumsikan, yaitu 3 persen. **Angka 3 persen adalah asumsi** yang belum
+diverifikasi terhadap data lini produksi nyata, dan ditulis di
+`configs/inference.yaml` sebagai asumsi, bukan sebagai hasil pengukuran.
+
+### 6.5 Keterbatasan
+
+1. Split kalibrasi dan uji masing-masing hanya memuat 7 gambar normal. Angka
+   apa pun yang bergantung pada kelas normal, termasuk cakupan per kelas dan
+   letak minimum biaya, memiliki ketidakpastian yang besar.
+2. Prevalensi 3 persen adalah asumsi.
+3. Kalibrasi menempatkan 54 dari 59 gambar uji pada keyakinan di atas 0,9.
+   Sebarannya terkalibrasi dengan baik, tetapi terpusat, dan itu kembali
+   mencerminkan komposisi dataset.
+
+**Gambar pendukung:** `reports/figures/reliability_diagram.png`,
+`conformal_coverage.png`, `cost_curve.png`.
 
 ## 7. Latensi & Ukuran Model
 
@@ -575,6 +669,7 @@ median dan persentil ke-95 dari 100 kali jalan.
 | # | Tgl | Model | Perubahan | Hasil | Keputusan |
 |---|---|---|---|---|---|
 | 1 | 2026-08-18 | YOLO11n detect | fine-tune pertama dari bobot COCO, config apa adanya | berhenti awal di epoch 161, terbaik epoch 137, mAP50 val 0,7967 | diterima sebagai model deteksi tahap penyisihan |
+| 4 | 2026-08-18 | Lapisan keputusan | kalibrasi, conformal, ambang biaya | Platt ECE 0,0391; conformal cakupan 0,9661; ambang biaya tidak menggeneralisasi | Platt dan conformal diterima; ambang operasi tetap 0,50 |
 | 3 | 2026-08-18 | PaDiM anomali | 5 kategori, 200 gambar latih, worker dataloader nol | AUROC 0,848 sampai 0,997; ambang EVT lolos uji KS di semua kategori | diterima; titik operasi 1 persen dinilai terlalu ketat dan diserahkan ke Step 7 |
 | 2 | 2026-08-18 | YOLO11n-seg | fine-tune dari bobot COCO, config apa adanya | berjalan penuh 250 epoch, terbaik epoch 203, mask mAP50 val 0,7899 | diterima; galat luas cacat 0,37 poin persen sudah memadai |
 
@@ -593,6 +688,9 @@ dan menunjukkan proses kerja yang nyata.)*
 |---|---|---|---|
 | 2026-08-18 | Peringatan ketidakcocokan ABI numpy dan scipy | pemasangan ultralytics menaikkan numpy ke 2.4.6 sementara scipy 1.13 menuntut di bawah 2.3 | scipy dinaikkan ke 1.17.1, seluruh angka statistik dihitung ulang di atas kombinasi yang sah |
 | 2026-08-18 | Recall `gores` hanya 0,556 | objek gores paling kecil ukurannya dan dukungannya hanya 9 instance di test | dicatat sebagai keterbatasan; penambahan sampel menjadi bahan Step 3 |
+| 2026-08-18 | Temperature scaling memperburuk ECE, 0,322 menjadi 0,404 | model justru kurang percaya diri karena 88 persen data uji memang cacat; temperature scaling tanpa intersep tidak dapat menggeser skor ke proporsi kelas sebenarnya | diganti Platt scaling yang punya intersep; ECE turun ke 0,0391 |
+| 2026-08-18 | Ambang hasil optimasi biaya lebih mahal daripada ambang 0,50 pada data uji | hanya 7 gambar normal per split sehingga letak minimum biaya tidak stabil | ambang operasi tetap 0,50; keterbatasan dinyatakan di EXPERIMENTS.md |
+| 2026-08-18 | `savings_versus` melaporkan biaya set kalibrasi seolah-olah biaya set uji | fungsi mengembalikan CostPoint yang diterimanya alih-alih menghitung ulang pada data yang dinilai | fungsi diubah agar mengevaluasi kedua ambang pada data yang sama |
 | 2026-08-18 | Step 6 gagal empat kali berturut-turut | dirinci di bawah | seluruhnya diperbaiki; run bersih kelima berhasil |
 | 2026-08-18 | Skor anomali hanya bernilai tiga macam | post-processor anomalib menormalisasi skor terhadap ambang internalnya dan praktis mengkuantisasi keluaran, sehingga ekor sebaran hilang dan tidak ada yang dapat dimodelkan GPD | post-processor dimatikan; skor mentah kembali kontinu dengan 39 nilai unik |
 | 2026-08-18 | Hasil kategori pertama hilang saat kategori kedua gagal | JSON hanya ditulis di akhir setelah semua kategori selesai | penulisan dijadikan inkremental dan menggabung isi berkas yang sudah ada |
