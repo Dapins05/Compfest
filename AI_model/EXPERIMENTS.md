@@ -6,8 +6,8 @@ mewajibkan: *"Model wajib di fine tune sesuai dengan inovasi fitur per tim."*
 Angka yang belum diukur ditulis `belum diukur` dan tidak pernah dikarang.
 Panitia berhak meminta demo langsung dan klarifikasi saat penjurian.
 
-**Status:** Step 2 dan Step 4 selesai. Deteksi sudah di-fine-tune dan diuji
-pada test set. Segmentasi, anomali, dan kalibrasi masih `belum diukur`.
+**Status:** Step 2, 4, dan 5 selesai. Deteksi dan segmentasi sudah di-fine-tune
+dan diuji pada test set. Anomali dan kalibrasi masih `belum diukur`.
 
 ---
 
@@ -285,15 +285,136 @@ imgsz 640, mosaic dimatikan pada 15 epoch terakhir, seed 42.
 
 ## 4. BUKTI FINE-TUNING - Segmentasi
 
-| Metrik | Baseline | Fine-tuned | Δ | 95% CI |
-|---|---|---|---|---|
-| Mask mAP@50 | belum diukur | belum diukur | - | - |
-| Mean IoU | belum diukur | belum diukur | - | - |
-| Galat estimasi luas cacat (%) | belum diukur | belum diukur | - | - |
+Dihasilkan `scripts/compare_segmentation.py`; angka lengkap di
+`reports/metrics/segmentation_comparison.json`. Pencocokan memakai **IoU mask**,
+bukan IoU kotak pembatas, karena dua mask yang bentuknya sangat berbeda bisa
+saja punya kotak yang nyaris sama.
 
-Uji McNemar Nilai
+### 4.1 Ringkas run
 
-|---|---| khi-kuadrat / p | belum diukur | ---
+| | |
+|---|---|
+| Model dasar | YOLO11n-seg pra-latih COCO |
+| Dataset | `data/processed/seg`, split identik dengan deteksi |
+| Epoch diminta | 250 |
+| Epoch dijalankan | **250** (tidak berhenti awal) |
+| Epoch terbaik | **203** |
+| Waktu tempuh | **66,8 menit** pada RTX 3050 Laptop 4 GB |
+| Metrik val terbaik (mask) | precision 0,8817 - recall 0,7253 - mAP50 **0,7899** - mAP50-95 0,5218 |
+| Metrik val terbaik (kotak) | mAP50 0,8090 - mAP50-95 0,5895 |
+
+Berbeda dengan deteksi yang berhenti awal di epoch 161, run ini berjalan penuh
+sampai batas 250. Bobot terbaik jatuh di epoch 203, artinya hanya 47 epoch
+terakhir yang tanpa perbaikan sementara `patience` bernilai 40. Model **mungkin
+masih bisa membaik** bila diberi epoch lebih banyak, dan hal itu dinyatakan apa
+adanya alih-alih diklaim sudah konvergen.
+
+### 4.2 Perbandingan metrik pada test set
+
+| Metrik (tingkat instance, IoU mask 0,5) | Baseline pra-latih | Sesudah fine-tune | 95% BCa |
+|---|---|---|---|
+| Recall | 0,0000 | **0,6000** | [0,4681 ; 0,7101] |
+| Precision | 0,0000 | **0,6000** | [0,4731 ; 0,7083] |
+| F2 | 0,0000 | 0,6000 | [0,4724 ; 0,7049] |
+| True positive | 0 | 45 | dari 75 instance |
+| False positive | 40 | 30 | |
+| False negative | 75 | 30 | |
+
+| Kualitas mask pada pasangan yang cocok | Baseline | Sesudah fine-tune |
+|---|---|---|
+| IoU rerata | 0,0000 | **0,7847** |
+| IoU median | 0,0000 | 0,8065 |
+| Jumlah pasangan | 0 | 45 |
+
+| Metrik (tingkat gambar) | Baseline | Sesudah fine-tune |
+|---|---|---|
+| TP / FP / TN / FN | 30 / 3 / 4 / 22 | 51 / 1 / 6 / 1 |
+| Recall | 0,577 | **0,981** |
+| **MCC** | **0,097** | **0,838** |
+
+MCC tingkat gambar model segmentasi (0,838) justru **lebih tinggi** daripada
+model deteksi (0,719). Untuk keputusan lolos atau tolak, segmentasi terbukti
+lebih dapat diandalkan meskipun recall per instance-nya lebih rendah.
+
+### 4.3 Estimasi luas cacat
+
+Ini keluaran yang benar-benar dipakai decision engine, dan karena itu galatnya
+diukur tersendiri. Satuannya **poin persen** terhadap luas gambar.
+
+| Galat mutlak luas cacat | Baseline | Sesudah fine-tune |
+|---|---|---|
+| Rerata | 15,3698 | **0,3714** |
+| 95% BCa rerata | [11,1014 ; 21,2449] | **[0,1662 ; 0,9968]** |
+| Median | 10,6940 | **0,0381** |
+| Persentil ke-95 | 56,3491 | **1,2943** |
+
+Baseline meleset rata-rata lebih dari 15 poin persen karena model COCO
+menyegmentasi **seluruh objeknya**, misalnya botol utuh, bukan area cacatnya.
+Sesudah fine-tuning, galat rerata turun menjadi 0,37 poin persen.
+
+**Kalimat untuk proposal:**
+
+> Sistem melaporkan luas cacat dengan galat mutlak rerata 0,37 poin persen
+> [0,17 ; 1,00] pada test set. Karena ambang keputusan luas ditetapkan pada
+> 2,0 persen, galat sebesar itu tidak mengubah keputusan pada mayoritas kasus.
+
+Sebaran titik dugaan terhadap luas sebenarnya dapat dilihat pada panel kanan
+`reports/figures/segmentation_comparison.png`; titik-titiknya menempel rapat
+pada garis identitas.
+
+### 4.4 Uji signifikansi McNemar
+
+| | Fine-tuned menangkap | Fine-tuned gagal |
+|---|---|---|
+| **Baseline menangkap** | a = 0 | b = 0 |
+| **Baseline gagal** | c = 45 | d = 30 |
+
+| | Nilai |
+|---|---|
+| Metode | khi-kuadrat dengan koreksi kontinuitas |
+| Khi-kuadrat McNemar | **43,022** |
+| Nilai p | **5,41 x 10^-11** |
+| Pasangan (n) | 75 |
+| Cohen's h | **1,772** (besar) |
+| Kesimpulan | perbedaan signifikan secara statistik |
+
+### 4.5 Recall per kelas
+
+| Kelas | n (test) | Baseline | Sesudah fine-tune |
+|---|---|---|---|
+| `noda` | 21 | 0,000 | 0,714 |
+| `kotor` | 3 | 0,000 | 0,667 |
+| `pecah` | 40 | 0,000 | 0,575 |
+| `gores` | 9 | 0,000 | 0,333 |
+| `deformasi` | 2 | 0,000 | 1,000 |
+
+`gores` menjadi yang terlemah dengan recall 0,333. Penyebabnya masuk akal:
+goresan berbentuk garis tipis, dan IoU mask menghukum bentuk tipis jauh lebih
+keras daripada IoU kotak. Pada model deteksi, kelas yang sama mencapai 0,556.
+
+### 4.6 Latensi
+
+| Tahap | ms/gambar |
+|---|---|
+| Prapemrosesan | 6,0 |
+| Inferensi | 40,7 |
+| Pascapemrosesan | 10,9 |
+| **Total** | **57,6** |
+
+Segmentasi sekitar empat kali lebih lambat daripada deteksi yang 15,0 ms.
+Angka ini PyTorch di GPU; ONNX di CPU diukur pada Step 9.
+
+### 4.7 Keterbatasan
+
+1. Recall segmentasi (0,600) lebih rendah daripada deteksi (0,693) karena IoU
+   mask pada ambang 0,5 jauh lebih ketat daripada IoU kotak.
+2. Run berjalan sampai batas epoch, bukan berhenti karena konvergen. Menaikkan
+   `epochs` berpotensi memperbaiki hasil bila waktu memungkinkan.
+3. Dukungan `kotor` dan `deformasi` masih sangat tipis, sehingga recall-nya
+   tidak informatif.
+
+**Gambar pendukung:** `reports/figures/segmentation_comparison.png`,
+`segmentation_pr_curve.png`, `segmentation_confusion_matrix.png`.
 
 ## 5. Anomaly Detection
 
@@ -337,23 +458,26 @@ Uji McNemar Nilai
 
 ## 7. Latensi & Ukuran Model
 
-| Tahap | Median (ms) | p95 (ms) | Ukuran |
+Diukur pada RTX 3050 Laptop, rata-rata 59 gambar test, resolusi 640 px.
+
+| Model | Tahap | Median (ms) | Ukuran bobot |
 |---|---|---|---|
-| PyTorch (GPU) | belum diukur | belum diukur | - |
-| ONNX (CPU) | belum diukur | belum diukur | - |
-| **Pipeline penuh (CPU)** | belum diukur | belum diukur | - |
+| YOLO11n detect | PyTorch GPU | **15,0** | 5,5 MB |
+| YOLO11n-seg | PyTorch GPU | **57,6** | 6,0 MB |
+| YOLO11n detect | ONNX CPU | belum diukur | belum diukur |
+| YOLO11n-seg | ONNX CPU | belum diukur | belum diukur |
+| Pipeline penuh | ONNX CPU | belum diukur | - |
 
-Dilaporkan sebagai median dan persentil ke-95 dari **100 kali jalan** - satu pengukuran tunggal
-
-tidak bermakna.
-
----
+Rincian per tahap ada di bagian 3.6 dan 4.6. Angka ONNX di CPU adalah target
+penyajian yang sebenarnya dan baru diukur pada Step 9, dilaporkan sebagai
+median dan persentil ke-95 dari 100 kali jalan.
 
 ## 8. Riwayat Run
 
 | # | Tgl | Model | Perubahan | Hasil | Keputusan |
 |---|---|---|---|---|---|
 | 1 | 2026-08-18 | YOLO11n detect | fine-tune pertama dari bobot COCO, config apa adanya | berhenti awal di epoch 161, terbaik epoch 137, mAP50 val 0,7967 | diterima sebagai model deteksi tahap penyisihan |
+| 2 | 2026-08-18 | YOLO11n-seg | fine-tune dari bobot COCO, config apa adanya | berjalan penuh 250 epoch, terbaik epoch 203, mask mAP50 val 0,7899 | diterima; galat luas cacat 0,37 poin persen sudah memadai |
 
 > **Aturan:** satu perubahan per run. Kalau augmentasi, ukuran model, dan learning rate diubah
 
@@ -370,3 +494,4 @@ dan menunjukkan proses kerja yang nyata.)*
 |---|---|---|---|
 | 2026-08-18 | Peringatan ketidakcocokan ABI numpy dan scipy | pemasangan ultralytics menaikkan numpy ke 2.4.6 sementara scipy 1.13 menuntut di bawah 2.3 | scipy dinaikkan ke 1.17.1, seluruh angka statistik dihitung ulang di atas kombinasi yang sah |
 | 2026-08-18 | Recall `gores` hanya 0,556 | objek gores paling kecil ukurannya dan dukungannya hanya 9 instance di test | dicatat sebagai keterbatasan; penambahan sampel menjadi bahan Step 3 |
+| 2026-08-18 | Segmentasi tidak berhenti awal | 250 epoch habis sebelum `patience` 40 tercapai, bobot terbaik di epoch 203 | dicatat apa adanya; model belum tentu konvergen dan dapat dilatih lebih lama bila waktu memungkinkan |

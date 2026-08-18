@@ -95,6 +95,14 @@ python scripts/train_detection.py               # fine-tune YOLO11n
 python scripts/compare_detection.py             # baseline vs hasil, uji McNemar
 ```
 
+## Menjalankan Fine-Tuning Segmentasi (Step 5)
+
+```bash
+python scripts/train_detection.py --data data/processed/seg/data.yaml \
+    --name seg --section segmentation
+python scripts/compare_segmentation.py
+```
+
 Keluaran: `models/finetuned/detect/`, `reports/metrics/detection_comparison.json`,
 `reports/figures/detection_comparison.png`.
 ```
@@ -127,7 +135,7 @@ python -c "import torch; print(torch.cuda.is_available(), torch.cuda.get_device_
 | 2 | Akuisisi & Preprocessing Dataset | selesai |
 | 3 | Generator Cacat Sintetik | ditunda |
 | 4 | Baseline + Fine-Tune Detection | selesai |
-| 5 | Fine-Tune Segmentation | belum |
+| 5 | Fine-Tune Segmentation | selesai |
 | 6 | Anomaly Detection + Ambang EVT | belum |
 | 7 | Lapisan Statistik & Kalibrasi | belum |
 | 8 | Lapisan Privasi | belum |

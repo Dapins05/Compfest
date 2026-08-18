@@ -23,7 +23,7 @@ Dokumen lain punya peran berbeda:
 | 2 | Akuisisi & Preprocessing Dataset | selesai | 10 modul data, 2 skrip, 3 dataset olahan, `dataset_stats.json`, 2 lembar kontak |
 | 3 | Generator Cacat Sintetik | ditunda | belum ada |
 | 4 | Baseline + Fine-Tune Detection | selesai | 7 modul training & evaluasi, 2 skrip, bobot terlatih, `detection_comparison.json`, 4 gambar |
-| 5 | Fine-Tune Segmentation | belum | belum ada |
+| 5 | Fine-Tune Segmentation | selesai | 1 modul evaluasi mask, 1 skrip, bobot terlatih, `segmentation_comparison.json`, 3 gambar |
 | 6 | Anomaly Detection + Ambang EVT | belum | belum ada |
 | 7 | Lapisan Statistik & Kalibrasi | belum | belum ada |
 | 8 | Lapisan Privasi | belum | belum ada |
@@ -160,7 +160,53 @@ Rincian beserta keterbatasannya di [EXPERIMENTS.md bagian 3](./EXPERIMENTS.md).
 
 ---
 
-## 6. Menghasilkan Ulang Semuanya
+## 6. Step 5 - Fine-Tune Segmentation
+
+### Kode
+
+| Berkas | Tanggung jawab |
+|---|---|
+| `src/visionqc_ai/evaluation/segmentation_eval.py` | pencocokan IoU mask dan perhitungan luas cacat |
+| `scripts/compare_segmentation.py` | membandingkan baseline dengan hasil fine-tuning |
+
+Training memakai ulang `scripts/train_detection.py` dengan penanda bagian
+`segmentation`, sehingga tidak ada kode training yang digandakan:
+
+```bash
+python scripts/train_detection.py --data data/processed/seg/data.yaml \
+    --name seg --section segmentation
+```
+
+### Bobot model (tidak masuk git)
+
+| Berkas | Isi |
+|---|---|
+| `models/finetuned/seg/weights/best.pt` | bobot terbaik, epoch 203 |
+| `models/finetuned/seg/weights/last.pt` | bobot epoch terakhir, 250 |
+| `models/finetuned/seg/results.csv` | metrik per epoch |
+| `yolo11n-seg.pt` | bobot pra-latih COCO, diunduh otomatis |
+
+### Bukti yang tersimpan
+
+| Berkas | Isi |
+|---|---|
+| `reports/metrics/training_seg.json` | ringkasan run |
+| `reports/metrics/segmentation_comparison.json` | metrik mask, IoU, galat luas cacat, McNemar, recall per kelas |
+| `reports/figures/segmentation_comparison.png` | metrik, sebaran IoU mask, ketepatan estimasi luas |
+| `reports/figures/segmentation_pr_curve.png` | kurva precision-recall mask |
+| `reports/figures/segmentation_confusion_matrix.png` | confusion matrix ternormalisasi |
+
+### Angka kunci
+
+Recall mask naik dari 0,0000 menjadi 0,6000 [0,4681 ; 0,7101], IoU mask rerata
+0,7847, dan MCC tingkat gambar 0,838. Galat estimasi luas cacat turun dari
+15,37 menjadi **0,37 poin persen**. Uji McNemar: 45 instance membaik, 0
+memburuk, p = 5,41 x 10^-11.
+
+
+---
+
+## 7. Menghasilkan Ulang Semuanya
 
 Dari repo bersih, dengan `data/raw/` sudah terisi dataset publik:
 
@@ -174,6 +220,10 @@ python scripts/preview_dataset.py --split test
 
 python scripts/train_detection.py       # Step 4, sekitar 22 menit di RTX 3050
 python scripts/compare_detection.py     # evaluasi dan uji signifikansi
+
+python scripts/train_detection.py --data data/processed/seg/data.yaml \
+    --name seg --section segmentation   # Step 5, sekitar 67 menit
+python scripts/compare_segmentation.py
 ```
 
 Seed dikunci di `configs/dataset.yaml`, sehingga pembagian split akan sama
@@ -182,8 +232,8 @@ sifat nondeterministik operasi CUDA tertentu.
 
 ---
 
-## 7. Yang Belum Ada
+## 8. Yang Belum Ada
 
-Belum ada satu pun keluaran untuk Step 3, 5, 6, 7, 8, 9, dan 10. Seluruh sel
+Belum ada satu pun keluaran untuk Step 3, 6, 7, 8, 9, dan 10. Seluruh sel
 metrik yang berkaitan di `EXPERIMENTS.md` masih bertuliskan `belum diukur` dan
 tidak boleh diisi sebelum ada run yang benar-benar dijalankan.
