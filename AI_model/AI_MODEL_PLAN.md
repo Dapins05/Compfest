@@ -61,7 +61,7 @@ Tiap langkah dirancang agar selesai sebagai satu unit kerja yang berdiri sendiri
 | **4** | **Baseline + Fine-Tune Detection** | Model detect terlatih + **uji McNemar** vs baseline | 4 jam | H-7 selesai |
 | **5** | **Fine-Tune Segmentation** | Model seg + perhitungan luas cacat % | 3 jam | H-7 selesai |
 | **6** | **Anomaly Detection + Ambang EVT** | PaDiM + ambang berbasis Extreme Value Theory | 4 jam | H-7 selesai |
-| **7** | Lapisan Statistik & Kalibrasi | Conformal prediction, temperature scaling, ambang sensitif biaya | 3 jam | H-7 |
+| **7** | **Lapisan Statistik & Kalibrasi** | Conformal prediction, Platt scaling, ambang sensitif biaya | 3 jam | H-7 selesai |
 | **8** | Lapisan Privasi | EXIF scrub, face blur, ephemeral buffer, hash audit | 2 jam | H-7 |
 | **9** | Decision Engine + Ekspor ONNX | Mesin keputusan 3 kelas + ONNX + tolok ukur latensi | 3 jam | H-6 |
 | **10** | Integrasi & Laporan Evaluasi | `run_inspection()` siap Backend + EXPERIMENTS.md terisi | 3 jam | H-6 |
@@ -286,31 +286,33 @@ Rincian lengkap di [EXPERIMENTS.md bagian 5](./EXPERIMENTS.md).
 
 ---
 
-### Step 7 - Lapisan Statistik & Kalibrasi
+### Step 7 - Kalibrasi, Conformal, dan Ambang Biaya `[SELESAI 18 Agu 2026]`
 
-**Tujuan:** ini inti diferensiator. Mengubah keluaran model mentah menjadi keputusan yang
-**terjamin secara statistik** .
-
-**Yang dibuat:** ```
-src/visionqc_ai/statistics/
-|-- conformal.py         # split & Mondrian conformal prediction
-|-- calibration.py       # temperature scaling, ECE, reliability diagram
-|-- cost_sensitive.py    # ambang optimal berbasis biaya asimetris
-|-- spc.py               # kartu kendali p-chart, CUSUM, EWMA (untuk laporan)
+**Dibuat:**
+```
+src/visionqc_ai/statistics/{calibration,conformal,cost_sensitive}.py
+scripts/calibrate_decision.py
+reports/metrics/calibration_results.json
 reports/figures/{reliability_diagram,conformal_coverage,cost_curve}.png
 ```
 
-**Tiga hasil konkret:** 1. **Conformal prediction** - kelas `REVIEW` bukan lagi tebakan, tapi konsekuensi matematis:
-   > *"Dengan α = 0,05, sistem menjamin label sebenarnya tercakup dalam himpunan prediksi
-   > minimal 95% dari waktu. Bila himpunan berisi lebih dari satu label, sistem menahan
-   > keputusan (REVIEW)."*
+**Hasil:**
 
-2. **Kalibrasi** - skor kepercayaan jadi bermakna. Sebelum kalibrasi ECE biasanya 0,1-0,2
-   (artinya "confidence 0,9" sebenarnya cuma benar ~75%). Setelah temperature scaling turun < 0,05.
+| Bagian | Hasil |
+|---|---|
+| Kalibrasi | ECE 0,3222 menjadi **0,0391** lewat Platt scaling |
+| Conformal | cakupan **0,9661** terhadap jaminan 0,95; 8,5 persen diserahkan ke manusia |
+| Ambang biaya | tidak menggeneralisasi; ambang operasi tetap 0,50 |
 
-3. **Ambang sensitif biaya** - memakai biaya nyata:
-   > *cacat lolos ke konsumen ≈ Rp 50.000 · salah tolak produk bagus ≈ Rp 2.000*
-   >  ambang optimal Bayes = 2.000/52.000 ≈ 0,038
+**Temperature scaling gagal dan diganti Platt scaling.** Model justru kurang
+percaya diri karena 88 persen data uji memang cacat, dan temperature scaling
+tanpa intersep tidak dapat menggeser skor ke proporsi kelas sebenarnya.
+
+**Cakupan per kelas normal hanya 0,714**, jauh di bawah jaminan, karena split
+kalibrasi hanya memuat 7 gambar normal. Ini keterbatasan paling serius pada
+langkah ini.
+
+Rincian lengkap di [EXPERIMENTS.md bagian 6](./EXPERIMENTS.md).
 
 ---
 

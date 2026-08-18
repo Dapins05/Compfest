@@ -51,16 +51,31 @@ decision:
     ks_p_value: 0.966  # diagnostik kecocokan; GPD tidak ditolak
     calibration_n: 39  # sampel normal yang tidak ikut dilatih
 
-  # bagian Conformal prediction (STATISTICS.md bagian 6)
+  # Conformal prediction menentukan kapan sistem menahan keputusan.
+  # Kuantil di bawah dihitung pada split val di Step 7 dan bersifat statis.
   conformal:
-    alpha: 0.05  # jaminan cakupan ≥ 95%
+    alpha: 0.05  # jaminan cakupan minimal 95 persen
     mode: mondrian  # kuantil terpisah per kelas - penting untuk data timpang
-    quantiles: TBD  # q̂ per kelas, diisi Step 7
+    quantiles:
+      normal: 0.9501
+      defect: 0.7772
+    empirical_coverage: 0.9661  # terukur pada split test
+    review_rate: 0.0847  # proporsi gambar yang diserahkan ke manusia
+    # PERINGATAN: cakupan kelas normal hanya 0.714, jauh di bawah jaminan.
+    # Penyebabnya split kalibrasi hanya memuat 7 gambar normal. Jaminan
+    # keseluruhan tercapai, jaminan per kelas belum.
 
-  # bagian Kalibrasi kepercayaan (STATISTICS.md bagian 5)
+  # Kalibrasi kepercayaan. Temperature scaling dicoba lebih dulu tetapi justru
+  # memperburuk ECE karena tidak punya intersep sehingga tidak dapat menggeser
+  # skor ke proporsi kelas yang sebenarnya. Platt scaling yang dipakai.
   calibration:
-    temperature: TBD  # dioptimasi pada set validasi di Step 7
-    ece_after: TBD  # target < 0.05
+    method: platt
+    platt_slope: 0.3849
+    platt_intercept: 4.0690
+    temperature_rejected: 5.3422  # ECE 0.4038, lebih buruk daripada tanpa kalibrasi
+    ece_before: 0.3222
+    ece_after: 0.0391  # target < 0.05, tercapai
+    brier_after: 0.0365
 
   # bagian Ambang sensitif biaya (STATISTICS.md bagian 8)
   # τ* = C_FP / (C_FP + C_FN)
@@ -68,7 +83,18 @@ decision:
     c_false_reject: 2000  # Rp - produk bagus salah ditolak
     c_missed_defect: 50000  # Rp - cacat lolos ke konsumen
     c_review: 500  # Rp - biaya waktu operator memeriksa
-    bayes_threshold: TBD  # dihitung dari nilai di atas pada Step 7
+    # Proporsi cacat yang diasumsikan terjadi di lini produksi. Test set dibangun
+    # dari gambar cacat sehingga 88 persen isinya cacat, jauh dari kenyataan.
+    # Tanpa koreksi ini, perhitungan biaya menyimpulkan bahwa menolak seluruh
+    # produk adalah pilihan termurah. Nilai 0.03 adalah ASUMSI yang belum
+    # diverifikasi terhadap data lini produksi sungguhan.
+    assumed_defect_prevalence: 0.03
+    bayes_threshold: 0.0385  # C_FP / (C_FP + C_FN) = 2000 / 52000
+    # Ambang yang benar-benar dipakai. Minimum biaya empiris pada set kalibrasi
+    # jatuh di 0.96 tetapi tidak menggeneralisasi: pada split test biayanya
+    # justru 5.2 persen lebih tinggi daripada ambang 0.50. Dengan hanya 7
+    # gambar normal per split, letak minimum itu tidak dapat dipercaya.
+    operating_threshold: 0.50
 
   # bagian Kepercayaan minimum sebelum sistem berani memutuskan
   min_confidence: 0.60
