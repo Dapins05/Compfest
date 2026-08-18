@@ -6,8 +6,8 @@ mewajibkan: *"Model wajib di fine tune sesuai dengan inovasi fitur per tim."*
 Angka yang belum diukur ditulis `belum diukur` dan tidak pernah dikarang.
 Panitia berhak meminta demo langsung dan klarifikasi saat penjurian.
 
-**Status:** Step 2, 4, dan 5 selesai. Deteksi dan segmentasi sudah di-fine-tune
-dan diuji pada test set. Anomali dan kalibrasi masih `belum diukur`.
+**Status:** Step 2, 4, 5, dan 6 selesai. Deteksi, segmentasi, dan anomali sudah
+dilatih serta diuji. Kalibrasi dan conformal masih `belum diukur`.
 
 ---
 
@@ -416,27 +416,125 @@ Angka ini PyTorch di GPU; ONNX di CPU diukur pada Step 9.
 **Gambar pendukung:** `reports/figures/segmentation_comparison.png`,
 `segmentation_pr_curve.png`, `segmentation_confusion_matrix.png`.
 
-## 5. Anomaly Detection
+## 5. Anomaly Detection dan Ambang EVT
 
-| Metrik | Nilai | Catatan |
-|---|---|---|
-| Image AUROC | belum diukur | |
-| Pixel AUROC | belum diukur | |
-| Model yang dipakai | belum diputuskan | EfficientAD, atau cadangan PaDiM/PatchCore |
+Dihasilkan `scripts/train_anomaly.py`; angka lengkap di
+`reports/metrics/anomaly_results.json`. Model dilatih **hanya dari gambar
+normal**, tanpa satu pun contoh cacat, sehingga jenis cacat yang belum pernah
+dilabeli tetap dapat terjaring.
 
-**Ambang via Extreme Value Theory** (STATISTICS.md bagian 7):
+### 5.1 Model yang dipakai, dan kenapa bukan pilihan utama
 
-
-| Parameter | Nilai |
+| | |
 |---|---|
-| ambang POT awal (u) | belum diukur |
-| ξ̂ (bentuk GPD) | belum diukur |
-| σ̂ (skala GPD) | belum diukur |
-| $N_u$ / n | belum diukur |
-| **Ambang akhir $z_q$** | belum diukur |
-| Laju alarm palsu tercapai | belum diukur (target ≤ 1%) |
+| Model | **PaDiM** (cadangan), bukan EfficientAD |
+| Backbone | ResNet18 pra-latih, 2,8 juta parameter |
+| Gambar latih | dibatasi 200 per kategori |
+| Kategori | 5, masing-masing satu model |
+| Waktu | sekitar 2 menit per kategori |
 
----
+`configs/training.yaml` menetapkan EfficientAD sebagai pilihan utama dengan
+PaDiM sebagai cadangan, dan **cadangan itulah yang dipakai**. Alasannya waktu:
+EfficientAD memerlukan unduhan dataset ImageNette sekitar 1,5 GB dan pelatihan
+ribuan langkah per kategori, sementara sisa waktu lomba masih harus menampung
+kalibrasi, decision engine, dan integrasi. Hal ini dinyatakan terbuka, bukan
+disembunyikan, dan EfficientAD tetap terbuka untuk dicoba di tahap Final.
+
+### 5.2 Pembagian data
+
+Ambang dikalibrasi pada data yang **tidak dipakai mengukurnya**. Tanpa
+pemisahan ini, laju alarm palsu yang dilaporkan menjadi melingkar.
+
+| Split | Isi | Perannya |
+|---|---|---|
+| latih | gambar normal | model belajar seperti apa produk normal |
+| kalibrasi | gambar normal, diambil dari latih, tidak ikut dilatih | dasar perhitungan ambang |
+| uji | gambar normal + cacat | dasar laju alarm palsu dan recall |
+
+| Kategori | Kalibrasi | Uji normal | Uji cacat |
+|---|---|---|---|
+| `bottle` | 39 | 34 | 9 |
+| `chewinggum` | 85 | 75 | 15 |
+| `cashew` | 85 | 75 | 14 |
+| `pipe_fryum` | 85 | 75 | 14 |
+| `fryum` | 85 | 75 | 14 |
+
+### 5.3 Hasil
+
+| Kategori | AUROC gambar | Ambang EVT | Kuantil empiris | Alarm palsu (uji) | Recall cacat |
+|---|---|---|---|---|---|
+| `bottle` | **0,9967** | 45,861 | 44,431 | 0,029 | **1,0000** |
+| `chewinggum` | 0,9307 | 37,234 | 33,630 | 0,067 | 0,8667 |
+| `fryum` | 0,8867 | 71,157 | 76,264 | 0,000 | 0,1429 |
+| `pipe_fryum` | 0,8571 | 53,243 | 53,041 | 0,000 | 0,2143 |
+| `cashew` | 0,8476 | 56,550 | 46,076 | 0,013 | 0,2857 |
+
+Target laju alarm palsu 1 persen, seed 42.
+
+### 5.4 Pencocokan GPD pada ekor
+
+| Kategori | u | Kuantil dipakai | N_u / n | xi | sigma | KS p | Tafsiran ekor |
+|---|---|---|---|---|---|---|---|
+| `bottle` | 21,389 | 74 | 10/39 | +0,667 | 2,119 | 0,966 | berat |
+| `chewinggum` | 23,692 | 85 | 13/85 | +0,312 | 3,150 | 0,940 | berat |
+| `cashew` | 25,589 | 85 | 13/85 | +0,454 | 5,737 | 0,593 | berat |
+| `pipe_fryum` | 29,897 | 85 | 13/85 | -0,340 | 13,138 | 0,898 | terbatas |
+| `fryum` | 31,366 | 85 | 13/85 | +0,790 | 4,124 | 0,978 | berat |
+
+Nilai p uji Kolmogorov-Smirnov berkisar 0,593 sampai 0,978 pada seluruh
+kategori. Tidak ada satu pun yang menolak GPD, sehingga pemodelan ekor ini
+memang didukung data dan bukan asumsi yang dipaksakan.
+
+Tanda parameter bentuk pun bervariasi secara masuk akal. `pipe_fryum`
+terdeteksi berekor terbatas, artinya ada batas atas skor yang tak terlampaui,
+sedangkan empat kategori lain berekor berat sehingga nilai ekstrem yang jauh
+lebih besar masih mungkin muncul. Perbedaan itu tidak akan terlihat bila
+ambang ditetapkan sebagai kuantil empiris begitu saja.
+
+**Kalimat untuk proposal:**
+
+> Ambang 45,8613 pada kategori botol diperoleh dengan memodelkan ekor sebaran
+> skor anomali sampel normal memakai sebaran Pareto Tergeneralisasi
+> (xi = 0,6669; sigma = 2,1188; u = 21,3890; N_u/n = 10/39), menargetkan laju
+> alarm palsu 1 persen. Uji Kolmogorov-Smirnov tidak menolak kecocokan model
+> tersebut (p = 0,966).
+
+### 5.5 Temuan penting: AUROC tinggi tetapi recall rendah
+
+Tiga kategori mencatat AUROC di atas 0,84 namun recall hanya 0,14 sampai 0,29
+pada ambang EVT. Keduanya tidak bertentangan dan perbedaannya perlu dipahami:
+
+AUROC mengukur kemampuan **mengurutkan**, yaitu peluang skor sebuah gambar
+cacat lebih tinggi daripada gambar normal yang diambil acak. Recall mengukur
+kinerja pada **satu titik operasi tertentu**. Menargetkan laju alarm palsu 1
+persen menempatkan ambang begitu tinggi sehingga mayoritas cacat jatuh di
+bawahnya.
+
+Untuk inspeksi produk pangan, 1 persen adalah titik operasi yang keliru.
+`configs/inference.yaml` menaksir biaya cacat lolos ke konsumen Rp 50.000
+berbanding Rp 2.000 untuk produk bagus yang salah ditolak. Dengan asimetri
+biaya sebesar itu, menahan alarm palsu di 1 persen justru memperbesar total
+kerugian.
+
+Hasil ini menjadi bukti empiris yang mendasari Step 7: angka 1 persen diwarisi
+dari kebiasaan industri, dan data di sini memperlihatkan harganya.
+
+### 5.6 Keterbatasan
+
+1. `chewinggum` mencatat laju alarm palsu 6,7 persen pada split uji padahal
+   targetnya 1 persen. Kalibrasi pada 85 sampel ternyata belum cukup mewakili
+   ekor sebaran yang sebenarnya.
+2. `bottle` hanya memiliki 39 sampel kalibrasi, sehingga ambang awal terpaksa
+   turun ke kuantil ke-74 agar ekornya cukup terisi. Semakin rendah kuantil
+   awal, semakin lemah landasan teoretis pendekatan GPD.
+3. Model yang dipakai adalah cadangan, bukan pilihan utama.
+4. Setiap kategori memiliki model dan ambang sendiri. Sistem pada tahap
+   penyisihan memakai ambang kategori `bottle` sebagai nilai statis karena
+   botol adalah produk demo utama.
+
+**Gambar pendukung:** `reports/figures/anomaly_{bottle,chewinggum,cashew,pipe_fryum,fryum}.png`,
+masing-masing memuat sebaran skor beserta ambangnya dan diagram kuantil-kuantil
+kecocokan GPD.
 
 ## 6. Kalibrasi & Conformal
 
@@ -477,6 +575,7 @@ median dan persentil ke-95 dari 100 kali jalan.
 | # | Tgl | Model | Perubahan | Hasil | Keputusan |
 |---|---|---|---|---|---|
 | 1 | 2026-08-18 | YOLO11n detect | fine-tune pertama dari bobot COCO, config apa adanya | berhenti awal di epoch 161, terbaik epoch 137, mAP50 val 0,7967 | diterima sebagai model deteksi tahap penyisihan |
+| 3 | 2026-08-18 | PaDiM anomali | 5 kategori, 200 gambar latih, worker dataloader nol | AUROC 0,848 sampai 0,997; ambang EVT lolos uji KS di semua kategori | diterima; titik operasi 1 persen dinilai terlalu ketat dan diserahkan ke Step 7 |
 | 2 | 2026-08-18 | YOLO11n-seg | fine-tune dari bobot COCO, config apa adanya | berjalan penuh 250 epoch, terbaik epoch 203, mask mAP50 val 0,7899 | diterima; galat luas cacat 0,37 poin persen sudah memadai |
 
 > **Aturan:** satu perubahan per run. Kalau augmentasi, ukuran model, dan learning rate diubah
@@ -494,4 +593,10 @@ dan menunjukkan proses kerja yang nyata.)*
 |---|---|---|---|
 | 2026-08-18 | Peringatan ketidakcocokan ABI numpy dan scipy | pemasangan ultralytics menaikkan numpy ke 2.4.6 sementara scipy 1.13 menuntut di bawah 2.3 | scipy dinaikkan ke 1.17.1, seluruh angka statistik dihitung ulang di atas kombinasi yang sah |
 | 2026-08-18 | Recall `gores` hanya 0,556 | objek gores paling kecil ukurannya dan dukungannya hanya 9 instance di test | dicatat sebagai keterbatasan; penambahan sampel menjadi bahan Step 3 |
+| 2026-08-18 | Step 6 gagal empat kali berturut-turut | dirinci di bawah | seluruhnya diperbaiki; run bersih kelima berhasil |
+| 2026-08-18 | Skor anomali hanya bernilai tiga macam | post-processor anomalib menormalisasi skor terhadap ambang internalnya dan praktis mengkuantisasi keluaran, sehingga ekor sebaran hilang dan tidak ada yang dapat dimodelkan GPD | post-processor dimatikan; skor mentah kembali kontinu dengan 39 nilai unik |
+| 2026-08-18 | Hasil kategori pertama hilang saat kategori kedua gagal | JSON hanya ditulis di akhir setelah semua kategori selesai | penulisan dijadikan inkremental dan menggabung isi berkas yang sudah ada |
+| 2026-08-18 | Proses mati kehabisan memori | worker dataloader disetel 4; di Windows tiap worker adalah proses Python penuh yang memuat ulang torch, sekitar 690 MB masing-masing | worker disetel nol; pemuatan data bukan hambatan pada model ini |
+| 2026-08-18 | Blok penulis JSON lama tidak ikut terhapus dan menimpa hasil gabungan | penyuntingan berkas yang tidak menyeluruh | blok lama dihapus; hasil diverifikasi ulang terhadap log, 20 dari 20 angka cocok |
+| 2026-08-18 | Laporan sempat menyebut proses sudah berhenti padahal masih berjalan | `pgrep` pada Git Bash tidak melihat proses Windows | pemeriksaan diganti memakai `Get-CimInstance` |
 | 2026-08-18 | Segmentasi tidak berhenti awal | 250 epoch habis sebelum `patience` 40 tercapai, bobot terbaik di epoch 203 | dicatat apa adanya; model belum tentu konvergen dan dapat dilatih lebih lama bila waktu memungkinkan |

@@ -60,7 +60,7 @@ Tiap langkah dirancang agar selesai sebagai satu unit kerja yang berdiri sendiri
 | **3** | Generator Cacat Sintetik | Penambah data + penyeimbang kelas (diizinkan panitia) | 3 jam | H-9 |
 | **4** | **Baseline + Fine-Tune Detection** | Model detect terlatih + **uji McNemar** vs baseline | 4 jam | H-7 selesai |
 | **5** | **Fine-Tune Segmentation** | Model seg + perhitungan luas cacat % | 3 jam | H-7 selesai |
-| **6** | Anomaly Detection + Ambang EVT | EfficientAD + ambang berbasis Extreme Value Theory | 4 jam¹ | H-8 |
+| **6** | **Anomaly Detection + Ambang EVT** | PaDiM + ambang berbasis Extreme Value Theory | 4 jam | H-7 selesai |
 | **7** | Lapisan Statistik & Kalibrasi | Conformal prediction, temperature scaling, ambang sensitif biaya | 3 jam | H-7 |
 | **8** | Lapisan Privasi | EXIF scrub, face blur, ephemeral buffer, hash audit | 2 jam | H-7 |
 | **9** | Decision Engine + Ekspor ONNX | Mesin keputusan 3 kelas + ONNX + tolok ukur latensi | 3 jam | H-6 |
@@ -250,28 +250,39 @@ Rincian lengkap di [EXPERIMENTS.md bagian 4](./EXPERIMENTS.md).
 
 ---
 
-### Step 6 - Anomaly Detection + Ambang EVT
+### Step 6 - Anomaly Detection dan Ambang EVT `[SELESAI 18 Agu 2026]`
 
-**Tujuan:** menangkap cacat **jenis baru** yang tidak ada di data latih.
-
-**Yang dibuat:** ```
-src/visionqc_ai/training/train_anomaly.py    # EfficientAD via anomalib
-src/visionqc_ai/inference/anomaly.py
-src/visionqc_ai/statistics/evt.py            # POT + Generalized Pareto
+**Dibuat:**
+```
+src/visionqc_ai/statistics/evt.py
+src/visionqc_ai/training/train_anomaly.py
 scripts/train_anomaly.py
-reports/figures/{anomaly_score_dist,evt_fit}.png
+models/finetuned/anomaly/    reports/metrics/anomaly_results.json
+reports/figures/anomaly_{bottle,chewinggum,cashew,pipe_fryum,fryum}.png
 ```
 
-**Diferensiator statistik:** ambang anomali **tidak dipilih asal** . Memakai
-**Peaks-Over-Threshold + Generalized Pareto Distribution** (STATISTICS.md bagian 7):
+**Hasil** (5 kategori, target laju alarm palsu 1 persen):
 
-> *"Ambang 0,7412 dipilih dengan memodelkan ekor distribusi skor anomali sampel normal memakai GPD
-> (ξ̂ = 0,18; σ̂ = 0,042), menjamin laju alarm palsu ≤ 1%."*
+| Kategori | AUROC | Ambang EVT | KS p | Recall |
+|---|---|---|---|---|
+| `bottle` | **0,9967** | 45,861 | 0,966 | **1,0000** |
+| `chewinggum` | 0,9307 | 37,234 | 0,940 | 0,8667 |
+| `fryum` | 0,8867 | 71,157 | 0,978 | 0,1429 |
+| `pipe_fryum` | 0,8571 | 53,243 | 0,898 | 0,2143 |
+| `cashew` | 0,8476 | 56,550 | 0,593 | 0,2857 |
 
-Ini pernyataan yang bisa dipertahankan di depan juri. "Kami pakai 0,75 karena terlihat bagus" tidak.
+Model yang dipakai adalah **PaDiM**, cadangan yang tercantum di config, bukan
+EfficientAD. Alasannya waktu, dan hal itu dinyatakan terbuka.
 
-**Rencana cadangan:** kalau EfficientAD terlalu berat untuk RTX 3050 dalam waktu tersedia,
-turun ke **PaDiM** atau **PatchCore** (jauh lebih ringan). Dicatat jujur di EXPERIMENTS.md.
+Uji Kolmogorov-Smirnov tidak menolak kecocokan GPD di kategori mana pun,
+sehingga ambangnya dapat dipertahankan sebagai konsekuensi pemodelan ekor dan
+bukan angka pilihan tangan.
+
+Recall rendah pada tiga kategori bukan kegagalan model melainkan akibat titik
+operasi 1 persen yang terlalu ketat untuk konteks pangan. Ini menjadi dasar
+empiris bagi ambang sensitif biaya di Step 7.
+
+Rincian lengkap di [EXPERIMENTS.md bagian 5](./EXPERIMENTS.md).
 
 ---
 
