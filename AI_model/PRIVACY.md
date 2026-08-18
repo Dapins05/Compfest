@@ -22,7 +22,7 @@ diselaraskan juga dengan prinsip GDPR Pasal 5.
 | 3 | **Pemrosesan sekali pakai** | Gambar hidup di memori selama satu permintaan, lalu dihapus. Tidak ditulis ke disk sama sekali |
 | 4 | **Transparansi** | Setiap transformasi privasi tercatat dan dapat diaudit |
 
->  **Kebetulan yang menguntungkan:**arsitektur sinkron tanpa basis data yang diwajibkan panitia
+>  **Kebetulan yang menguntungkan:** arsitektur sinkron tanpa basis data yang diwajibkan panitia
 > justru **secara alami** memenuhi prinsip 1 dan 3. Batasan lomba dan desain privasi
 > mengarah ke tempat yang sama.
 
@@ -132,7 +132,7 @@ tanpa menyimpan gambarnya.
 | **Data pribadi spesifik** (Pasal 4 ayat 2) | Data biometrik (wajah) diburamkan sebelum diproses |
 | **Akuntabilitas** (Pasal 20) | Jejak audit hanya-hash yang dapat diverifikasi |
 
-**Untuk proposal (Anggota 3):**ini poin yang layak diberi sub-bab tersendiri. Sangat sedikit
+**Untuk proposal (Anggota 3):** ini poin yang layak diberi sub-bab tersendiri. Sangat sedikit
 
 peserta lomba yang memikirkan kepatuhan data, padahal itu justru pertanyaan pertama yang muncul
 saat sistem seperti ini hendak dipakai perusahaan sungguhan.

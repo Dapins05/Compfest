@@ -100,7 +100,7 @@ Pelengkap: **uji dua sampel Kolmogorov-Smirnov**$$D_{n,m} = \sup_x |F_{1,n}(x) -
 
 ## 3. Estimasi Metrik dengan Ketidakpastian
 
-> **Prinsip:**melaporkan "recall = 0,94" tanpa selang kepercayaan adalah menyembunyikan informasi.
+> **Prinsip:** melaporkan "recall = 0,94" tanpa selang kepercayaan adalah menyembunyikan informasi.
 > Recall 0,94 dari 50 sampel dan dari 5.000 sampel adalah dua klaim yang sangat berbeda.
 
 ### 3.1 Metrik dasar
@@ -209,7 +209,7 @@ signifikan.
 
 ## 5. Kalibrasi Kepercayaan Model
 
-> **Masalah yang jarang disadari:**jaringan saraf modern hampir selalu *overconfident*. Ketika model
+> **Masalah yang jarang disadari:** jaringan saraf modern hampir selalu *overconfident*. Ketika model
 > berkata "confidence 0,9", ia sebenarnya benar hanya sekitar 70-75% dari waktu. Padahal seluruh
 > logika ambang batas kita bergantung pada angka kepercayaan itu. Kalau tidak dikalibrasi,
 > ambang apa pun yang dipilih menjadi tidak bermakna.
@@ -256,7 +256,7 @@ Dekomposisi Murphy: $BS = \underbrace{\text{Reliability}}_{\downarrow \text{ leb
 
 ### 6.1 Split conformal prediction
 
-**Prosedur:**1. Sisihkan himpunan kalibrasi berukuran $n$ (terpisah dari train dan test)
+**Prosedur:** 1. Sisihkan himpunan kalibrasi berukuran $n$ (terpisah dari train dan test)
 2. Hitung skor ketidaksesuaian tiap sampel kalibrasi. Untuk klasifikasi:
    $$s_i = 1 - \hat{p}(y_i \mid x_i)$$
 3. Hitung kuantil terkoreksi:
@@ -313,18 +313,18 @@ Himpunan yang lebih kecil = model lebih informatif, pada tingkat cakupan yang sa
 
 ## 7. Ambang Anomali via Extreme Value Theory
 
-> **Masalah:**dari mana angka ambang 0,75 untuk skor anomali? Kalau jawabannya "kelihatannya bagus",
+> **Masalah:** dari mana angka ambang 0,75 untuk skor anomali? Kalau jawabannya "kelihatannya bagus",
 > itu titik lemah yang akan langsung dikejar juri. **Teori Nilai Ekstrem** memberi jawaban yang bisa
 > dipertahankan.
 
 ### 7.1 Peaks Over Threshold + Generalized Pareto
 
-**Teorema Pickands-Balkema-de Haan:**untuk ambang $u$ yang cukup tinggi, distribusi kelebihan
+**Teorema Pickands-Balkema-de Haan:** untuk ambang $u$ yang cukup tinggi, distribusi kelebihan
 $(X - u \mid X > u)$ konvergen ke **Generalized Pareto Distribution** :
 
 $$G_{\xi,\sigma}(y) = 1 - \left(1 + \frac{\xi y}{\sigma}\right)^{-1/\xi}, \qquad y > 0, \; 1 + \frac{\xi y}{\sigma} > 0$$
 
-**Prosedur:**1. Jalankan model anomali pada gambar **normal saja** (validasi)  kumpulkan skor
+**Prosedur:** 1. Jalankan model anomali pada gambar **normal saja** (validasi)  kumpulkan skor
 2. Pilih ambang awal $u$ = kuantil ke-95 dari skor tersebut
 3. Ambil kelebihan $Y_i = X_i - u$ untuk semua $X_i > u$; misalkan ada $N_u$ buah
 4. Estimasi $\hat{\xi}, \hat{\sigma}$ dengan maximum likelihood
@@ -393,11 +393,11 @@ sensitif biaya - untuk menunjukkan seberapa jauh keduanya berbeda.
 
 ## 9. Statistical Process Control (SPC)
 
-> **Kenapa ini kuat:**SPC adalah bahasa asli insinyur kualitas manufaktur. Menghubungkan keluaran
+> **Kenapa ini kuat:** SPC adalah bahasa asli insinyur kualitas manufaktur. Menghubungkan keluaran
 > AI ke kartu kendali menunjukkan sistem ini dirancang untuk pabrik sungguhan, bukan sekadar
 > eksperimen laboratorium.
 
->  **Kepatuhan:**SPC hanya dipakai sebagai **analisis luring pada laporan evaluasi dan proposal** ,
+>  **Kepatuhan:** SPC hanya dipakai sebagai **analisis luring pada laporan evaluasi dan proposal** ,
 > bukan sebagai layanan pemantauan berjalan - pemantauan otomatis termasuk yang dibatasi panitia
 > untuk tahap penyisihan. Versi runtime-nya diparkir ke tahap Final.
 

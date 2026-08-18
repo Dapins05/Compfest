@@ -23,7 +23,7 @@ Diperbarui 18 Agustus 2026, setelah Step 2 selesai.
 | **2** | **Sintetik** (Step 3) | belum dibuat | menyeimbangkan `kotor` & `deformasi` |
 | **3** | **Foto produk lokal** | opsional | gambar contoh & video demo |
 
-**Ukuran di disk:**`data/raw` ≈ 2,6 GB · `data/processed` ≈ 302 MB.
+**Ukuran di disk:** `data/raw` ≈ 2,6 GB · `data/processed` ≈ 302 MB.
 
 
 ### Kategori final yang dipakai - dan dasarnya
@@ -42,7 +42,7 @@ dipelajari detektor.
 | `macaroni1` / `macaroni2` | pasta kering | 37,8 % / 31,8 % | cadangan, tidak diproses |
 | `candle`, `pcb1`-`pcb4`, `capsules` | bukan pangan / farmasi | - | di luar domain |
 
->  **"Perlukah menambah dataset keripik/chips?"** - **Tidak.**Tidak ada
+>  **"Perlukah menambah dataset keripik/chips?"** - **Tidak.** Tidak ada
 
 > dataset publik keripik-dalam-kemasan yang beranotasi mask, jadi menambahnya
 > berarti melabeli sendiri dari nol - pekerjaan berhari-hari yang tidak muat di
@@ -82,7 +82,7 @@ dipelajari detektor.
 | **Total** | 12 kategori, ~10.821 gambar |
 | **Subset relevan** | `chewinggum` (permen karet kemasan), `fryum` (snack kering), `cashew` (kacang mete), `capsules` (kemasan blister) |
 
-**Kenapa perlu:**MVTec `bottle` menutup sisi minuman, VisA menutup sisi **makanan ringan kemasan** .
+**Kenapa perlu:** MVTec `bottle` menutup sisi minuman, VisA menutup sisi **makanan ringan kemasan** .
 
 Kombinasi keduanya membuat klaim "makanan & minuman kemasan" di proposal benar-benar didukung data,
 bukan sekadar narasi.
@@ -107,7 +107,7 @@ bukan sekadar narasi.
 Panitia **secara eksplisit mengizinkan data sintetik** . Ini bukan jalan pintas - ini menyelesaikan
 masalah nyata dan sekaligus menjadi diferensiator.
 
-**Masalah yang diselesaikan:**MVTec `bottle` hanya punya 3 jenis cacat dengan total di bawah 100
+**Masalah yang diselesaikan:** MVTec `bottle` hanya punya 3 jenis cacat dengan total di bawah 100
 gambar cacat. Terlalu sedikit untuk melatih detektor yang andal, dan rasio ketimpangannya ekstrem.
 
 **Yang akan dihasilkan** (dari gambar normal Tier 1):
@@ -131,7 +131,7 @@ Kualitas tiap gambar sintetik divalidasi dengan **jarak Wasserstein** dan **uji 
 
 **Tidak untuk melatih model** - untuk **gambar contoh di aplikasi dan video demo** .
 
-**Kenapa disarankan:**juri Indonesia melihat demo memakai Teh Botol, Aqua, atau Chitato akan
+**Kenapa disarankan:** juri Indonesia melihat demo memakai Teh Botol, Aqua, atau Chitato akan
 langsung menangkap relevansinya. Dataset MVTec berisi botol laboratorium yang asing bagi
 kebanyakan orang. Biayanya hanya ± 45 menit memotret.
 
@@ -217,5 +217,5 @@ python scripts/preview_dataset.py --split test # lembar kontak verifikasi anotas
 | Disk penuh | Cukup Tier 1 minimal + sintetik. VisA boleh dilewati, catat sebagai keterbatasan di proposal |
 | Tautan mati | Cari sumber pengganti pada daftar cadangan di bagian 2.3 |
 
->  **Saran soal urutan:**jangan menunggu semua dataset lengkap. Begitu **MVTec `bottle` selesai
+>  **Saran soal urutan:** jangan menunggu semua dataset lengkap. Begitu **MVTec `bottle` selesai
 > diunduh** , Step 2 sudah bisa dimulai. VisA bisa ditambahkan belakangan tanpa mengubah kode.
