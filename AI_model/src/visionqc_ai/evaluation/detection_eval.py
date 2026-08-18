@@ -147,3 +147,61 @@ def evaluate_detection(
         image_count=count,
         speed_ms={k: round(v / count, 3) for k, v in speed_totals.items()},
     )
+
+
+@dataclass(frozen=True)
+class ImageScore:
+    """Skor keyakinan tingkat gambar beserta label sebenarnya."""
+
+    image_id: str
+    score: float
+    is_defect: bool
+
+
+def image_level_scores(
+    weights: Path,
+    dataset_root: Path,
+    *,
+    split: str = "test",
+    imgsz: int = 640,
+    conf: float = 0.05,
+    iou_nms: float = 0.45,
+    max_detections: int = 30,
+    device: int | str = 0,
+) -> list[ImageScore]:
+    """Kumpulkan keyakinan tertinggi per gambar beserta label sebenarnya.
+
+    Ambang confidence sengaja disetel rendah. Kalibrasi dan conformal perlu
+    melihat seluruh rentang skor, termasuk yang lemah; menyaringnya lebih dulu
+    akan memotong bagian sebaran yang justru menentukan batas keputusan.
+
+    Gambar tanpa deteksi sama sekali diberi skor nol, bukan dibuang, karena
+    ketiadaan deteksi adalah keluaran model yang sah.
+    """
+    from ultralytics import YOLO
+
+    image_dir = dataset_root / "images" / split
+    label_dir = dataset_root / "labels" / split
+    images = sorted(image_dir.glob("*.jpg"))
+    if not images:
+        raise FileNotFoundError(f"tidak ada gambar pada {image_dir}")
+
+    model = YOLO(str(weights))
+    scores: list[ImageScore] = []
+    for path in images:
+        result = model.predict(
+            source=str(path),
+            imgsz=imgsz,
+            conf=conf,
+            iou=iou_nms,
+            max_det=max_detections,
+            device=device,
+            verbose=False,
+        )[0]
+        predictions = _predictions_from_result(result)
+        best = max((p.confidence for p in predictions), default=0.0)
+        truth = read_ground_truth(label_dir / f"{path.stem}.txt")
+        scores.append(
+            ImageScore(image_id=path.stem, score=float(best), is_defect=bool(truth))
+        )
+    return scores
