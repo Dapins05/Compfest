@@ -1,10 +1,10 @@
 # AI_MODEL_PLAN.md - Rencana Kerja Modul AI
 
 **VisionQC**· COMPFEST 18 AIC · Penyisihan
-**Domain:**inspeksi kualitas **makanan & minuman kemasan** (botol, kaleng, pouch, sachet)
-**Pemilik modul:**Anggota 1 (AI + Frontend)
-**Hardware:**NVIDIA RTX 3050 Laptop
-**Deadline:**25 Agustus 2026, 23.55 WIB
+**Domain:** inspeksi kualitas **makanan & minuman kemasan** (botol, kaleng, pouch, sachet)
+**Pemilik modul:** Anggota 1 (AI + Frontend)
+**Hardware:** NVIDIA RTX 3050 Laptop
+**Deadline:** 25 Agustus 2026, 23.55 WIB
 
 Dokumen ini adalah **peta kerja modul AI dari nol sampai bisa dipanggil Backend.** | Dokumen pendamping | Isi |---|---|
 | [DATASET_REQUIREMENTS.md](./DATASET_REQUIREMENTS.md) | Dataset apa saja yang dibutuhkan + sumber valid | [STATISTICS.md](./STATISTICS.md) | Rumus statistik - **diferensiator utama** |
@@ -23,7 +23,7 @@ from visionqc_ai import run_inspection, InspectionResult
 result: InspectionResult = run_inspection(image_bytes, config)
 ```
 
-**Definisi selesai untuk seluruh modul AI:**1.  `run_inspection()` bisa dipanggil Backend dan mengembalikan hasil lengkap
+**Definisi selesai untuk seluruh modul AI:** 1.  `run_inspection()` bisa dipanggil Backend dan mengembalikan hasil lengkap
 2.  Bobot model **hasil fine-tuning** tersedia dalam format ONNX
 3.  Ada bukti fine-tuning: baseline vs sesudah, dengan **uji signifikansi statistik** 4.  Threshold bersifat **statis** , dibaca dari `configs/inference.yaml`
 5.  Lapisan privasi aktif: EXIF dibersihkan, wajah diburamkan, tidak ada penyimpanan gambar
@@ -58,7 +58,7 @@ Tiap langkah dirancang agar selesai sebagai satu unit kerja yang berdiri sendiri
 | **1** | **Fondasi & Perencanaan** | Struktur folder, 5 dokumen, config, requirements | 1 jam | H-10 |
 | **2** | **Akuisisi & Preprocessing Dataset** | Dataset terunduh, format YOLO, split terkunci + validasi statistik | 3 jam | H-7  |
 | **3** | Generator Cacat Sintetik | Penambah data + penyeimbang kelas (diizinkan panitia) | 3 jam | H-9 |
-| **4** | Baseline + Fine-Tune Detection | Model detect terlatih + **uji McNemar** vs baseline | 4 jam¹ | H-9 |
+| **4** | **Baseline + Fine-Tune Detection** | Model detect terlatih + **uji McNemar** vs baseline | 4 jam | H-7 selesai |
 | **5** | Fine-Tune Segmentation | Model seg + perhitungan luas cacat % | 3 jam¹ | H-8 |
 | **6** | Anomaly Detection + Ambang EVT | EfficientAD + ambang berbasis Extreme Value Theory | 4 jam¹ | H-8 |
 | **7** | Lapisan Statistik & Kalibrasi | Conformal prediction, temperature scaling, ambang sensitif biaya | 3 jam | H-7 |
@@ -92,7 +92,7 @@ Frontend, video, dan perbaikan.
 
 ### Step 2 - Akuisisi & Preprocessing Dataset `[SELESAI 18 Agu 2026]`
 
-**Dibuat:**```
+**Dibuat:** ```
 src/visionqc_ai/data/
 |-- taxonomy.py          # 5 kelas + pemetaan 30+ label mentah (dapat diaudit)
 |-- sources.py           # registri kategori + tata letak folder mentah yang sebenarnya
@@ -110,20 +110,20 @@ reports/metrics/dataset_stats.json
 reports/figures/dataset_samples_{train,test}.png
 ```
 
-**Temuan terpenting - mask VisA menyimpan jenis cacat.**Nilai piksel mask VisA bukan biner melainkan **kode jenis cacat** , tetapi
+**Temuan terpenting - mask VisA menyimpan jenis cacat.** Nilai piksel mask VisA bukan biner melainkan **kode jenis cacat** , tetapi
 pemetaan kodejenis tidak ikut didistribusikan. Kode itu dipulihkan lewat
 belajar dari gambar berlabel tunggal  eliminasi  peleburan kelas, lalu diuji
 ulang: **120/120 gambar multi-label cocok** . Tanpa langkah ini VisA hanya
 berguna sebagai data biner normal/anomali; dengan langkah ini VisA memberi
 label jenis cacat **per instance** .
 
-**Keputusan berbasis pengukuran, bukan selera.**Kategori dipilih dari ukuran
+**Keputusan berbasis pengukuran, bukan selera.** Kategori dipilih dari ukuran
 cacat setelah resize ke 640 px: `bottle` 100 %, `chewinggum` 96,3 %,
 `cashew` 67,6 %, `pipe_fryum` 63,9 % objek ≥ 12 px  masuk deteksi.
 `fryum` (29,8 %), `macaroni1` (37,8 %), `macaroni2` (31,8 %) terlalu kecil
 dialihkan ke jalur anomali, tidak dibuang.
 
-**Hasil:**414 gambar (291/64/59), 643 instance cacat.
+**Hasil:** 414 gambar (291/64/59), 643 instance cacat.
 
 | Uji | Nilai | Lulus? |
 |---|---|---|
@@ -138,10 +138,10 @@ Rincian lengkap: [EXPERIMENTS.md bagian 2](./EXPERIMENTS.md).
 
 ### Step 3 - Generator Cacat Sintetik
 
-**Tujuan:**cacat itu langka. Sintetik menyelesaikan ketimpangan kelas **dan** menjadi diferensiator
+**Tujuan:** cacat itu langka. Sintetik menyelesaikan ketimpangan kelas **dan** menjadi diferensiator
 (panitia mengizinkan data sintetik secara eksplisit).
 
-**Yang dibuat:**```
+**Yang dibuat:** ```
 src/visionqc_ai/data/
 |-- synthetic.py         # injeksi cacat: penyok, gores, sobek, tumpah, label miring, segel rusak
 |-- augment.py           # pipeline Albumentations
@@ -160,7 +160,7 @@ reports/figures/synthetic_samples.png
 | `label_miring` (misalign) | Rotasi + translasi label | Label tertempel miring |
 | `kotor` (contamination) | Bercak/noda acak | Kontaminasi permukaan |
 
-**Kontrol kualitas:**setiap gambar sintetik divalidasi agar distribusinya tidak terlalu jauh dari
+**Kontrol kualitas:** setiap gambar sintetik divalidasi agar distribusinya tidak terlalu jauh dari
 gambar asli - memakai **jarak Wasserstein** pada histogram intensitas (STATISTICS.md bagian 2.4). Sintetik
 yang terlalu "palsu" justru merusak model.
 
@@ -174,7 +174,7 @@ yang terlalu "palsu" justru merusak model.
 | **`kotor`** | **22** | ≥ 109 | **+87** |
 | **`deformasi`** | **16** | ≥ 109 | **+93** |
 
-**Kriteria selesai:**rasio ketimpangan turun di bawah 3,0 dan entropi
+**Kriteria selesai:** rasio ketimpangan turun di bawah 3,0 dan entropi
 
 ternormalisasi naik di atas 0,85 - keduanya diukur ulang oleh
 `scripts/prepare_dataset.py`. Sampel sintetik hanya masuk **train** ; test set
@@ -182,47 +182,47 @@ wajib tetap murni data nyata.
 
 ---
 
-### Step 4 - Baseline + Fine-Tune Detection  WAJIB
+### Step 4 - Baseline + Fine-Tune Detection `[SELESAI 18 Agu 2026]`
 
-**Tujuan:**memenuhi kewajiban panitia (model **wajib** di-fine-tune) **dengan bukti statistik** .
-
-**Yang dibuat:**```
-src/visionqc_ai/training/
-|-- train_detect.py
-|-- callbacks.py
+**Dibuat:**
+```
+src/visionqc_ai/training/train_detect.py
 src/visionqc_ai/evaluation/
-|-- metrics.py           # mAP, recall, precision, MCC
-|-- bootstrap.py         # BCa confidence interval
-|-- significance.py      # uji McNemar, Cohen's h
-scripts/run_baseline.py
-scripts/train_detection.py
-models/baseline/  models/finetuned/
-reports/metrics/detection_comparison.json
-reports/figures/{pr_curve,confusion_matrix,training_curves}.png
+|-- matching.py         # pencocokan prediksi dengan ground truth
+|-- metrics.py          # precision, recall, F2, MCC tingkat gambar
+|-- bootstrap.py        # selang kepercayaan BCa dan Wilson
+|-- significance.py     # uji McNemar dan Cohen's h
+|-- detection_eval.py   # menjalankan model pada satu split
+scripts/train_detection.py    scripts/compare_detection.py
+models/finetuned/detect/      reports/metrics/detection_comparison.json
+reports/figures/{detection_comparison,training_curves,detection_confusion_matrix,detection_pr_curve}.png
 ```
 
-**Alur wajib:**```
-1. Ukur YOLO11n pre-trained APA ADANYA pada test set   angka "SEBELUM"
-2. Fine-tune pada dataset kita                          angka "SESUDAH"
-3. Uji McNemar pada prediksi berpasangan                nilai p
-4. Bootstrap BCa 95% CI untuk tiap metrik               selang kepercayaan
-5. Cohen's h                                            besar efek
-```
+**Hasil pada test set** (75 instance, ambang IoU 0,5):
 
-**Hasil yang ditargetkan di EXPERIMENTS.md:**> *"Fine-tuning meningkatkan recall kelas cacat dari 0,XX [CI] menjadi 0,YY [CI].
-> Uji McNemar menunjukkan perbedaan signifikan (χ² = Z, p < 0,001, n = N)."*
+| Metrik | Baseline pra-latih | Sesudah fine-tune |
+|---|---|---|
+| Recall | 0,0000 | **0,6933** [0,5793 ; 0,7989] |
+| Precision | 0,0000 | **0,7429** [0,6195 ; 0,8382] |
+| F2 | 0,0000 | 0,7027 [0,5968 ; 0,7977] |
+| MCC tingkat gambar | 0,090 | **0,719** |
 
-Kalimat seperti itu jauh lebih kuat di mata juri daripada sekadar menampilkan dua angka.
+Uji McNemar: 52 instance membaik, 0 memburuk, khi-kuadrat 50,019,
+p = 1,52 x 10^-12. Cohen's h = 1,968 yang tergolong besar.
 
-**Konfigurasi RTX 3050:**lihat `configs/training.yaml` bagian 5.
+Training berhenti awal di epoch 161 dari 300 dengan bobot terbaik pada epoch
+137, memakan waktu sekitar 22 menit pada RTX 3050 Laptop 4 GB.
+
+Rincian lengkap beserta keterbatasannya ada di
+[EXPERIMENTS.md bagian 3](./EXPERIMENTS.md).
 
 ---
 
 ### Step 5 - Fine-Tune Segmentation
 
-**Tujuan:**mask presisi  menghitung `luas_cacat / luas_produk × 100%`.
+**Tujuan:** mask presisi  menghitung `luas_cacat / luas_produk × 100%`.
 
-**Yang dibuat:**```
+**Yang dibuat:** ```
 src/visionqc_ai/training/train_seg.py
 src/visionqc_ai/inference/segmenter.py     # termasuk perhitungan luas
 scripts/train_segmentation.py
@@ -236,9 +236,9 @@ Metrik utama: mask mAP50 dan IoU. Ditambah **selang kepercayaan bootstrap untuk 
 
 ### Step 6 - Anomaly Detection + Ambang EVT
 
-**Tujuan:**menangkap cacat **jenis baru** yang tidak ada di data latih.
+**Tujuan:** menangkap cacat **jenis baru** yang tidak ada di data latih.
 
-**Yang dibuat:**```
+**Yang dibuat:** ```
 src/visionqc_ai/training/train_anomaly.py    # EfficientAD via anomalib
 src/visionqc_ai/inference/anomaly.py
 src/visionqc_ai/statistics/evt.py            # POT + Generalized Pareto
@@ -246,7 +246,7 @@ scripts/train_anomaly.py
 reports/figures/{anomaly_score_dist,evt_fit}.png
 ```
 
-**Diferensiator statistik:**ambang anomali **tidak dipilih asal** . Memakai
+**Diferensiator statistik:** ambang anomali **tidak dipilih asal** . Memakai
 **Peaks-Over-Threshold + Generalized Pareto Distribution** (STATISTICS.md bagian 7):
 
 > *"Ambang 0,7412 dipilih dengan memodelkan ekor distribusi skor anomali sampel normal memakai GPD
@@ -254,17 +254,17 @@ reports/figures/{anomaly_score_dist,evt_fit}.png
 
 Ini pernyataan yang bisa dipertahankan di depan juri. "Kami pakai 0,75 karena terlihat bagus" tidak.
 
-**Rencana cadangan:**kalau EfficientAD terlalu berat untuk RTX 3050 dalam waktu tersedia,
+**Rencana cadangan:** kalau EfficientAD terlalu berat untuk RTX 3050 dalam waktu tersedia,
 turun ke **PaDiM** atau **PatchCore** (jauh lebih ringan). Dicatat jujur di EXPERIMENTS.md.
 
 ---
 
 ### Step 7 - Lapisan Statistik & Kalibrasi
 
-**Tujuan:**ini inti diferensiator. Mengubah keluaran model mentah menjadi keputusan yang
+**Tujuan:** ini inti diferensiator. Mengubah keluaran model mentah menjadi keputusan yang
 **terjamin secara statistik** .
 
-**Yang dibuat:**```
+**Yang dibuat:** ```
 src/visionqc_ai/statistics/
 |-- conformal.py         # split & Mondrian conformal prediction
 |-- calibration.py       # temperature scaling, ECE, reliability diagram
@@ -273,7 +273,7 @@ src/visionqc_ai/statistics/
 reports/figures/{reliability_diagram,conformal_coverage,cost_curve}.png
 ```
 
-**Tiga hasil konkret:**1. **Conformal prediction** - kelas `REVIEW` bukan lagi tebakan, tapi konsekuensi matematis:
+**Tiga hasil konkret:** 1. **Conformal prediction** - kelas `REVIEW` bukan lagi tebakan, tapi konsekuensi matematis:
    > *"Dengan α = 0,05, sistem menjamin label sebenarnya tercakup dalam himpunan prediksi
    > minimal 95% dari waktu. Bila himpunan berisi lebih dari satu label, sistem menahan
    > keputusan (REVIEW)."*
@@ -289,9 +289,9 @@ reports/figures/{reliability_diagram,conformal_coverage,cost_curve}.png
 
 ### Step 8 - Lapisan Privasi
 
-**Tujuan:**memenuhi permintaan "sistem privasi maksimal" dengan implementasi nyata, bukan klaim.
+**Tujuan:** memenuhi permintaan "sistem privasi maksimal" dengan implementasi nyata, bukan klaim.
 
-**Yang dibuat:**```
+**Yang dibuat:** ```
 src/visionqc_ai/privacy/
 |-- exif.py              # hapus SELURUH metadata (GPS, perangkat, waktu)
 |-- face_blur.py         # deteksi & buramkan wajah sebelum inferensi
@@ -307,7 +307,7 @@ Rincian ancaman & mitigasi ada di [PRIVACY.md](./PRIVACY.md).
 
 ### Step 9 - Decision Engine + Ekspor ONNX
 
-**Yang dibuat:**```
+**Yang dibuat:** ```
 src/visionqc_ai/inference/
 |-- decision.py          # PASS / REJECT / REVIEW - menggabungkan semua sinyal
 |-- annotate.py          # gambar bbox + mask + heatmap di atas gambar asli
@@ -328,7 +328,7 @@ bukan satu angka - karena satu pengukuran tidak berarti apa-apa.
 
 ### Step 10 - Integrasi & Laporan Evaluasi
 
-**Yang dibuat:**```
+**Yang dibuat:** ```
 src/visionqc_ai/__init__.py        # ekspor run_inspection() + InspectionResult
 src/visionqc_ai/schemas.py         # Pydantic - sinkron dengan Backend
 pyproject.toml                     # agar Backend bisa: pip install -e ../AI_model
@@ -337,7 +337,7 @@ EXPERIMENTS.md                     # TERISI PENUH
 reports/evaluation_report.md       # bahan langsung untuk proposal
 ```
 
-**Serah terima ke Backend:**```python
+**Serah terima ke Backend:** ```python
 from visionqc_ai import run_inspection
 result = run_inspection(image_bytes, config)   # InspectionResult
 ```
