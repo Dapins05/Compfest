@@ -122,6 +122,15 @@ python scripts/calibrate_decision.py
 Mengukur kalibrasi kepercayaan, menghitung kuantil conformal yang menjadi
 landasan kelas REVIEW, dan menilai ambang berdasarkan biaya kesalahan.
 
+## Ekspor ONNX dan Tolok Ukur Latensi (Step 9)
+
+```bash
+python scripts/export_onnx.py
+```
+
+Menghasilkan `models/onnx/` dan mengukur latensi di CPU sebagai median beserta
+persentil ke-95 dari 100 pengulangan.
+
 Keluaran: `models/finetuned/detect/`, `reports/metrics/detection_comparison.json`,
 `reports/figures/detection_comparison.png`.
 ```
@@ -158,7 +167,7 @@ python -c "import torch; print(torch.cuda.is_available(), torch.cuda.get_device_
 | 6 | Anomaly Detection + Ambang EVT | selesai |
 | 7 | Lapisan Statistik & Kalibrasi | selesai |
 | 8 | Lapisan Privasi | belum |
-| 9 | Decision Engine + Ekspor ONNX | belum |
+| 9 | Decision Engine + Ekspor ONNX | sebagian |
 | 10 | Integrasi & Laporan Evaluasi | belum |
 
 Rincian tiap step ada di [AI_MODEL_PLAN.md](./AI_MODEL_PLAN.md) bagian 4.

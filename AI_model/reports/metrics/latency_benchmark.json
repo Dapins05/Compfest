@@ -1,0 +1,50 @@
+{
+  "generated_on": "2026-08-18",
+  "imgsz": 640,
+  "opset": 12,
+  "runs": 100,
+  "warmup": 10,
+  "intra_op_threads": 4,
+  "cpu": "Intel64 Family 6 Model 141 Stepping 1, GenuineIntel",
+  "platform": "Windows-10-10.0.26200-SP0",
+  "exports": [
+    {
+      "name": "detect",
+      "source": "C:\\compfest\\AI_model\\models\\finetuned\\detect\\weights\\best.pt",
+      "onnx_path": "C:\\compfest\\AI_model\\models\\onnx\\yolo11n-defect.onnx",
+      "size_mb": 10.12,
+      "imgsz": 640,
+      "opset": 12
+    },
+    {
+      "name": "seg",
+      "source": "C:\\compfest\\AI_model\\models\\finetuned\\seg\\weights\\best.pt",
+      "onnx_path": "C:\\compfest\\AI_model\\models\\onnx\\yolo11n-seg-defect.onnx",
+      "size_mb": 11.09,
+      "imgsz": 640,
+      "opset": 12
+    }
+  ],
+  "latency_cpu": [
+    {
+      "name": "detect",
+      "device": "cpu",
+      "runs": 100,
+      "median_ms": 62.491,
+      "p95_ms": 119.625,
+      "mean_ms": 68.762,
+      "min_ms": 50.077,
+      "max_ms": 159.585
+    },
+    {
+      "name": "seg",
+      "device": "cpu",
+      "runs": 100,
+      "median_ms": 90.877,
+      "p95_ms": 140.273,
+      "mean_ms": 99.77,
+      "min_ms": 78.471,
+      "max_ms": 160.32
+    }
+  ]
+}

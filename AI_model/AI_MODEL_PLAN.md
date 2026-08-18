@@ -63,7 +63,7 @@ Tiap langkah dirancang agar selesai sebagai satu unit kerja yang berdiri sendiri
 | **6** | **Anomaly Detection + Ambang EVT** | PaDiM + ambang berbasis Extreme Value Theory | 4 jam | H-7 selesai |
 | **7** | **Lapisan Statistik & Kalibrasi** | Conformal prediction, Platt scaling, ambang sensitif biaya | 3 jam | H-7 selesai |
 | **8** | Lapisan Privasi | EXIF scrub, face blur, ephemeral buffer, hash audit | 2 jam | H-7 |
-| **9** | Decision Engine + Ekspor ONNX | Mesin keputusan 3 kelas + ONNX + tolok ukur latensi | 3 jam | H-6 |
+| **9** | **Decision Engine + Ekspor ONNX** | Mesin keputusan 3 kelas + ONNX + tolok ukur latensi | 3 jam | H-7 sebagian |
 | **10** | Integrasi & Laporan Evaluasi | `run_inspection()` siap Backend + EXPERIMENTS.md terisi | 3 jam | H-6 |
 
 ¹ *termasuk waktu tunggu training di RTX 3050 - bisa dijalankan sambil mengerjakan Frontend.*
@@ -334,24 +334,34 @@ Rincian ancaman & mitigasi ada di [PRIVACY.md](./PRIVACY.md).
 
 ---
 
-### Step 9 - Decision Engine + Ekspor ONNX
+### Step 9 - Mesin Keputusan dan Ekspor ONNX `[SEBAGIAN 18 Agu 2026]`
 
-**Yang dibuat:** ```
-src/visionqc_ai/inference/
-|-- decision.py          # PASS / REJECT / REVIEW - menggabungkan semua sinyal
-|-- annotate.py          # gambar bbox + mask + heatmap di atas gambar asli
-|-- pipeline.py          # orkestrasi urutan
+**Dibuat:**
+```
+src/visionqc_ai/inference/decision.py
 src/visionqc_ai/export/onnx_export.py
-scripts/benchmark_latency.py
-models/onnx/
-reports/metrics/latency_benchmark.json
+scripts/export_onnx.py
+models/onnx/    reports/metrics/latency_benchmark.json
 ```
 
-**Decision engine** menggabungkan: himpunan conformal + luas cacat + skor anomali (ambang EVT) +
-kepercayaan terkalibrasi + ambang sensitif biaya.
+**Mesin keputusan** menggabungkan peluang terkalibrasi Platt, himpunan prediksi
+conformal, ambang luas cacat, bobot keparahan kelas, dan ambang anomali hasil
+teori nilai ekstrem. Urutan aturannya disengaja: ketidakpastian diperiksa lebih
+dulu, lalu bukti cacat, dan anomali tak dikenal paling akhir sebagai jaring
+pengaman.
 
-**Tolok ukur latensi** dilaporkan sebagai **median dan persentil ke-95** dari 100 kali jalan,
-bukan satu angka - karena satu pengukuran tidak berarti apa-apa.
+**Latensi ONNX di CPU** dari 100 pengulangan:
+
+| Model | Median | Persentil ke-95 | Ukuran |
+|---|---|---|---|
+| detect | **62,5 ms** | 119,6 ms | 10,12 MB |
+| seg | **90,9 ms** | 140,3 ms | 11,09 MB |
+
+**Cacat yang ditemukan:** gambar bersih tanpa deteksi menghasilkan REVIEW alih-alih
+PASS, karena himpunan conformal memuat kedua label dengan selisih 0,0002.
+Dinyatakan sebagai keterbatasan di [EXPERIMENTS.md bagian 6.6](./EXPERIMENTS.md).
+
+**Belum dibuat:** `annotate.py` dan `pipeline.py`, digeser ke Step 10.
 
 ---
 

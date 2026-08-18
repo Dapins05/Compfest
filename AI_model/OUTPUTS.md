@@ -27,7 +27,7 @@ Dokumen lain punya peran berbeda:
 | 6 | Anomaly Detection + Ambang EVT | selesai | 2 modul, 1 skrip, 5 model, `anomaly_results.json`, 5 gambar |
 | 7 | Lapisan Statistik & Kalibrasi | selesai | 3 modul, 1 skrip, `calibration_results.json`, 3 gambar |
 | 8 | Lapisan Privasi | belum | belum ada |
-| 9 | Decision Engine + Ekspor ONNX | belum | belum ada |
+| 9 | Decision Engine + Ekspor ONNX | sebagian | mesin keputusan, ekspor ONNX, tolok ukur latensi; anotasi dan pipeline digeser ke Step 10 |
 | 10 | Integrasi & Laporan Evaluasi | belum | belum ada |
 
 ---
@@ -271,7 +271,47 @@ operasi tetap 0,50.
 
 ---
 
-## 9. Menghasilkan Ulang Semuanya
+## 9. Step 9 - Mesin Keputusan dan Ekspor ONNX
+
+### Kode
+
+| Berkas | Tanggung jawab |
+|---|---|
+| `src/visionqc_ai/inference/decision.py` | mesin keputusan PASS, REJECT, REVIEW |
+| `src/visionqc_ai/export/onnx_export.py` | ekspor ONNX dan pengukuran latensi |
+| `scripts/export_onnx.py` | menjalankan ekspor dan tolok ukur |
+
+### Artefak penyajian (tidak masuk git)
+
+| Berkas | Ukuran |
+|---|---|
+| `models/onnx/yolo11n-defect.onnx` | 10,12 MB |
+| `models/onnx/yolo11n-seg-defect.onnx` | 11,09 MB |
+
+### Bukti yang tersimpan
+
+| Berkas | Isi |
+|---|---|
+| `reports/metrics/latency_benchmark.json` | latensi median dan persentil ke-95 di CPU, ukuran berkas, spesifikasi mesin |
+
+### Angka kunci
+
+Latensi ONNX di CPU: detect 62,5 ms dan seg 90,9 ms median, total 153,4 ms.
+Sasaran keseluruhan satu detik per gambar masih menyisakan ruang.
+
+Mesin keputusan menggabungkan peluang terkalibrasi Platt, himpunan prediksi
+conformal, ambang luas cacat, bobot keparahan kelas, dan ambang anomali hasil
+teori nilai ekstrem. Seluruh nilainya statis dari `configs/inference.yaml`.
+
+### Belum dibuat
+
+`annotate.py` dan `pipeline.py` digeser ke Step 10 bersama `run_inspection()`,
+karena ketiganya hanya bermakna bila dirakit sekaligus.
+
+
+---
+
+## 10. Menghasilkan Ulang Semuanya
 
 Dari repo bersih, dengan `data/raw/` sudah terisi dataset publik:
 
@@ -292,6 +332,7 @@ python scripts/compare_segmentation.py
 
 python scripts/train_anomaly.py         # Step 6, sekitar 2 menit per kategori
 python scripts/calibrate_decision.py    # Step 7, sekitar 1 menit
+python scripts/export_onnx.py           # Step 9, sekitar 2 menit
 ```
 
 Seed dikunci di `configs/dataset.yaml`, sehingga pembagian split akan sama
@@ -300,8 +341,8 @@ sifat nondeterministik operasi CUDA tertentu.
 
 ---
 
-## 10. Yang Belum Ada
+## 11. Yang Belum Ada
 
-Belum ada satu pun keluaran untuk Step 3, 8, 9, dan 10. Seluruh sel
+Belum ada satu pun keluaran untuk Step 3, 8, dan 10. Seluruh sel
 metrik yang berkaitan di `EXPERIMENTS.md` masih bertuliskan `belum diukur` dan
 tidak boleh diisi sebelum ada run yang benar-benar dijalankan.
