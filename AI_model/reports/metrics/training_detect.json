@@ -1,0 +1,10 @@
+{
+  "weights_best": "C:\\compfest\\AI_model\\models\\finetuned\\detect\\weights\\best.pt",
+  "weights_last": "C:\\compfest\\AI_model\\models\\finetuned\\detect\\weights\\last.pt",
+  "run_dir": "C:\\compfest\\AI_model\\models\\finetuned\\detect",
+  "epochs_requested": 300,
+  "epochs_completed": 161,
+  "results_csv": "C:\\compfest\\AI_model\\models\\finetuned\\detect\\results.csv",
+  "finished_on": "2026-08-18",
+  "section": "detection"
+}

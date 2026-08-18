@@ -83,8 +83,19 @@ AI_model/
 ## Menjalankan Preprocessing (Step 2)
 
 ```bash
-python scripts/prepare_dataset.py               # konversi + split + validasi + tulis dataset
+python scripts/prepare_dataset.py               # konversi, split, validasi, tulis dataset
 python scripts/preview_dataset.py --split train # lembar kontak verifikasi anotasi
+```
+
+## Menjalankan Fine-Tuning Deteksi (Step 4)
+
+```bash
+python scripts/train_detection.py               # fine-tune YOLO11n
+python scripts/compare_detection.py             # baseline vs hasil, uji McNemar
+```
+
+Keluaran: `models/finetuned/detect/`, `reports/metrics/detection_comparison.json`,
+`reports/figures/detection_comparison.png`.
 ```
 
 Keluaran: `data/processed/{detect,seg,anomaly}/`,
@@ -113,14 +124,14 @@ python -c "import torch; print(torch.cuda.is_available(), torch.cuda.get_device_
 |---|---|---|
 | 1 | Fondasi & Perencanaan | selesai |
 | 2 | Akuisisi & Preprocessing Dataset | selesai |
-| 3 | Generator Cacat Sintetik | |
-| 4 | Baseline + Fine-Tune Detection | |
-| 5 | Fine-Tune Segmentation | |
-| 6 | Anomaly Detection + Ambang EVT | |
-| 7 | Lapisan Statistik & Kalibrasi | |
-| 8 | Lapisan Privasi | |
-| 9 | Decision Engine + Ekspor ONNX | |
-| 10 | Integrasi & Laporan Evaluasi | |
+| 3 | Generator Cacat Sintetik | ditunda |
+| 4 | Baseline + Fine-Tune Detection | selesai |
+| 5 | Fine-Tune Segmentation | belum |
+| 6 | Anomaly Detection + Ambang EVT | belum |
+| 7 | Lapisan Statistik & Kalibrasi | belum |
+| 8 | Lapisan Privasi | belum |
+| 9 | Decision Engine + Ekspor ONNX | belum |
+| 10 | Integrasi & Laporan Evaluasi | belum |
 
 Rincian tiap step ada di [AI_MODEL_PLAN.md](./AI_MODEL_PLAN.md) bagian 4.
 
