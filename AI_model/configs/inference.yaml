@@ -39,14 +39,17 @@ decision:
   # Diturunkan dari standar toleransi cacat kemasan, dikonfirmasi lewat validasi.
   area_pct_threshold: 2.0
 
-  # bagian Ambang anomali - DIHITUNG dengan Extreme Value Theory (STATISTICS.md bagian 7)
-  # Bukan angka pilihan tangan. Diisi otomatis oleh Step 6.
-  anomaly_threshold: TBD
+  # Ambang anomali dihitung dengan teori nilai ekstrem, bukan dipilih tangan.
+  # Nilai di bawah berasal dari Step 6 pada kategori bottle, produk demo utama.
+  # Ambang lengkap per kategori ada di reports/metrics/anomaly_results.json.
+  anomaly_threshold: 45.8613
   anomaly_target_far: 0.01  # laju alarm palsu target 1%
   anomaly_evt_params:
-    xi: TBD  # parameter bentuk GPD
-    sigma: TBD  # parameter skala GPD
-    u: TBD  # ambang POT awal
+    xi: 0.6669  # parameter bentuk GPD; positif berarti ekor berat
+    sigma: 2.1188  # parameter skala GPD
+    u: 21.3890  # ambang POT awal, kuantil ke-74
+    ks_p_value: 0.966  # diagnostik kecocokan; GPD tidak ditolak
+    calibration_n: 39  # sampel normal yang tidak ikut dilatih
 
   # bagian Conformal prediction (STATISTICS.md bagian 6)
   conformal:

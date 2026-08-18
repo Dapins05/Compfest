@@ -103,6 +103,16 @@ python scripts/train_detection.py --data data/processed/seg/data.yaml \
 python scripts/compare_segmentation.py
 ```
 
+## Melatih Model Anomali (Step 6)
+
+```bash
+python scripts/train_anomaly.py
+python scripts/train_anomaly.py --categories bottle --model padim
+```
+
+Model dilatih hanya dari gambar normal. Ambangnya dihitung dari ekor sebaran
+skor memakai teori nilai ekstrem, bukan dipilih tangan.
+
 Keluaran: `models/finetuned/detect/`, `reports/metrics/detection_comparison.json`,
 `reports/figures/detection_comparison.png`.
 ```
@@ -136,7 +146,7 @@ python -c "import torch; print(torch.cuda.is_available(), torch.cuda.get_device_
 | 3 | Generator Cacat Sintetik | ditunda |
 | 4 | Baseline + Fine-Tune Detection | selesai |
 | 5 | Fine-Tune Segmentation | selesai |
-| 6 | Anomaly Detection + Ambang EVT | belum |
+| 6 | Anomaly Detection + Ambang EVT | selesai |
 | 7 | Lapisan Statistik & Kalibrasi | belum |
 | 8 | Lapisan Privasi | belum |
 | 9 | Decision Engine + Ekspor ONNX | belum |

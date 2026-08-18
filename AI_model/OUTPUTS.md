@@ -24,7 +24,7 @@ Dokumen lain punya peran berbeda:
 | 3 | Generator Cacat Sintetik | ditunda | belum ada |
 | 4 | Baseline + Fine-Tune Detection | selesai | 7 modul training & evaluasi, 2 skrip, bobot terlatih, `detection_comparison.json`, 4 gambar |
 | 5 | Fine-Tune Segmentation | selesai | 1 modul evaluasi mask, 1 skrip, bobot terlatih, `segmentation_comparison.json`, 3 gambar |
-| 6 | Anomaly Detection + Ambang EVT | belum | belum ada |
+| 6 | Anomaly Detection + Ambang EVT | selesai | 2 modul, 1 skrip, 5 model, `anomaly_results.json`, 5 gambar |
 | 7 | Lapisan Statistik & Kalibrasi | belum | belum ada |
 | 8 | Lapisan Privasi | belum | belum ada |
 | 9 | Decision Engine + Ekspor ONNX | belum | belum ada |
@@ -206,7 +206,42 @@ memburuk, p = 5,41 x 10^-11.
 
 ---
 
-## 7. Menghasilkan Ulang Semuanya
+## 7. Step 6 - Anomaly Detection dan Ambang EVT
+
+### Kode
+
+| Berkas | Tanggung jawab |
+|---|---|
+| `src/visionqc_ai/statistics/evt.py` | pencocokan GPD pada ekor dan perhitungan ambang |
+| `src/visionqc_ai/training/train_anomaly.py` | pembungkus anomalib, pembatas gambar latih |
+| `scripts/train_anomaly.py` | melatih tiap kategori dan menurunkan ambangnya |
+
+### Bobot model (tidak masuk git)
+
+`models/finetuned/anomaly/` berisi checkpoint PaDiM untuk kelima kategori.
+
+### Bukti yang tersimpan
+
+| Berkas | Isi |
+|---|---|
+| `reports/metrics/anomaly_results.json` | AUROC, ambang EVT, parameter GPD, laju alarm palsu, recall per kategori |
+| `reports/figures/anomaly_bottle.png` | sebaran skor dan diagram kuantil-kuantil GPD |
+| `reports/figures/anomaly_chewinggum.png` | idem |
+| `reports/figures/anomaly_cashew.png` | idem |
+| `reports/figures/anomaly_pipe_fryum.png` | idem |
+| `reports/figures/anomaly_fryum.png` | idem |
+
+### Angka kunci
+
+AUROC 0,848 sampai 0,997. Ambang EVT lolos uji kecocokan Kolmogorov-Smirnov di
+seluruh kategori dengan p antara 0,593 dan 0,978. Recall pada titik operasi 1
+persen berkisar 0,14 sampai 1,00; rendahnya recall pada sebagian kategori
+menjadi dasar peninjauan titik operasi di Step 7.
+
+
+---
+
+## 8. Menghasilkan Ulang Semuanya
 
 Dari repo bersih, dengan `data/raw/` sudah terisi dataset publik:
 
@@ -224,6 +259,8 @@ python scripts/compare_detection.py     # evaluasi dan uji signifikansi
 python scripts/train_detection.py --data data/processed/seg/data.yaml \
     --name seg --section segmentation   # Step 5, sekitar 67 menit
 python scripts/compare_segmentation.py
+
+python scripts/train_anomaly.py         # Step 6, sekitar 2 menit per kategori
 ```
 
 Seed dikunci di `configs/dataset.yaml`, sehingga pembagian split akan sama
@@ -232,8 +269,8 @@ sifat nondeterministik operasi CUDA tertentu.
 
 ---
 
-## 8. Yang Belum Ada
+## 9. Yang Belum Ada
 
-Belum ada satu pun keluaran untuk Step 3, 6, 7, 8, 9, dan 10. Seluruh sel
+Belum ada satu pun keluaran untuk Step 3, 7, 8, 9, dan 10. Seluruh sel
 metrik yang berkaitan di `EXPERIMENTS.md` masih bertuliskan `belum diukur` dan
 tidak boleh diisi sebelum ada run yang benar-benar dijalankan.

@@ -105,6 +105,13 @@ anomaly:
   # menangkap cacat jenis baru yang belum pernah dilabeli.
   train_on: normal_only
 
+  # PaDiM menahan embedding seluruh gambar latih di RAM sebelum mencocokkan
+  # Gaussian, sehingga kebutuhan memorinya tumbuh linier terhadap jumlah
+  # gambar. Pada mesin 16 GB, 428 gambar menghabiskan memori dan proses mati.
+  # Batas 200 disamakan dengan MVTec bottle yang memakai 209 gambar dan sudah
+  # terbukti memadai. Pengambilan sampelnya deterministik terhadap seed.
+  max_train_images: 200
+
   # Rencana cadangan bila terlalu berat di RTX 3050 dalam waktu tersedia.
   # Catat dengan jujur di EXPERIMENTS.md bila cadangan yang dipakai.
   fallback: padim  # alternatif: patchcore
