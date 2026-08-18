@@ -1,0 +1,77 @@
+# dataset.yaml - Konfigurasi Akuisisi & Preprocessing Dataset (Step 2)
+#
+# Sumber kebenaran untuk: kategori mana yang dipakai, untuk peran apa, dan
+# parameter preprocessing. Dibaca oleh scripts/prepare_dataset.py.
+#
+# Seed dan rasio split dikunci di sini. Test set tidak pernah dilihat saat
+# tuning; mengubah seed setelah training berjalan membatalkan hasil.
+
+version: "0.2.0-step2"
+
+# LOKASI
+paths:
+  raw: data/raw
+  processed: data/processed
+  reports: reports/metrics
+
+# PEMILIHAN KATEGORI
+# Dasar pemilihan: ukuran cacat setelah resize ke 640 px sisi terpanjang.
+# Objek di bawah ~12 px praktis tidak dapat dipelajari detektor. Persentase
+# di bawah adalah bagian objek >= 12 px @640 (diukur, bukan perkiraan):
+#
+#   bottle       100.0 %   dipakai untuk detect + seg
+#   chewinggum    96.3 %   dipakai untuk detect + seg
+#   cashew        67.6 %   dipakai untuk detect + seg
+#   pipe_fryum    63.9 %   dipakai untuk detect + seg
+#   macaroni1     37.8 %   terlalu kecil, anomaly saja
+#   macaroni2     31.8 %   terlalu kecil, anomaly saja
+#   fryum         29.8 %   terlalu kecil, anomaly saja
+#
+# Kategori dengan cacat sangat kecil TIDAK dibuang - dialihkan ke jalur
+# anomaly detection yang tidak memerlukan kotak pembatas. Ini sekaligus
+# memperkuat alasan kenapa sistem butuh dua pendekatan (lihat PROJECT.md bagian 4.2).
+
+categories:
+  detect: [bottle, chewinggum, cashew, pipe_fryum]
+  anomaly: [bottle, chewinggum, cashew, pipe_fryum, fryum]
+  # Tidak diproses - cadangan bila ada waktu tersisa:
+  #   macaroni1, macaroni2                  (pangan, cacat terlalu kecil)
+  #   mvtec capsule/pill, visa capsules     (farmasi, di luar domain)
+  #   visa candle, pcb1..pcb4               (bukan pangan)
+
+# PREPROCESSING
+preprocess:
+  imgsz: 640  # sisi terpanjang; rasio aspek dipertahankan
+  jpeg_quality: 95
+
+  # Penyaring derau anotasi. Komponen mask yang lebih kecil dari ini dibuang
+  # karena hampir selalu artefak pelabelan, bukan cacat sungguhan.
+  min_component_area_px: 25  # pada resolusi ASLI
+  min_scaled_side_px: 3  # sisi terpanjang setelah resize
+
+  # Penyederhanaan poligon segmentasi (fraksi dari keliling kontur).
+  polygon_epsilon_ratio: 0.005
+  polygon_max_points: 60
+
+  # Gambar normal yang disertakan ke dataset deteksi sebagai latar belakang
+  # (label kosong). Menekan alarm palsu pada produk yang sebenarnya bagus.
+  background_ratio: 0.15
+
+# SPLIT  (DIKUNCI)
+split:
+  seed: 42
+  train: 0.70
+  val: 0.15
+  test: 0.15
+  stratified: true  # per (kategori, kelas dominan)
+
+# AMBANG VALIDASI STATISTIK  (STATISTICS.md bagian 2)
+validation:
+  chi2_alpha: 0.05  # p > 0,05  distribusi kelas antar split selaras
+  max_imbalance_ratio: 3.0  # target; ketimpangan sisa ditangani Step 3 (sintetik)
+  min_normalized_entropy: 0.85
+  # Ukuran sampel minimum test: n = z^2 p(1-p) / E^2
+  sample_size:
+    z: 1.96  # tingkat kepercayaan 95%
+    expected_recall: 0.90
+    margin_of_error: 0.05

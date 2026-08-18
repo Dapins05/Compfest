@@ -1,0 +1,29 @@
+# ruff.toml - konfigurasi lint & format modul AI
+#
+# Dikunci eksplisit supaya hasil `ruff check` sama di mesin siapa pun,
+# termasuk mesin panitia. Tanpa berkas ini, aturan yang aktif ikut berubah
+# setiap kali versi ruff berganti.
+
+line-length = 88
+target-version = "py311"
+src = ["src", "scripts"]
+
+[lint]
+select = [
+    "E",  # pycodestyle - termasuk E402 (impor tidak di puncak berkas)
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort - urutan impor
+    "UP",  # pyupgrade - idiom Python modern
+    "B",  # flake8-bugbear - jebakan yang mudah terlewat
+    "SIM",  # flake8-simplify
+    "RUF",  # aturan khas ruff
+]
+
+# `scripts/` wajib menyetel sys.path sebelum mengimpor visionqc_ai, karena
+# paketnya belum dipasang (pyproject.toml baru dibuat di Step 10). Impor
+# setelah kode itu disengaja dan ditandai `# noqa: E402` di tempatnya.
+
+[format]
+quote-style = "double"
+indent-style = "space"
