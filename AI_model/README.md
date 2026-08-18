@@ -19,7 +19,8 @@ result: InspectionResult = run_inspection(image_bytes, config)
 | [DATASET_REQUIREMENTS.md](./DATASET_REQUIREMENTS.md) | Dataset yang dibutuhkan + sumber valid |
 | [STATISTICS.md](./STATISTICS.md) | Rumus statistik - **diferensiator utama** |
 | [PRIVACY.md](./PRIVACY.md) | Desain privasi & kepatuhan UU PDP No. 27/2022 |
-| [EXPERIMENTS.md](./EXPERIMENTS.md) | Bukti fine-tuning (wajib panitia) |
+| [EXPERIMENTS.md](./EXPERIMENTS.md) | Bukti fine-tuning: angka dan seberapa dapat dipercaya |
+| [OUTPUTS.md](./OUTPUTS.md) | Peta keluaran tiap langkah: berkas apa, di mana |
 
 ---
 
