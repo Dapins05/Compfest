@@ -1,0 +1,291 @@
+{
+  "generated_on": "2026-08-18",
+  "step": "2 - akuisisi & preprocessing dataset",
+  "environment": {
+    "python": "3.11.1",
+    "platform": "Windows-10-10.0.26200-SP0"
+  },
+  "config": {
+    "seed": 42,
+    "ratios": {
+      "train": 0.7,
+      "val": 0.15,
+      "test": 0.15
+    },
+    "preprocess": {
+      "imgsz": 640,
+      "jpeg_quality": 95,
+      "min_component_area_px": 25,
+      "min_scaled_side_px": 3,
+      "polygon_epsilon_ratio": 0.005,
+      "polygon_max_points": 60,
+      "background_ratio": 0.15
+    },
+    "categories": {
+      "detect": [
+        "bottle",
+        "chewinggum",
+        "cashew",
+        "pipe_fryum"
+      ],
+      "anomaly": [
+        "bottle",
+        "chewinggum",
+        "cashew",
+        "pipe_fryum",
+        "fryum"
+      ]
+    }
+  },
+  "taxonomy": {
+    "classes": [
+      "pecah",
+      "gores",
+      "noda",
+      "kotor",
+      "deformasi"
+    ],
+    "class_ids": {
+      "pecah": 0,
+      "gores": 1,
+      "noda": 2,
+      "kotor": 3,
+      "deformasi": 4
+    },
+    "severity_weight": {
+      "pecah": 0.9,
+      "gores": 0.4,
+      "noda": 0.6,
+      "kotor": 1.0,
+      "deformasi": 0.5
+    }
+  },
+  "visa_code_reconstruction": {
+    "cashew": {
+      "code_to_label": {
+        "1": "burnt",
+        "2": "corner or edge breakage",
+        "3": "different colour spot",
+        "4": "middle breakage",
+        "5": "small holes",
+        "6": "small scratches",
+        "7": "stuck together",
+        "8": "same colour spot"
+      },
+      "code_to_class": {
+        "1": "noda",
+        "2": "pecah",
+        "3": "noda",
+        "4": "pecah",
+        "5": "pecah",
+        "6": "gores",
+        "7": "deformasi",
+        "8": "noda"
+      },
+      "class_merged_codes": {},
+      "learned_codes": 8,
+      "inferred_codes": 0,
+      "validated_multilabel_images": 10
+    },
+    "chewinggum": {
+      "code_to_label": {
+        "1": "chunk of gum missing",
+        "2": "corner missing",
+        "3": "scratches",
+        "4": "similar colour spot",
+        "5": "small cracks"
+      },
+      "code_to_class": {
+        "1": "pecah",
+        "2": "pecah",
+        "3": "gores",
+        "4": "noda",
+        "5": "pecah"
+      },
+      "class_merged_codes": {},
+      "learned_codes": 4,
+      "inferred_codes": 1,
+      "validated_multilabel_images": 43
+    },
+    "fryum": {
+      "code_to_label": {
+        "1": "burnt",
+        "2": "corner or edge breakage",
+        "3": "different colour spot",
+        "4": "fryum stuck together",
+        "5": "middle breakage",
+        "6": "similar colour spot",
+        "7": "small scratches",
+        "8": "other"
+      },
+      "code_to_class": {
+        "1": "noda",
+        "2": "pecah",
+        "3": "noda",
+        "4": "deformasi",
+        "5": "pecah",
+        "6": "noda",
+        "7": "gores",
+        "8": null
+      },
+      "class_merged_codes": {},
+      "learned_codes": 7,
+      "inferred_codes": 1,
+      "validated_multilabel_images": 13
+    },
+    "pipe_fryum": {
+      "code_to_label": {
+        "1": "burnt",
+        "2": "corner and edge breakage",
+        "3": "different colour spot",
+        "5": "similar colour spot",
+        "6": "small scratches",
+        "7": "stuck together"
+      },
+      "code_to_class": {
+        "1": "noda",
+        "2": "pecah",
+        "3": "noda",
+        "4": "pecah",
+        "5": "noda",
+        "6": "gores",
+        "7": "deformasi",
+        "8": "pecah"
+      },
+      "class_merged_codes": {
+        "4": [
+          "middle breakage",
+          "small cracks"
+        ],
+        "8": [
+          "middle breakage",
+          "small cracks"
+        ]
+      },
+      "learned_codes": 6,
+      "inferred_codes": 0,
+      "validated_multilabel_images": 12
+    }
+  },
+  "per_category": {
+    "bottle": {
+      "defect_images": 63,
+      "normal_images": 229,
+      "instances_kept": 68,
+      "dropped_small_area": 0,
+      "dropped_small_side": 0,
+      "dropped_unmapped": 0,
+      "dropped_no_polygon": 0,
+      "missing_masks": 0,
+      "learnable_at_640_pct": 100.0
+    },
+    "cashew": {
+      "defect_images": 100,
+      "normal_images": 500,
+      "instances_kept": 141,
+      "dropped_small_area": 11,
+      "dropped_small_side": 0,
+      "dropped_unmapped": 0,
+      "dropped_no_polygon": 0,
+      "missing_masks": 0,
+      "learnable_at_640_pct": 67.6
+    },
+    "chewinggum": {
+      "defect_images": 100,
+      "normal_images": 503,
+      "instances_kept": 214,
+      "dropped_small_area": 42,
+      "dropped_small_side": 0,
+      "dropped_unmapped": 0,
+      "dropped_no_polygon": 0,
+      "missing_masks": 0,
+      "learnable_at_640_pct": 96.3
+    },
+    "fryum": {
+      "defect_images": 100,
+      "normal_images": 500,
+      "instances_kept": 254,
+      "dropped_small_area": 280,
+      "dropped_small_side": 19,
+      "dropped_unmapped": 1,
+      "dropped_no_polygon": 0,
+      "missing_masks": 0,
+      "learnable_at_640_pct": 29.8
+    },
+    "pipe_fryum": {
+      "defect_images": 100,
+      "normal_images": 500,
+      "instances_kept": 220,
+      "dropped_small_area": 94,
+      "dropped_small_side": 0,
+      "dropped_unmapped": 0,
+      "dropped_no_polygon": 0,
+      "missing_masks": 0,
+      "learnable_at_640_pct": 63.9
+    }
+  },
+  "validation": {
+    "chi_square": {
+      "statistic": 7.160616234424079,
+      "p_value": 0.5194068407140653,
+      "degrees_of_freedom": 8,
+      "passed": true,
+      "note": "frekuensi harapan minimum < 5; nilai p hanya indikatif"
+    },
+    "balance": {
+      "counts": {
+        "pecah": 325,
+        "gores": 139,
+        "noda": 141,
+        "kotor": 22,
+        "deformasi": 16
+      },
+      "imbalance_ratio": 20.3125,
+      "normalized_entropy": 0.7556094710992206,
+      "ir_passed": false,
+      "entropy_passed": false
+    },
+    "sample_size": {
+      "required_instances": 139,
+      "actual_instances": 75,
+      "actual_defect_images": 52,
+      "achieved_margin_of_error": 0.06789639165669997,
+      "passed": false,
+      "formula": "n = z^2 * p(1-p) / E^2",
+      "parameters": {
+        "z": 1.96,
+        "p": 0.9,
+        "E": 0.05
+      }
+    },
+    "per_split_images": {
+      "train": 291,
+      "val": 64,
+      "test": 59
+    },
+    "per_split_instances": {
+      "train": {
+        "kotor": 16,
+        "pecah": 231,
+        "gores": 110,
+        "noda": 103,
+        "deformasi": 11
+      },
+      "val": {
+        "kotor": 3,
+        "pecah": 54,
+        "gores": 20,
+        "noda": 17,
+        "deformasi": 3
+      },
+      "test": {
+        "kotor": 3,
+        "pecah": 40,
+        "gores": 9,
+        "noda": 21,
+        "deformasi": 2
+      }
+    }
+  },
+  "written": {}
+}
