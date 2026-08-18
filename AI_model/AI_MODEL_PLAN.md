@@ -64,7 +64,7 @@ Tiap langkah dirancang agar selesai sebagai satu unit kerja yang berdiri sendiri
 | **7** | **Lapisan Statistik & Kalibrasi** | Conformal prediction, Platt scaling, ambang sensitif biaya | 3 jam | H-7 selesai |
 | **8** | Lapisan Privasi | EXIF scrub, face blur, ephemeral buffer, hash audit | 2 jam | H-7 |
 | **9** | **Decision Engine + Ekspor ONNX** | Mesin keputusan 3 kelas + ONNX + tolok ukur latensi | 3 jam | H-7 sebagian |
-| **10** | Integrasi & Laporan Evaluasi | `run_inspection()` siap Backend + EXPERIMENTS.md terisi | 3 jam | H-6 |
+| **10** | **Integrasi & Laporan Evaluasi** | `run_inspection()` siap Backend + EXPERIMENTS.md terisi | 3 jam | H-7 selesai |
 
 ¹ *termasuk waktu tunggu training di RTX 3050 - bisa dijalankan sambil mengerjakan Frontend.*
 
@@ -365,23 +365,33 @@ Dinyatakan sebagai keterbatasan di [EXPERIMENTS.md bagian 6.6](./EXPERIMENTS.md)
 
 ---
 
-### Step 10 - Integrasi & Laporan Evaluasi
+### Step 10 - Integrasi dan Laporan Evaluasi `[SELESAI 18 Agu 2026]`
 
-**Yang dibuat:** ```
-src/visionqc_ai/__init__.py        # ekspor run_inspection() + InspectionResult
-src/visionqc_ai/schemas.py         # Pydantic - sinkron dengan Backend
-pyproject.toml                     # agar Backend bisa: pip install -e ../AI_model
-tests/                             # unit test secukupnya (bukan bulk testing)
-EXPERIMENTS.md                     # TERISI PENUH
-reports/evaluation_report.md       # bahan langsung untuk proposal
+**Dibuat:**
+```
+src/visionqc_ai/__init__.py     src/visionqc_ai/schemas.py
+src/visionqc_ai/inference/{annotate,pipeline}.py
+pyproject.toml    tests/    reports/evaluation_report.md
+reports/figures/inspection_example.png
 ```
 
-**Serah terima ke Backend:** ```python
-from visionqc_ai import run_inspection
-result = run_inspection(image_bytes, config)   # InspectionResult
+**Serah terima ke Backend:**
+
+```python
+from visionqc_ai import run_inspection, InspectionResult
+
+result: InspectionResult = run_inspection(image_bytes)
 ```
 
-Setelah step ini, modul AI **selesai** dan Backend tinggal memanggil.
+Inspeksi utuh terukur sekitar 140 ms per gambar setelah model dimuat, jauh di
+bawah sasaran satu detik. Seluruh 12 uji lolos.
+
+Skor anomali diterima sebagai argumen karena model anomali dilatih per kategori
+produk dan belum diekspor ke ONNX. Nilai bawaan nol berarti jalur anomali tidak
+ikut menentukan keputusan.
+
+Rincian seluruh angka ada di
+[reports/evaluation_report.md](./reports/evaluation_report.md).
 
 ---
 

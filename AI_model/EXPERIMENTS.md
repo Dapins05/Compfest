@@ -6,8 +6,8 @@ mewajibkan: *"Model wajib di fine tune sesuai dengan inovasi fitur per tim."*
 Angka yang belum diukur ditulis `belum diukur` dan tidak pernah dikarang.
 Panitia berhak meminta demo langsung dan klarifikasi saat penjurian.
 
-**Status:** Step 2, 4, 5, 6, 7, dan 9 selesai. Model sudah dilatih, dikalibrasi,
-diekspor ke ONNX, dan diukur latensinya di CPU. Privasi dan integrasi belum.
+**Status:** Step 2, 4, 5, 6, 7, 9, dan 10 selesai. Modul AI sudah dapat dipanggil
+Backend lewat `run_inspection()`. Step 3 (sintetik) dan Step 8 (privasi) belum.
 
 ---
 
@@ -728,13 +728,16 @@ penyajian. Yang wajib dikutip di proposal adalah angka CPU di atas.
 Sasaran keseluruhan yang ditetapkan PROJECT.md adalah satu detik per gambar di
 CPU. Kedua model inti memakan 153 ms median, menyisakan ruang untuk
 prapemrosesan, skor anomali, OCR, dan penggambaran anotasi. Latensi pipeline
-utuh baru dapat diukur setelah Step 10 dan saat ini masih `belum diukur`.
+utuh terukur sekitar 140 ms per gambar setelah model dimuat, termasuk
+prapemrosesan, deteksi, segmentasi, perhitungan luas, keputusan, dan
+penggambaran anotasi.
 
 ## 8. Riwayat Run
 
 | # | Tgl | Model | Perubahan | Hasil | Keputusan |
 |---|---|---|---|---|---|
 | 1 | 2026-08-18 | YOLO11n detect | fine-tune pertama dari bobot COCO, config apa adanya | berhenti awal di epoch 161, terbaik epoch 137, mAP50 val 0,7967 | diterima sebagai model deteksi tahap penyisihan |
+| 6 | 2026-08-18 | Integrasi | pipeline utuh di atas ONNX | inspeksi utuh sekitar 140 ms per gambar, 12 uji lolos | diterima; siap dipanggil Backend |
 | 5 | 2026-08-18 | Ekspor ONNX | opset 12, imgsz 640, 4 utas | detect 62,5 ms dan seg 90,9 ms median di CPU | diterima; menyisakan ruang untuk sasaran satu detik |
 | 4 | 2026-08-18 | Lapisan keputusan | kalibrasi, conformal, ambang biaya | Platt ECE 0,0391; conformal cakupan 0,9661; ambang biaya tidak menggeneralisasi | Platt dan conformal diterima; ambang operasi tetap 0,50 |
 | 3 | 2026-08-18 | PaDiM anomali | 5 kategori, 200 gambar latih, worker dataloader nol | AUROC 0,848 sampai 0,997; ambang EVT lolos uji KS di semua kategori | diterima; titik operasi 1 persen dinilai terlalu ketat dan diserahkan ke Step 7 |

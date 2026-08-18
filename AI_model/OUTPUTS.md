@@ -27,8 +27,8 @@ Dokumen lain punya peran berbeda:
 | 6 | Anomaly Detection + Ambang EVT | selesai | 2 modul, 1 skrip, 5 model, `anomaly_results.json`, 5 gambar |
 | 7 | Lapisan Statistik & Kalibrasi | selesai | 3 modul, 1 skrip, `calibration_results.json`, 3 gambar |
 | 8 | Lapisan Privasi | belum | belum ada |
-| 9 | Decision Engine + Ekspor ONNX | sebagian | mesin keputusan, ekspor ONNX, tolok ukur latensi; anotasi dan pipeline digeser ke Step 10 |
-| 10 | Integrasi & Laporan Evaluasi | belum | belum ada |
+| 9 | Decision Engine + Ekspor ONNX | selesai | mesin keputusan, ekspor ONNX, tolok ukur latensi |
+| 10 | Integrasi & Laporan Evaluasi | selesai | `run_inspection()`, skema Pydantic, anotasi, pipeline, 12 uji, laporan evaluasi |
 
 ---
 
@@ -311,7 +311,45 @@ karena ketiganya hanya bermakna bila dirakit sekaligus.
 
 ---
 
-## 10. Menghasilkan Ulang Semuanya
+## 10. Step 10 - Integrasi dan Laporan Evaluasi
+
+### Kode
+
+| Berkas | Tanggung jawab |
+|---|---|
+| `src/visionqc_ai/__init__.py` | mengekspor `run_inspection` dan `InspectionResult` |
+| `src/visionqc_ai/schemas.py` | kontrak Pydantic dengan Backend |
+| `src/visionqc_ai/inference/annotate.py` | penggambaran kotak, mask, dan pita keputusan |
+| `src/visionqc_ai/inference/pipeline.py` | orkestrasi dari byte gambar sampai hasil |
+| `pyproject.toml` | agar Backend dapat memasang modul ini |
+| `tests/` | 12 uji untuk mesin keputusan dan kontrak data |
+
+### Cara Backend memakainya
+
+```python
+from visionqc_ai import run_inspection, InspectionResult
+
+result: InspectionResult = run_inspection(image_bytes)
+```
+
+Model dimuat sekali pada pemanggilan pertama dan dipakai ulang sesudahnya.
+
+### Bukti yang tersimpan
+
+| Berkas | Isi |
+|---|---|
+| `reports/evaluation_report.md` | ringkasan seluruh angka, bahan langsung untuk proposal |
+| `reports/figures/inspection_example.png` | contoh keluaran beranotasi yang dilihat pengguna |
+
+### Angka kunci
+
+Inspeksi utuh sekitar 140 ms per gambar setelah model dimuat, jauh di bawah
+sasaran satu detik. Seluruh 12 uji lolos.
+
+
+---
+
+## 11. Menghasilkan Ulang Semuanya
 
 Dari repo bersih, dengan `data/raw/` sudah terisi dataset publik:
 
@@ -341,8 +379,9 @@ sifat nondeterministik operasi CUDA tertentu.
 
 ---
 
-## 11. Yang Belum Ada
+## 12. Yang Belum Ada
 
-Belum ada satu pun keluaran untuk Step 3, 8, dan 10. Seluruh sel
+Belum ada satu pun keluaran untuk Step 3 (generator cacat sintetik) dan
+Step 8 (lapisan privasi). Seluruh sel
 metrik yang berkaitan di `EXPERIMENTS.md` masih bertuliskan `belum diukur` dan
 tidak boleh diisi sebelum ada run yang benar-benar dijalankan.
