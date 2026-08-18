@@ -1,0 +1,131 @@
+# training.yaml - Hyperparameter Fine-Tuning
+# Disetel khusus untuk NVIDIA RTX 3050 Laptop
+#
+# VRAM terkonfirmasi 4 GB lewat nvidia-smi pada 18 Agustus 2026 (RTX 3050
+# Laptop, 4096 MiB, driver 592.00, CUDA 13.1, torch 2.5.1+cu121). Nilai batch
+# di bawah sudah sesuai untuk 4 GB.
+#
+# Semua nilai di sini adalah titik awal yang masuk akal, bukan hasil optimasi.
+# Nilai final wajib diverifikasi lewat run sungguhan dan dicatat di
+# EXPERIMENTS.md.
+
+# REPRODUSIBILITAS  (seed dikunci, test set tidak pernah dilihat saat tuning)
+seed: 42
+deterministic: true
+
+# Split sesungguhnya dikerjakan Step 2; nilainya dikunci di configs/dataset.yaml
+# agar hanya ada SATU sumber kebenaran. Diulang di sini sebagai rujukan saja.
+split:
+  train: 0.70
+  val: 0.15
+  test: 0.15
+  stratified: true  # per (kategori, kelas dominan); divalidasi uji χ² (STATISTICS.md bagian 2.1)
+  source_of_truth: configs/dataset.yaml
+
+# HARDWARE
+hardware:
+  device: 0  # GPU pertama
+  vram_gb: 4  # terkonfirmasi nvidia-smi 18 Agu 2026 (4096 MiB)
+  amp: true  # mixed precision - wajib di VRAM terbatas, ~40% lebih hemat memori
+  workers: 4  # Windows: turunkan ke 0 kalau muncul error multiprocessing
+  cache: false  # jangan cache ke RAM di laptop; pakai 'disk' kalau SSD longgar
+
+  # Panduan batch size:
+  # VRAM 4 GB  detect: 8   | seg: 4
+  # VRAM 6 GB  detect: 16  | seg: 8
+  # Kalau muncul CUDA out of memory: turunkan setengah, jangan ubah imgsz dulu.
+
+# DETEKSI - YOLO11n
+detection:
+  model: yolo11n.pt  # nano: paling ringan, cocok untuk 3050 & target perangkat pabrik
+  imgsz: 640
+  batch: 8  # naikkan ke 16 bila VRAM 6 GB
+  epochs: 300  # tinggi sengaja - early stopping yang menentukan berhentinya
+  patience: 50  # berhenti bila 50 epoch tanpa perbaikan pada val
+
+  optimizer: AdamW
+  lr0: 0.001  # lebih rendah dari default SGD karena ini fine-tuning, bukan latih dari nol
+  lrf: 0.01  # lr akhir = lr0 * lrf
+  cos_lr: true  # cosine decay - konvergensi lebih halus, galat akhir lebih tipis
+  warmup_epochs: 5
+  weight_decay: 0.0005
+  momentum: 0.937
+
+  # Bobot fungsi galat
+  box: 7.5
+  cls: 0.5
+  dfl: 1.5
+
+  # Augmentasi - sengaja kuat karena dataset kecil
+  hsv_h: 0.015
+  hsv_s: 0.7
+  hsv_v: 0.4
+  degrees: 10.0  # produk kemasan bisa miring di conveyor
+  translate: 0.1
+  scale: 0.5
+  shear: 2.0
+  perspective: 0.0
+  flipud: 0.5  # kemasan bisa terbalik
+  fliplr: 0.5
+  mosaic: 1.0
+  close_mosaic: 15  # matikan mosaic di 15 epoch terakhir  hasil akhir lebih stabil
+  mixup: 0.1
+  copy_paste: 0.0
+
+# SEGMENTASI - YOLO11n-seg
+segmentation:
+  model: yolo11n-seg.pt
+  imgsz: 640
+  batch: 4  # seg lebih berat dari detect; naikkan ke 8 bila VRAM 6 GB
+  epochs: 250
+  patience: 40
+
+  optimizer: AdamW
+  lr0: 0.001
+  lrf: 0.01
+  cos_lr: true
+  warmup_epochs: 5
+
+  overlap_mask: true
+  mask_ratio: 4
+  copy_paste: 0.3  # sangat membantu untuk segmentasi dengan data terbatas
+  mosaic: 1.0
+  close_mosaic: 15
+
+# ANOMALI - EfficientAD
+anomaly:
+  model: efficient_ad
+  variant: small  # 'medium' butuh VRAM & waktu jauh lebih besar
+  imgsz: 256  # EfficientAD memang bekerja pada resolusi lebih kecil
+  batch: 1  # arsitektur EfficientAD memang batch=1
+  max_epochs: 100
+  patience: 20
+
+  # Dilatih HANYA dari gambar normal - inilah yang membuatnya bisa
+  # menangkap cacat jenis baru yang belum pernah dilabeli.
+  train_on: normal_only
+
+  # Rencana cadangan bila terlalu berat di RTX 3050 dalam waktu tersedia.
+  # Catat dengan jujur di EXPERIMENTS.md bila cadangan yang dipakai.
+  fallback: padim  # alternatif: patchcore
+
+# ESTIMASI WAKTU  ( perkiraan kasar - ukur sungguhan lalu perbarui)
+# Asumsi ±1.200 gambar setelah augmentasi sintetik, RTX 3050 4 GB:
+#   detection    : 20-35 detik/epoch  ±1,5-3 jam (kemungkinan berhenti awal ~150 epoch)
+#   segmentation : 35-55 detik/epoch  ±2,5-4 jam
+#   anomaly      : ±1-2 jam
+#
+# Jalankan training malam hari sambil laptop ditinggal, dan kerjakan
+# Frontend di siang hari. Ini kunci agar 10 hari cukup.
+
+# CATATAN PEMILIHAN EPOCH
+# Kenapa epoch tinggi (250-300) padahal datanya kecil?
+#   - Dataset kecil  tiap epoch cepat, jadi epoch banyak tidak mahal
+#   - `patience` yang menentukan kapan berhenti, bukan `epochs`.
+# Menetapkan epochs tinggi + patience memadai memberi model kesempatan
+#     konvergen penuh tanpa menebak-nebak angka yang tepat.
+#   - Ultralytics otomatis menyimpan `best.pt` berdasarkan metrik validasi,
+#     jadi overfitting di epoch akhir tidak merusak model yang dipakai.
+#
+# Kalau ternyata terlalu lama: turunkan `epochs` ke 150 dan `patience` ke 30.
+# Yang TIDAK boleh dilakukan: menyetel epoch berdasarkan hasil TEST set.

@@ -1,0 +1,126 @@
+# inference.yaml - Parameter Inferensi
+#
+# Seluruh nilai di sini bersifat statis: dibaca sekali saat startup dan tidak
+# berubah saat sistem berjalan. Tidak ada auto-tuning, penyesuaian adaptif,
+# maupun endpoint untuk mengubahnya.
+#
+# Nilai bertanda TBD diisi dari hasil kalibrasi di Step 6 dan 7, berdasarkan
+# run sungguhan dan bukan tebakan.
+
+version: "0.2.0-step2"
+
+# MODEL
+models:
+  detection:
+    path: models/onnx/yolo11n-defect.onnx
+    imgsz: 640
+    conf_threshold: 0.25  # ambang bawah NMS - penyaringan kasar, bukan ambang keputusan
+    iou_threshold: 0.45
+    max_detections: 30
+
+  segmentation:
+    path: models/onnx/yolo11n-seg-defect.onnx
+    imgsz: 640
+    mask_threshold: 0.5
+
+  anomaly:
+    path: models/onnx/efficientad.onnx
+    imgsz: 256
+
+  ocr:
+    engine: paddleocr
+    lang: en
+    use_gpu: false  # OCR di CPU saja - sisakan VRAM untuk model utama
+
+# AMBANG KEPUTUSAN  (dasar teori: STATISTICS.md)
+decision:
+
+  # bagian Luas cacat - batas toleransi produk
+  # Diturunkan dari standar toleransi cacat kemasan, dikonfirmasi lewat validasi.
+  area_pct_threshold: 2.0
+
+  # bagian Ambang anomali - DIHITUNG dengan Extreme Value Theory (STATISTICS.md bagian 7)
+  # Bukan angka pilihan tangan. Diisi otomatis oleh Step 6.
+  anomaly_threshold: TBD
+  anomaly_target_far: 0.01  # laju alarm palsu target 1%
+  anomaly_evt_params:
+    xi: TBD  # parameter bentuk GPD
+    sigma: TBD  # parameter skala GPD
+    u: TBD  # ambang POT awal
+
+  # bagian Conformal prediction (STATISTICS.md bagian 6)
+  conformal:
+    alpha: 0.05  # jaminan cakupan ≥ 95%
+    mode: mondrian  # kuantil terpisah per kelas - penting untuk data timpang
+    quantiles: TBD  # q̂ per kelas, diisi Step 7
+
+  # bagian Kalibrasi kepercayaan (STATISTICS.md bagian 5)
+  calibration:
+    temperature: TBD  # dioptimasi pada set validasi di Step 7
+    ece_after: TBD  # target < 0.05
+
+  # bagian Ambang sensitif biaya (STATISTICS.md bagian 8)
+  # τ* = C_FP / (C_FP + C_FN)
+  cost:
+    c_false_reject: 2000  # Rp - produk bagus salah ditolak
+    c_missed_defect: 50000  # Rp - cacat lolos ke konsumen
+    c_review: 500  # Rp - biaya waktu operator memeriksa
+    bayes_threshold: TBD  # dihitung dari nilai di atas pada Step 7
+
+  # bagian Kepercayaan minimum sebelum sistem berani memutuskan
+  min_confidence: 0.60
+
+# KELAS CACAT
+# Taksonomi 5 kelas, hasil penyatuan 30+ label mentah MVTec AD dan VisA
+# (lihat src/visionqc_ai/data/taxonomy.py - pemetaan lengkapnya ditulis di
+# sana supaya bisa diaudit). Urutan id WAJIB sama dengan DEFECT_CLASSES;
+# id yang bergeser membuat bobot hasil training tidak lagi bermakna.
+classes:
+  - id: 0
+    name: pecah
+    label_id: "Pecah / Retak"
+    severity_weight: 0.9
+  - id: 1
+    name: gores
+    label_id: "Gores"
+    severity_weight: 0.4
+  - id: 2
+    name: noda
+    label_id: "Noda Warna"
+    severity_weight: 0.6
+  - id: 3
+    name: kotor
+    label_id: "Kontaminasi"
+    severity_weight: 1.0  # paling kritis: berdampak langsung pada keamanan pangan
+  - id: 4
+    name: deformasi
+    label_id: "Deformasi"
+    severity_weight: 0.5
+
+# PRIVASI  (PRIVACY.md) - semua wajib menyala
+privacy:
+  strip_exif: true  # A2 - hapus seluruh metadata
+  blur_faces: true  # A1 - data biometrik, UU PDP Pasal 4(2)
+  face_blur_kernel: 45
+  ephemeral_buffers: true  # A3 - gambar tidak pernah menyentuh disk
+  hash_only_logging: true  # A6 - log hanya SHA-256
+  ocr_allowlist_only: true  # A4 - hanya pola kode batch yang dipertahankan
+  ocr_patterns:
+    - '^[A-Z]{1,3}[-/]?\d{6,10}$'
+    - '^\d{2}[/.]\d{2}[/.]\d{2,4}$'
+  no_network_calls: true  # A8 - diverifikasi lewat pengujian di Step 10
+
+# MASUKAN
+input:
+  max_file_size_mb: 10
+  allowed_formats: [jpg, jpeg, png, webp]
+  min_dimension: 224
+  max_dimension: 4096
+
+# RUNTIME
+runtime:
+  provider: CPUExecutionProvider  # ONNX di CPU  panitia tidak wajib punya GPU
+  warmup_on_startup: true  # 1 inferensi dummy agar permintaan pertama tidak lambat
+  intra_op_threads: 4
+  return_annotated_image: true
+  return_anomaly_heatmap: true
