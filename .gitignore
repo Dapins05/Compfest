@@ -1,2 +1,54 @@
+# Dokumen internal tim (tidak dipublikasikan)
 CLAUDE.md
 LOG.md
+
+# ── Bobot model & artefak training (R4.2) ────────────────────
+*.pt
+*.pth
+*.onnx
+*.engine
+*.pb
+*.tflite
+AI_model/models/
+AI_model/data/
+runs/
+wandb/
+lightning_logs/
+
+# ── Hasil eksperimen ─────────────────────────────────────────
+# CATATAN: isi AI_model/reports/ SENGAJA ikut di-commit. Gambar evaluasi
+# (kurva training, confusion matrix, verifikasi anotasi) dan berkas metrik
+# adalah bukti fine-tuning yang diwajibkan panitia — F-16 / R7.3. Bobot model
+# dan dataset tetap dikecualikan di atas karena ukurannya, bukan perannya.
+AI_model/notebooks/*.ipynb_checkpoints
+
+# ── Python ───────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.pytest_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# ── Node ─────────────────────────────────────────────────────
+node_modules/
+.next/
+dist/
+build/
+.turbo/
+
+# ── Environment & rahasia (R4.1) ─────────────────────────────
+.env
+.env.local
+*.key
+*.pem
+
+# ── OS & editor ──────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/

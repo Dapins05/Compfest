@@ -1,32 +1,29 @@
 # PROJECT.md — VisionQC
-
 **AI Smart Manufacturing Quality Control**
 COMPFEST 18 · AIC (AI Competition) · Tahap **Penyisihan**
 
 Dokumen teknis utama. Rules pengerjaan → [CLAUDE.md](./CLAUDE.md) · Progres → [LOG.md](./LOG.md)
-
-**Terakhir diperbarui:** 2026-08-15 (rombak total agar patuh persyaratan panitia)
+**Terakhir diperbarui:** 2026-08-18 (struktur repo diselaraskan dengan kenyataan; timeline dijadwal ulang)
 
 ---
 
-## 🚨 KOTAK MERAH — BACA INI DULU
+## KOTAK MERAH — BACA INI DULU
 
 | | |
 |---|---|
 | **Deadline** | **25 Agustus 2026, 23.55 WIB** |
-| **Hari ini** | 15 Agustus 2026 |
-| **Sisa waktu** | **10 HARI** |
+| **Hari ini** | 18 Agustus 2026 |
+| **Sisa waktu** | **7 HARI** |
 | **Periode kerja sah** | 17 Juni – 25 Agustus 2026 (dilarang melanjutkan proyek lama) |
 | **Standby Discord** | 9 & 10 September 2026, 20.00 — panitia bisa minta live demo, jawab maks. 2 jam |
-
 **Empat berkas wajib. Kurang satu = diskualifikasi:**
-1. 🔗 Link repo GitHub (**public**, ada `README.md` + `docker compose`)
-2. 🎥 Video **Proof of Work** — maks. 7 menit, YouTube **unlisted**
-3. 🎬 Video **Karya Inovasi** — maks. 5 menit, YouTube **public**
-4. 📄 Proposal PDF — maks. 20 halaman
+1.  Link repo GitHub (**public**, ada `README.md` + `docker compose`)
+2.  Video **Proof of Work** — maks. 7 menit, YouTube **unlisted**
+3.  Video **Karya Inovasi** — maks. 5 menit, YouTube **public**
+4.  Proposal PDF — maks. 20 halaman
 
-> ⚠️ Versi PROJECT.md sebelumnya (arsitektur queue + dashboard analitik + auth, timeline 8 minggu)
-> **melanggar batasan ruang lingkup panitia dan tidak muat di sisa waktu**. Dokumen ini adalah
+>  Versi PROJECT.md sebelumnya (arsitektur queue + dashboard analitik + auth, timeline 8 minggu)
+>**melanggar batasan ruang lingkup panitia dan tidak muat di sisa waktu**. Dokumen ini adalah
 > hasil perombakan total. Alasannya dirinci di §2.
 
 ---
@@ -59,9 +56,7 @@ Dokumen teknis utama. Rules pengerjaan → [CLAUDE.md](./CLAUDE.md) · Progres �
 ---
 
 ## 1. Ringkasan Proyek
-
-**Tema lomba:** AI for Backbone Economy → area **Smart Manufacturing** ✅ (salah satu dari tiga area yang diizinkan: Smart Manufacturing, Smart Logistics, Smart Commerce)
-
+**Tema lomba:** AI for Backbone Economy → area **Smart Manufacturing**  (salah satu dari tiga area yang diizinkan: Smart Manufacturing, Smart Logistics, Smart Commerce)
 **VisionQC** adalah sistem *quality control* otomatis berbasis computer vision untuk lini produksi.
 
 ### Alur inti (versi Penyisihan)
@@ -101,7 +96,7 @@ Dokumen teknis utama. Rules pengerjaan → [CLAUDE.md](./CLAUDE.md) · Progres �
 
 ### 2.1 Tiga batasan resmi
 
-| Lapisan | ✅ WAJIB HANYA SAMPAI | ❌ DILARANG / TIDAK PERLU |
+| Lapisan |  WAJIB HANYA SAMPAI |  DILARANG / TIDAK PERLU |
 |---|---|---|
 | **Frontend / UI** | Alur interaksi inti: menerima **input tunggal** dari pengguna, menampilkan output AI | Dashboard analitik tingkat lanjut · sistem otentikasi kompleks · halaman riwayat pengguna |
 | **Backend & Integrasi** | **Pemrosesan interaksi sinkron**. Fokus agar API/sistem lokal jalan sesuai `README.md` pakai `docker compose` | Background jobs · pipeline pencatatan data otomatis (*automated logging*) · infrastruktur database terdistribusi |
@@ -113,22 +108,22 @@ Versi PROJECT.md terdahulu melanggar batasan di atas. Berikut audit lengkapnya:
 
 | Komponen lama | Vonis | Dasar |
 |---|---|---|
-| RabbitMQ + Celery worker | ❌ **DIBUANG** | Background jobs — dilarang. Backend wajib sinkron |
-| Ingestor sebagai service terpisah | ❌ **DIBUANG** | Bagian dari arsitektur async yang dilarang |
-| Redis pub/sub + WebSocket realtime | ❌ **DIBUANG** | Bukan interaksi sinkron request-response |
-| PostgreSQL + TimescaleDB + Alembic + SQLAlchemy | ❌ **DIBUANG** | Pencatatan data otomatis + infrastruktur DB — dilarang |
-| MinIO object storage | ❌ **DIBUANG** | Bagian dari infrastruktur penyimpanan yang tidak diperlukan |
-| Dashboard analitik, grafik tren, Pareto chart | ❌ **DIBUANG** | "tidak perlu dashboard analitik tingkat lanjut" |
-| Halaman riwayat inspeksi + galeri cacat | ❌ **DIBUANG** | "tidak perlu halaman riwayat pengguna" |
-| Auth JWT + RBAC | ❌ **DIBUANG** | "tidak perlu sistem otentikasi yang kompleks" |
-| Antrean review + active learning | ❌ **DIBUANG** | Loop umpan balik otomatis — dilarang |
-| Model registry + aktivasi model + shadow mode | ❌ **DIBUANG** | Auto-tuning / parameter tidak statis — dilarang |
-| Panel ubah threshold saat runtime | ❌ **DIBUANG** | Parameter wajib **statis** saat demo |
-| Retensi otomatis, housekeeping, monitoring Grafana | ❌ **DIBUANG** | Automated pipeline — dilarang |
-| E2E test massal (Playwright) | ⚠️ **DIKURANGI** | "skrip pengujian massal" tidak diminta. Sisakan unit test secukupnya |
-| Qwen + Qdrant + embedding + XGBoost/CatBoost | ❌ **DIBUANG** | Di luar core inference; juga tidak muat dalam 10 hari |
+| RabbitMQ + Celery worker |  **DIBUANG** | Background jobs — dilarang. Backend wajib sinkron |
+| Ingestor sebagai service terpisah |  **DIBUANG** | Bagian dari arsitektur async yang dilarang |
+| Redis pub/sub + WebSocket realtime |  **DIBUANG** | Bukan interaksi sinkron request-response |
+| PostgreSQL + TimescaleDB + Alembic + SQLAlchemy |  **DIBUANG** | Pencatatan data otomatis + infrastruktur DB — dilarang |
+| MinIO object storage |  **DIBUANG** | Bagian dari infrastruktur penyimpanan yang tidak diperlukan |
+| Dashboard analitik, grafik tren, Pareto chart |  **DIBUANG** | "tidak perlu dashboard analitik tingkat lanjut" |
+| Halaman riwayat inspeksi + galeri cacat |  **DIBUANG** | "tidak perlu halaman riwayat pengguna" |
+| Auth JWT + RBAC |  **DIBUANG** | "tidak perlu sistem otentikasi yang kompleks" |
+| Antrean review + active learning |  **DIBUANG** | Loop umpan balik otomatis — dilarang |
+| Model registry + aktivasi model + shadow mode |  **DIBUANG** | Auto-tuning / parameter tidak statis — dilarang |
+| Panel ubah threshold saat runtime |  **DIBUANG** | Parameter wajib **statis** saat demo |
+| Retensi otomatis, housekeeping, monitoring Grafana |  **DIBUANG** | Automated pipeline — dilarang |
+| E2E test massal (Playwright) |  **DIKURANGI** | "skrip pengujian massal" tidak diminta. Sisakan unit test secukupnya |
+| Qwen + Qdrant + embedding + XGBoost/CatBoost |  **DIBUANG** | Di luar core inference; juga tidak muat dalam 10 hari |
 
-> 💡 **Ini bukan kerugian.** Semua yang dibuang **diparkir ke tahap Final** (§15). Panitia menyatakan
+> **Ini bukan kerugian.** Semua yang dibuang **diparkir ke tahap Final** (§15). Panitia menyatakan
 > proyek penyisihan **wajib dilanjutkan** di Final, jadi rancangan lengkapnya tetap berguna —
 > hanya belum boleh diimplementasikan sekarang.
 
@@ -206,7 +201,7 @@ Versi PROJECT.md terdahulu melanggar batasan di atas. Berikut audit lengkapnya:
 | Cacat lolos ke pelanggan | Biaya recall & retur jauh lebih mahal daripada biaya inspeksi |
 | Cacat jenis baru tidak terantisipasi | Bahan baku ganti / mesin aus → muncul cacat yang belum pernah dilabeli |
 
-> ⚠️ Anggota 3: setiap angka statistik yang dikutip di proposal **wajib punya sumber yang bisa
+>  Anggota 3: setiap angka statistik yang dikutip di proposal **wajib punya sumber yang bisa
 > ditelusuri** (R7.2). Jangan pakai angka dari ingatan.
 
 ### 4.2 Kenapa pendekatan tiga model
@@ -258,7 +253,6 @@ Prioritas: **P0** = wajib (tanpa ini tidak ada demo) · **P1** = penting untuk n
 | **F-14** | README setup guide | **P0** | Langkah demi langkah, bisa diikuti orang asing |
 | **F-15** | Halaman "Tentang Model" | P2 | Info versi model, metrik fine-tuning, dataset — memperlihatkan kedalaman kerja |
 | **F-16** | Bukti fine-tuning di repo | **P0** | Skrip training, config, log, metrik sebelum vs sesudah (R7.3) |
-
 **Total: 16 fitur.** Ini terlihat jauh lebih sedikit dari versi sebelumnya (31 fitur) — dan memang
 seharusnya begitu. Panitia menilai **fokus dan reprodusibilitas**, bukan banyaknya fitur.
 
@@ -275,7 +269,6 @@ seharusnya begitu. Panitia menilai **fokus dan reprodusibilitas**, bukan banyakn
 | **Tailwind CSS** | Styling | Cepat — waktu tinggal 10 hari |
 | **shadcn/ui** | Komponen | Aksesibel & rapi tanpa membangun design system |
 | **Zod** | Validasi respons API | Memastikan tipe tidak "bohong" saat runtime |
-
 **Yang sengaja TIDAK dipakai:** TanStack Query/Table (tidak ada daftar data), Socket.IO (tidak ada
 realtime), Recharts (tidak ada dashboard analitik — dilarang R9.1), Zustand (state cukup `useState`).
 
@@ -287,7 +280,6 @@ realtime), Recharts (tidak ada dashboard analitik — dilarang R9.1), Zustand (s
 | **Pydantic v2** | Skema request/response | Kontrak tipe yang tegas (R3.6) |
 | **Uvicorn** | ASGI server | Standar FastAPI |
 | **Pillow / OpenCV** | Pengolahan gambar | Decode, resize, gambar anotasi |
-
 **Tanpa database, tanpa queue, tanpa object storage.** Gambar diproses di memori, hasil dikembalikan
 langsung dalam respons. Ini bukan penyederhanaan malas — ini **kepatuhan pada R9.1** sekaligus
 membuat `docker compose up` jauh lebih andal untuk dinilai panitia.
@@ -296,13 +288,13 @@ membuat `docker compose up` jauh lebih andal untuk dinilai panitia.
 
 | Komponen | Model | Fine-tune? | Peran |
 |---|---|---|---|
-| **Detection** | Ultralytics **YOLO11n** | ✅ **WAJIB** | Cari cacat: jenis + bbox |
-| **Segmentation** | **YOLO11n-seg** | ✅ **WAJIB** | Mask cacat → luas % |
-| **Anomaly** | **EfficientAD** | ✅ dilatih dari data kita | Skor penyimpangan dari normal |
-| **OCR** | **PaddleOCR** | ➖ pre-trained (pelengkap) | Baca kode batch |
+| **Detection** | Ultralytics **YOLO11n** |  **WAJIB** | Cari cacat: jenis + bbox |
+| **Segmentation** | **YOLO11n-seg** |  **WAJIB** | Mask cacat → luas % |
+| **Anomaly** | **EfficientAD** |  dilatih dari data kita | Skor penyimpangan dari normal |
+| **OCR** | **PaddleOCR** |  pre-trained (pelengkap) | Baca kode batch |
 | **Runtime** | **ONNX Runtime** | — | Inferensi cepat di CPU |
 
-> 🚨 **R7.3 — fine-tuning itu WAJIB, bukan opsional.** Panitia menyatakan: *"Model wajib di fine
+> **R7.3 — fine-tuning itu WAJIB, bukan opsional.** Panitia menyatakan: *"Model wajib di fine
 > tune sesuai dengan inovasi fitur per tim."* Bukti yang harus ada di repo: skrip training, file
 > config/hyperparameter, log training, dan tabel metrik **sebelum vs sesudah** fine-tuning.
 > PaddleOCR boleh tetap pre-trained karena ia komponen pelengkap, bukan model inovasi inti —
@@ -312,16 +304,15 @@ membuat `docker compose up` jauh lebih andal untuk dinilai panitia.
 
 | Sumber | Status | Catatan |
 |---|---|---|
-| **MVTec AD** | ✅ Boleh — sumber publik | Standar emas anomaly detection industri. Punya gambar normal + cacat + mask ground truth |
-| **DAGM 2007** | ✅ Boleh — sumber publik | Cacat permukaan tekstur |
-| **Data sintetik** | ✅ Boleh secara eksplisit | Bisa dipakai menambah variasi |
+| **MVTec AD** |  Boleh — sumber publik | Standar emas anomaly detection industri. Punya gambar normal + cacat + mask ground truth |
+| **DAGM 2007** |  Boleh — sumber publik | Cacat permukaan tekstur |
+| **Data sintetik** |  Boleh secara eksplisit | Bisa dipakai menambah variasi |
 
 Panitia mengizinkan dataset dari sumber publik dan data sintetik. **Yang wajib dilakukan selama
 periode lomba adalah preprocessing-nya**, dan itu harus dijelaskan di proposal (§16, bab Metodologi
 → "alur dalam memperoleh dataset").
 
 ### 6.5 Tooling
-
 **Docker Compose** (wajib) · **uv** (Python) · **pnpm** (Node) · **ruff** · **pytest**
 
 ---
@@ -340,7 +331,7 @@ periode lomba adalah preprocessing-nya**, dan itu harus dijelaskan di proposal (
                            │ ── menunggu (sinkron) ──
                            ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                    FastAPI  (apps/api)                          │
+│                    FastAPI  (Backend/)                          │
 │                                                                 │
 │   1. validasi gambar (format, ukuran maks)                      │
 │   2. preprocessing (resize, normalisasi)                        │
@@ -398,9 +389,8 @@ periode lomba adalah preprocessing-nya**, dan itu harus dijelaskan di proposal (
 | 9 | **Decide** | Decision engine (§8.2) | ~1 ms |
 | 10 | **Render** | Gambar hasil beranotasi bbox + mask, encode base64 | ~25 ms |
 | 11 | **Respons** | JSON lengkap dikembalikan | ~10 ms |
-
 **Target total: ≤ 1 detik di CPU dengan ONNX.**
-> ⚠️ Ini **target**, bukan hasil pengukuran. Wajib diukur nyata dan dicatat di `LOG.md` sebelum
+>  Ini **target**, bukan hasil pengukuran. Wajib diukur nyata dan dicatat di `LOG.md` sebelum
 > ditulis di proposal (R7.2).
 
 ### 8.2 Decision Engine
@@ -431,7 +421,6 @@ def decide(detections, seg_result, anomaly_score, config) -> Verdict:
 
     return Verdict(PASS, alasan="dalam batas toleransi")
 ```
-
 **Kenapa 3 kelas, bukan 2:**
 
 | Alasan | Penjelasan |
@@ -440,7 +429,7 @@ def decide(detections, seg_result, anomaly_score, config) -> Verdict:
 | **Aman untuk produksi** | Lebih baik beberapa barang dicek manusia daripada satu cacat lolos ke pelanggan |
 | **Nilai plus di penjurian** | Menunjukkan sistem dirancang untuk dunia nyata, bukan sekadar mengejar angka akurasi |
 
-> ⚠️ **Penting soal kepatuhan:** kelas `REVIEW` hanya **ditampilkan sebagai hasil**. Tidak ada
+> **Penting soal kepatuhan:** kelas `REVIEW` hanya **ditampilkan sebagai hasil**. Tidak ada
 > antrean review, tidak ada penyimpanan, tidak ada loop retraining otomatis — itu semua dilarang
 > di tahap penyisihan (R9.1) dan diparkir ke Final (§15).
 
@@ -465,7 +454,6 @@ GET  /api/v1/samples          # daftar gambar contoh (F-08)
 GET  /api/v1/model-info       # versi & metrik model (F-15)
 GET  /healthz                 # kesiapan sistem (F-12)
 ```
-
 **Respons `POST /api/v1/inspect`:**
 
 ```json
@@ -493,66 +481,65 @@ GET  /healthz                 # kesiapan sistem (F-12)
 }
 ```
 
-Semua skema didefinisikan sebagai model Pydantic di `apps/api/app/schemas.py`, lalu diekspor jadi
+Semua skema didefinisikan sebagai model Pydantic di `Backend/app/schemas.py`, lalu diekspor jadi
 tipe TypeScript ke `packages/contracts/api.d.ts`. Frontend **dilarang** menulis tipe API manual (R3.7).
 
 ---
 
 ## 10. Struktur Repo
 
+> Diperbarui 18 Agustus 2026. Versi sebelumnya menuliskan tata letak gaya
+> monorepo (`apps/api`, `apps/web`, `ml`) yang tidak pernah terwujud. Yang
+> berlaku adalah struktur nyata di bawah.
+
 ```
 compfest/
-├── README.md                      # ⭐ setup guide + docker compose   [WAJIB R9.3]
-├── CLAUDE.md · PROJECT.md · LOG.md
-├── docker-compose.yml             # ⭐ 2 service saja                 [WAJIB R9.3]
-├── .env.example
-├── .gitignore
-│
-├── apps/
-│   ├── web/                       # Next.js                          [Anggota 1]
-│   │   ├── app/page.tsx           #   halaman inti: unggah → hasil
-│   │   ├── components/            #   UploadZone, ResultCard, DefectOverlay
-│   │   └── lib/api.ts             #   client, pakai tipe dari contracts
-│   │
-│   └── api/                       # FastAPI                          [Anggota 2]
-│       ├── app/
-│       │   ├── main.py            #   entrypoint + lifespan (muat model)
-│       │   ├── routers/inspect.py #   endpoint
-│       │   ├── schemas.py         #   Pydantic  ← SUMBER KEBENARAN KONTRAK
-│       │   ├── config.py          #   threshold STATIS
-│       │   └── inference/         #   pipeline AI                    [Anggota 1]
-│       │       ├── detector.py    #     YOLO detect
-│       │       ├── segmenter.py   #     YOLO seg
-│       │       ├── anomaly.py     #     EfficientAD
-│       │       ├── ocr.py         #     PaddleOCR
-│       │       ├── decision.py    #     decision engine
-│       │       └── annotate.py    #     gambar bbox + mask
-│       ├── models/                #   bobot .onnx (TIDAK di git)
-│       ├── samples/               #   gambar contoh (F-08) — ini BOLEH di git
-│       └── tests/
-│
-├── packages/contracts/            # 🤝 openapi.json + api.d.ts       [BERSAMA]
-│
-├── ml/                            #                                  [Anggota 1]
-│   ├── datasets/                  #   .gitignored
-│   ├── preprocessing/             #   ⭐ skrip preprocessing (wajib dijelaskan di proposal)
-│   ├── training/
-│   │   ├── train_yolo_detect.py   #   ⭐ BUKTI FINE-TUNING (R7.3)
-│   │   ├── train_yolo_seg.py
-│   │   ├── train_efficientad.py
-│   │   └── configs/               #   hyperparameter
-│   ├── export/onnx_export.py
-│   ├── results/                   #   log training, confusion matrix, grafik
-│   └── EXPERIMENTS.md             #   ⭐ tabel metrik sebelum vs sesudah
-│
-└── docs/                          #                                  [Anggota 3]
-    ├── proposal/
-    ├── video/                     #   naskah & storyboard
-    └── assets/                    #   diagram, screenshot
+|-- README.md                      # setup guide + docker compose
+|-- PROJECT.md                     # dokumen teknis
+|-- docker-compose.yml             # 2 service saja
+|-- .env.example
+|-- .gitignore
+|
+|-- Frontend/                      # Next.js                     [Anggota 1]
+| |-- app/page.tsx               #   halaman inti: unggah, hasil
+| |-- components/                #   UploadZone, ResultCard, DefectOverlay
+| |-- lib/api.ts                 #   client, tipe dari contracts
+|
+|-- Backend/                       # FastAPI sinkron             [Anggota 2]
+| |-- app/
+| |   |-- main.py                #   entrypoint + lifespan
+| |   |-- routers/inspect.py     #   endpoint
+| |   |-- schemas.py             #   Pydantic, sumber kebenaran kontrak
+| |   |-- config.py              #   threshold statis
+| |-- models/                    #   bobot .onnx (tidak masuk git)
+| |-- samples/                   #   gambar contoh (F-08)
+| |-- tests/
+|
+|-- AI_model/                      # modul AI                    [Anggota 1]
+| |-- configs/                   #   dataset, training, inference
+| |-- src/visionqc_ai/
+| |   |-- data/                  #   konversi, split, validasi dataset
+| |   |-- training/              #   skrip fine-tuning
+| |   |-- evaluation/            #   metrik, bootstrap, uji signifikansi
+| |   |-- statistics/            #   conformal, kalibrasi, EVT
+| |   |-- privacy/               #   EXIF, face blur, ephemeral
+| |   |-- inference/             #   pipeline, decision engine, anotasi
+| |-- scripts/                   #   entrypoint manual
+| |-- data/  models/             #   tidak masuk git
+| |-- reports/                   #   metrik & gambar evaluasi, ikut di-commit
+| |-- EXPERIMENTS.md             #   tabel metrik sebelum vs sesudah
+|
+|-- packages/contracts/            # openapi.json + api.d.ts     [BERSAMA]
+|-- docs/                          #                             [Anggota 3]
+    |-- proposal/  video/  assets/
 ```
 
-> ⚠️ `ml/` **wajib ada di repo** meskipun tidak dipakai saat runtime — inilah bukti bahwa model
-> benar-benar di-fine-tune (R7.3) dan bahwa preprocessing dikerjakan selama periode lomba.
+> `AI_model/` wajib ada di repo meskipun tidak dipakai saat runtime. Inilah
+> bukti bahwa model benar-benar di-fine-tune dan bahwa preprocessing dikerjakan
+> selama periode lomba.
+>
+> Isi `AI_model/reports/` sengaja ikut di-commit karena merupakan bukti
+> evaluasi. Bobot model dan dataset tetap dikecualikan karena ukurannya.
 
 ---
 
@@ -560,30 +547,29 @@ compfest/
 
 Sisa waktu 10 hari. Pembagian ini dirancang agar **tidak ada yang menunggu**.
 
-> ⚠️ **Anggota 1 memegang beban terberat** (Frontend + AI, dan fine-tuning adalah jalur kritis).
+> **Anggota 1 memegang beban terberat** (Frontend + AI, dan fine-tuning adalah jalur kritis).
 > Mitigasi ada di §11.4 — tolong dibaca dan dijalankan, bukan sekadar dibaca.
 
 ---
 
-### 👤 ANGGOTA 1 — Frontend + AI Engineer
-
-**Folder milik:** `ml/` · `apps/api/app/inference/` · `apps/web/`
+### ANGGOTA 1 — Frontend + AI Engineer
+**Folder milik:** `AI_model/` · `AI_model/src/visionqc_ai/inference/` · `Frontend/`
 
 #### A. Bagian AI — **JALUR KRITIS, kerjakan lebih dulu**
 
 | # | Tugas | Deliverable | Hari |
 |---|---|---|---|
 | A1 | Unduh & siapkan dataset MVTec AD | Dataset terpasang, split train/val/test terkunci | H-10 |
-| A2 | **Skrip preprocessing** | `ml/preprocessing/` — resize, augmentasi, konversi format YOLO. **Wajib dijelaskan di proposal** | H-10 |
+| A2 | **Skrip preprocessing** | `AI_model/src/visionqc_ai/data/` — resize, augmentasi, konversi format YOLO. **Wajib dijelaskan di proposal** | H-10 |
 | A3 | Baseline (sebelum fine-tune) | Ukur YOLO11n pre-trained apa adanya → catat metrik. Ini pembanding wajib | H-9 |
-| A4 | **Fine-tune YOLO11-detect** ⭐ | Model terlatih + log + metrik sesudah. **INI WAJIB (R7.3)** | H-9 |
-| A5 | **Fine-tune YOLO11-seg** ⭐ | Model mask + perhitungan luas % | H-8 |
-| A6 | **Latih EfficientAD** ⭐ | Dilatih dari gambar normal saja + tentukan threshold | H-8 |
+| A4 | **Fine-tune YOLO11-detect**  | Model terlatih + log + metrik sesudah. **INI WAJIB (R7.3)** | H-9 |
+| A5 | **Fine-tune YOLO11-seg**  | Model mask + perhitungan luas % | H-8 |
+| A6 | **Latih EfficientAD**  | Dilatih dari gambar normal saja + tentukan threshold | H-8 |
 | A7 | Integrasi PaddleOCR | Fungsi baca kode batch | H-7 |
 | A8 | **Decision engine** | `decision.py` — gabungkan semua jadi PASS/REJECT/REVIEW | H-7 |
 | A9 | Ekspor ONNX + ukur latensi | `.onnx` + tabel perbandingan latensi | H-6 |
 | A10 | Modul anotasi gambar | `annotate.py` — gambar bbox + mask di atas gambar asli | H-6 |
-| A11 | **Isi `ml/EXPERIMENTS.md`** | Tabel metrik **sebelum vs sesudah** fine-tuning (R7.1, R7.3) | terus-menerus |
+| A11 | **Isi `AI_model/EXPERIMENTS.md`** | Tabel metrik **sebelum vs sesudah** fine-tuning (R7.1, R7.3) | terus-menerus |
 
 #### B. Bagian Frontend
 
@@ -597,42 +583,38 @@ Sisa waktu 10 hari. Pembagian ini dirancang agar **tidak ada yang menunggu**.
 | B6 | Tombol gambar contoh | "Coba contoh" (F-08) — **penting agar panitia mudah menguji** | H-5 |
 | B7 | Halaman "Tentang Model" | Versi + metrik + dataset (F-15) | H-4 |
 | B8 | Polish + loading state + error state | Tampilan rapi untuk video demo | H-4 |
-
 **Urutan yang saya sarankan:** hari 1–4 fokus **AI sampai A6**, karena fine-tuning butuh waktu
 training (dan waktu tunggu itu bisa dipakai mengerjakan B1–B3 secara paralel). Setelah pipeline AI
 jadi, geser penuh ke frontend.
 
 ---
 
-### 👤 ANGGOTA 2 — Backend Engineer
-
-**Folder milik:** `apps/api/` · `docker-compose.yml` · `README.md` · `packages/contracts/`
+### ANGGOTA 2 — Backend Engineer
+**Folder milik:** `Backend/` · `docker-compose.yml` · `README.md` · `packages/contracts/`
 
 | # | Tugas | Deliverable | Hari |
 |---|---|---|---|
 | C1 | **Inisialisasi repo GitHub PUBLIC** | Repo + `.gitignore` + struktur folder + branch protection | **H-10 (pagi)** |
-| C2 | **Kunci kontrak API** ⭐ | `schemas.py` + `openapi.json` + `api.d.ts` — semua orang menunggu ini | **H-10** |
+| C2 | **Kunci kontrak API**  | `schemas.py` + `openapi.json` + `api.d.ts` — semua orang menunggu ini | **H-10** |
 | C3 | Skeleton FastAPI | App jalan, `/healthz` hijau, CORS (F-12) | H-10 |
-| C4 | **Mock endpoint `/inspect`** ⭐ | Balas hasil palsu sesuai kontrak → Anggota 1 bisa bangun UI tanpa menunggu AI | **H-10** |
+| C4 | **Mock endpoint `/inspect`**  | Balas hasil palsu sesuai kontrak → Anggota 1 bisa bangun UI tanpa menunggu AI | **H-10** |
 | C5 | Validasi & preprocessing gambar | Cek format/ukuran, resize, penanganan error yang jelas | H-9 |
 | C6 | `config.py` threshold statis | Nilai statis dari file config (R7.4) | H-9 |
-| C7 | **`docker-compose.yml`** ⭐ | 2 service, `docker compose up --build` langsung jalan (F-13) | H-8 |
+| C7 | **`docker-compose.yml`**  | 2 service, `docker compose up --build` langsung jalan (F-13) | H-8 |
 | C8 | Lifespan & warm-up model | Model dimuat sekali saat startup, 1 inferensi dummy | H-7 |
 | C9 | Integrasi pipeline AI ke endpoint | Pasang modul Anggota 1 menggantikan mock | H-6 |
 | C10 | Endpoint samples & model-info | F-08, F-15 | H-5 |
 | C11 | Penanganan error menyeluruh | Gambar rusak, model gagal muat, timeout — pesan jelas, bukan 500 telanjang | H-5 |
 | C12 | Unit test secukupnya | Test decision engine + validasi. **Bukan bulk testing** (dilarang R9.1) | H-4 |
-| C13 | **`README.md` setup guide** ⭐ | Langkah demi langkah (F-14, R9.3) — **ini dinilai panitia** | H-4 |
-| C14 | **Uji reprodusibilitas** ⭐ | Clone bersih di komputer lain → `docker compose up` → harus jalan (R5.6) | H-3 |
+| C13 | **`README.md` setup guide**  | Langkah demi langkah (F-14, R9.3) — **ini dinilai panitia** | H-4 |
+| C14 | **Uji reprodusibilitas**  | Clone bersih di komputer lain → `docker compose up` → harus jalan (R5.6) | H-3 |
 | C15 | Optimasi latensi | Pastikan respons masuk akal untuk demo | H-3 |
-
 **C1, C2, C4 adalah prioritas mutlak di hari pertama.** Selama ketiganya belum ada, dua anggota lain
 tidak bisa bergerak efisien.
 
 ---
 
-### 👤 ANGGOTA 3 — Proposal, Video & Dokumentasi
-
+### ANGGOTA 3 — Proposal, Video & Dokumentasi
 **Folder milik:** `docs/`
 
 Ini **bukan peran pasif**. Tiga dari empat berkas wajib ada di tangan Anggota 3.
@@ -680,7 +662,6 @@ Ini **bukan peran pasif**. Tiga dari empat berkas wajib ada di tangan Anggota 3.
 | 1 — Frontend + AI | ~45% | H-10 s/d H-6 (fine-tuning + bangun UI bersamaan) |
 | 2 — Backend | ~25% | H-10 (semua orang menunggu kontrak & mock) |
 | 3 — Proposal + video | ~30% | H-3 s/d H-1 (proposal, dua video, checklist) |
-
 **Cara meringankan Anggota 1 — jalankan, jangan cuma dibaca:**
 
 1. **Anggota 2 wajib menyelesaikan mock endpoint (C4) di hari pertama.** Ini membuat Anggota 1 bisa membangun seluruh UI tanpa menunggu model selesai dilatih.
@@ -731,13 +712,13 @@ refactor: pisahkan pipeline inferensi jadi modul terpisah
 
 Contoh yang **buruk** (berisiko dianggap tidak memenuhi standar):
 ```bash
-update          ❌
-fix bug         ❌  (bug yang mana?)
-asdasd          ❌
-final version   ❌
+update
+fix bug           (bug yang mana?)
+asdasd
+final version
 ```
 
-> 💡 Scope opsional (`feat(api): ...`) tetap sah menurut spesifikasi Conventional Commits, tapi
+>  Scope opsional (`feat(api): ...`) tetap sah menurut spesifikasi Conventional Commits, tapi
 > panitia hanya mencontohkan bentuk tanpa scope. **Pakai bentuk tanpa scope** agar persis sama
 > dengan contoh mereka — tidak ada gunanya mengambil risiko tafsir.
 
@@ -763,7 +744,7 @@ git pull --rebase origin main
 git checkout -b feat/ai-finetune-yolo
 
 # ── KERJA, lalu commit (SERING, jangan ditumpuk) ───────
-git add ml/training/train_yolo_detect.py
+git add AI_model/src/visionqc_ai/training/train_yolo_detect.py
 git commit -m "feat: tambah skrip fine-tuning YOLO11n untuk deteksi cacat"
 
 # ── SEBELUM PUSH: sinkronkan ───────────────────────────
@@ -779,11 +760,11 @@ git checkout main && git pull --rebase origin main
 git branch -d feat/ai-finetune-yolo
 ```
 
-> ⏱️ **Catatan realistis untuk 10 hari:** kalau proses PR terasa memperlambat, boleh menyederhanakan
+> ⏱ **Catatan realistis untuk 10 hari:** kalau proses PR terasa memperlambat, boleh menyederhanakan
 > jadi *push langsung ke branch masing-masing lalu merge cepat*. Yang **tidak boleh dikorbankan**
 > adalah: pesan commit deskriptif, commit sering, dan `main` selalu bisa jalan.
 
-### 12.5 🤝 Titik temu AI ↔ Backend
+### 12.5  Titik temu AI ↔ Backend
 
 Berbeda dengan rancangan lama (queue + database), pada arsitektur sinkron ini AI dan Backend hanya
 bertemu di **satu titik**: **antarmuka fungsi pipeline inferensi**.
@@ -791,20 +772,19 @@ bertemu di **satu titik**: **antarmuka fungsi pipeline inferensi**.
 ```
    ANGGOTA 2 (Backend)                        ANGGOTA 1 (AI)
    ───────────────────                        ──────────────
-   apps/api/app/routers/inspect.py            apps/api/app/inference/
+   Backend/app/routers/inspect.py            AI_model/src/visionqc_ai/inference/
               │                                        │
               │   ┌──────────────────────────────┐    │
               └──▶│  TITIK TEMU:                 │◀───┘
                   │  fungsi run_inspection()     │
                   │  + skema InspectionResult    │
-                  │  (apps/api/app/schemas.py)   │
+                  │  (Backend/app/schemas.py)   │
                   └──────────────────────────────┘
 ```
-
 **Kontrak yang dikunci di Hari 1 oleh Anggota 2:**
 
 ```python
-# apps/api/app/schemas.py  — SUMBER KEBENARAN, jangan diubah sepihak
+# Backend/app/schemas.py  — SUMBER KEBENARAN, jangan diubah sepihak
 
 class Defect(BaseModel):
     type: str
@@ -829,12 +809,11 @@ class InspectionResult(BaseModel):
     latency_ms: int
 
 
-# apps/api/app/inference/__init__.py  — DIISI ANGGOTA 1
+# AI_model/src/visionqc_ai/inference/__init__.py  — DIISI ANGGOTA 1
 def run_inspection(image: bytes, config: Config) -> InspectionResult:
     """Satu-satunya pintu masuk dari backend ke AI."""
     ...
 ```
-
 **Cara kerja paralel tanpa saling menunggu:**
 
 | Waktu | Anggota 2 (Backend) | Anggota 1 (AI/FE) |
@@ -843,7 +822,6 @@ def run_inspection(image: bytes, config: Config) -> InspectionResult:
 | H-10 s/d H-6 | Bangun endpoint, validasi, docker, README — semua di atas mock | Bangun UI di atas mock; latih model secara terpisah |
 | H-6 | — | Ganti isi `run_inspection()` dengan pipeline asli |
 | H-6 | **Integrasi langsung jalan**, karena bentuk datanya sudah sama sejak hari pertama | |
-
 **Aturan mengubah kontrak (R6.5):**
 ```
 1. JANGAN ubah schemas.py sendirian tanpa memberi tahu.
@@ -869,7 +847,6 @@ ragu, tanya pemiliknya. Kalau kacau: `git rebase --abort`, lalu minta bantuan.
 
 Bobot model dan dataset **tidak boleh masuk git** (R4.2) — repo jadi berat dan lambat di-clone
 panitia.
-
 **`.gitignore` wajib:**
 ```gitignore
 # Model & dataset
@@ -877,9 +854,9 @@ panitia.
 *.pth
 *.onnx
 *.engine
-ml/datasets/
-ml/runs/
-apps/api/models/
+AI_model/data/
+AI_model/models/
+Backend/models/
 
 # Environment
 .env
@@ -890,17 +867,16 @@ __pycache__/
 node_modules/
 .next/
 ```
-
 **Lalu bagaimana panitia mendapat modelnya?** Ini pertanyaan penting — jangan sampai `docker compose up`
 gagal karena model tidak ada. Tiga opsi:
 
 | Opsi | Cara | Rekomendasi |
 |---|---|---|
-| **GitHub Releases** | Unggah `.onnx` sebagai release asset; `Dockerfile`/skrip unduh otomatis saat build | ✅ **Paling rapi** — tetap satu tempat dengan repo, otomatis |
-| Hugging Face Hub | Unggah model, unduh saat build | ✅ Bagus, sekalian menambah kredibilitas |
-| Google Drive | Link di README, unduh manual | ⚠️ Terakhir — panitia harus kerja manual, rawan gagal |
+| **GitHub Releases** | Unggah `.onnx` sebagai release asset; `Dockerfile`/skrip unduh otomatis saat build |  **Paling rapi** — tetap satu tempat dengan repo, otomatis |
+| Hugging Face Hub | Unggah model, unduh saat build |  Bagus, sekalian menambah kredibilitas |
+| Google Drive | Link di README, unduh manual |  Terakhir — panitia harus kerja manual, rawan gagal |
 
-> 🚨 Apapun pilihannya, **`README.md` wajib menjelaskan langkahnya dengan sangat jelas**, dan
+>  Apapun pilihannya, **`README.md` wajib menjelaskan langkahnya dengan sangat jelas**, dan
 > Anggota 3 wajib mengujinya dari nol (D16). Model yang tidak bisa diunduh = sistem tidak jalan =
 > nilai hangus.
 
@@ -923,20 +899,20 @@ Khusus Anggota 1. **Fine-tuning bukan opsional** — panitia mewajibkannya (R7.3
    - Konversi anotasi ke format YOLO
    - Augmentasi: flip, rotate, brightness, noise (Albumentations)
    - Split train/val/test — TERKUNCI, test set tidak pernah dilihat saat tuning (R7.5)
-   → simpan skripnya di ml/preprocessing/, ini bukti kerja
+   → simpan skripnya di AI_model/src/visionqc_ai/data/, ini bukti kerja
 
-3. BASELINE — UKUR SEBELUM FINE-TUNE  ⭐ WAJIB
+3. BASELINE — UKUR SEBELUM FINE-TUNE   WAJIB
    Jalankan YOLO11n pre-trained apa adanya pada test set. Catat metriknya.
    Tanpa angka "sebelum", kamu tidak bisa membuktikan fine-tuning memberi dampak.
 
-4. FINE-TUNE  ⭐ INI YANG DIWAJIBKAN PANITIA
+4. FINE-TUNE   INI YANG DIWAJIBKAN PANITIA
    yolo detect train model=yolo11n.pt data=defect.yaml epochs=50 imgsz=640
    Simpan: config hyperparameter, log training, kurva loss
 
 5. UKUR SESUDAH
    Evaluasi pada test set yang sama. Bandingkan dengan baseline.
 
-6. CATAT DI ml/EXPERIMENTS.md  ⭐
+6. CATAT DI AI_model/EXPERIMENTS.md
    Tabel sebelum vs sesudah — ini bukti utama kepatuhan R7.3
 
 7. EVALUASI JUJUR
@@ -953,52 +929,67 @@ Khusus Anggota 1. **Fine-tuning bukan opsional** — panitia mewajibkannya (R7.3
    Tidak boleh berubah sendiri saat demo.
 ```
 
-### 13.2 Tabel wajib di `ml/EXPERIMENTS.md`
+### 13.2 Tabel wajib di `AI_model/EXPERIMENTS.md`
 
 Ini **bukti kepatuhan R7.3** dan bahan langsung untuk proposal:
 
 | Model | Tahap | Dataset | Epoch | mAP50 | Recall (cacat) | Precision | Latensi | Catatan |
 |---|---|---|---|---|---|---|---|---|
 | YOLO11n-detect | **sebelum** (pre-trained) | MVTec bottle test | — | ? | ? | ? | ? | baseline |
-| YOLO11n-detect | **sesudah** fine-tune | MVTec bottle test | 50 | ? | ? | ? | ? | ⭐ |
+| YOLO11n-detect | **sesudah** fine-tune | MVTec bottle test | 50 | ? | ? | ? | ? | |
 | YOLO11n-seg | sebelum | — | — | ? | ? | ? | ? | |
-| YOLO11n-seg | sesudah | — | 50 | ? | ? | ? | ? | ⭐ |
+| YOLO11n-seg | sesudah | — | 50 | ? | ? | ? | ? | |
 | EfficientAD | dilatih dari normal | MVTec bottle | — | AUROC ? | — | — | ? | |
 
-> 🚨 **Isi dengan angka hasil run yang sungguhan.** Jangan pernah mengarang (R7.2). Panitia berhak
+> **Isi dengan angka hasil run yang sungguhan.** Jangan pernah mengarang (R7.2). Panitia berhak
 > meminta live demo dan klarifikasi saat penjurian — angka karangan akan ketahuan.
 
 ### 13.3 Realistis dalam 10 hari
 
 Kamu **tidak perlu** mengejar model terbaik. Yang dinilai adalah:
-- Apakah fine-tuning **benar-benar dilakukan** dan **bisa dibuktikan** ✅
-- Apakah **prosesnya dijelaskan dengan jelas** di proposal ✅
-- Apakah **sistemnya berjalan** saat panitia menjalankannya ✅
+- Apakah fine-tuning **benar-benar dilakukan** dan **bisa dibuktikan**
+- Apakah **prosesnya dijelaskan dengan jelas** di proposal
+- Apakah **sistemnya berjalan** saat panitia menjalankannya
 
 Fine-tune 30–50 epoch pada 1–2 kategori MVTec AD sudah memenuhi syarat. Lebih baik model sederhana
 yang benar-benar jalan dan terdokumentasi, daripada model canggih yang belum selesai saat deadline.
 
 ---
 
-## 14. TIMELINE 10 HARI
+## 14. TIMELINE - SISA 7 HARI
+**Hari ini 18 Agustus. Deadline 25 Agustus 23.55 WIB.**
 
-**Hari ini 15 Agustus. Deadline 25 Agustus 23.55 WIB.**
+> Timeline H-10 yang lama sudah terlewat. Yang tercapai sampai 18 Agustus:
+> dataset terunduh dan Step 2 modul AI selesai. Sisi Backend dan Frontend
+> masih kosong.
 
 | Hari | Tgl | Anggota 1 (FE+AI) | Anggota 2 (BE) | Anggota 3 (Proposal) |
 |---|---|---|---|---|
-| **H-10** | 15 Agu | Dataset + preprocessing (A1–A2); setup Next.js (B1) | ⭐ **Repo public, kontrak API, mock endpoint** (C1–C4) | Riset latar belakang (D1); bantu dataset (D12) |
-| **H-9** | 16 Agu | ⭐ Baseline + **fine-tune YOLO-detect** (A3–A4); komponen unggah (B2–B3) | Validasi gambar, config statis (C5–C6) | Studi literatur (D2); dataset (D12) |
-| **H-8** | 17 Agu | ⭐ **Fine-tune YOLO-seg + EfficientAD** (A5–A6) | ⭐ **docker-compose.yml** (C7) | Draf Latar Belakang + Tujuan (D3) |
-| **H-7** | 18 Agu | OCR + **decision engine** (A7–A8) | Lifespan & warm-up model (C8) | Draf Metodologi bag. 1 (D4) |
-| **H-6** | 19 Agu | ⭐ **ONNX + anotasi gambar** (A9–A10); tampilan hasil (B4) | ⭐ **Integrasi pipeline AI** (C9) | Metodologi bag. 2 (D4); diagram (D14); gambar contoh (D13) |
-| **H-5** | 20 Agu | Overlay cacat + tombol contoh (B5–B6) | Endpoint samples & model-info (C10–C11) | Metodologi bag. 3 (D4); **naskah video** (D8) |
-| **H-4** | 21 Agu | Halaman model-info + polish (B7–B8) | Unit test + ⭐ **README** (C12–C13) | Bab metode pendukung (D5); **QA sistem** (D15) |
-| **H-3** | 22 Agu | Perbaikan dari hasil QA | ⭐ **Uji reprodusibilitas** + optimasi (C14–C15) | Kesimpulan + pustaka (D6); ⭐ **rekam Video PoW** (D9); uji README (D16) |
-| **H-2** | 23 Agu | Perbaikan akhir; bantu rekaman demo | Perbaikan akhir | ⭐ **Rekam Video Inovasi + edit + unggah** (D10–D11); **finalisasi PDF** (D7) |
-| **H-1** | 24 Agu | 🔒 **FREEZE FITUR** — hanya perbaikan bug kritis | 🔒 Freeze; commit terakhir | ⭐ **Audit institusi (D18) + checklist submisi (D19)** |
-| **H-0** | 25 Agu | **SUBMIT PAGI HARI** — jangan menunggu 23.55 | | |
+| **H-7** | 18 Agu | Step 2 dataset selesai; mulai Step 3-4 | **Repo public, kontrak API, mock endpoint** (C1-C4) | Riset latar belakang + studi literatur (D1-D2) |
+| **H-6** | 19 Agu | **Fine-tune YOLO-detect** (Step 4); setup Next.js (B1) | Validasi gambar, config statis, **docker-compose** (C5-C7) | Draf Latar Belakang + Tujuan (D3) |
+| **H-5** | 20 Agu | **Fine-tune seg + anomali** (Step 5-6); komponen unggah (B2-B3) | Lifespan & warm-up (C8) | Metodologi bagian 1-2 (D4); diagram (D14) |
+| **H-4** | 21 Agu | Lapisan statistik + privasi (Step 7-8); tampilan hasil (B4) | **Integrasi pipeline AI** (C9) | Metodologi bagian 3 (D4); naskah video (D8) |
+| **H-3** | 22 Agu | **Decision engine + ONNX + integrasi** (Step 9-10); overlay (B5-B6) | Endpoint samples & model-info (C10-C11) | Bab metode pendukung (D5); QA sistem (D15) |
+| **H-2** | 23 Agu | Polish UI + perbaikan hasil QA (B7-B8) | Unit test, **README**, **uji reprodusibilitas** (C12-C14) | Kesimpulan (D6); **rekam Video PoW** (D9); uji README (D16) |
+| **H-1** | 24 Agu | **Freeze fitur**, hanya bug kritis | Freeze; commit terakhir | **Video Inovasi + PDF final** (D7, D10-D11); audit institusi (D18) |
+| **H-0** | 25 Agu | **Submit pagi hari**; checklist bagian 3.2 (D19) | | |
 
-### 🔴 Aturan timeline yang tidak boleh dilanggar
+### Konsekuensi kehilangan tiga hari
+
+Sisa waktu tidak lagi memungkinkan mengerjakan semua yang direncanakan.
+Urutan pemotongan:
+
+1. **F-15 halaman Tentang Model** - potong sekarang
+2. **F-11 grading severity** dan **F-10 heatmap** - potong bila H-4 belum mulai
+3. **Step 3 cacat sintetik** - kecilkan ke kelas `kotor` dan `deformasi` saja
+4. **F-07 OCR** - potong bila H-3 belum jalan
+5. **Step 5 segmentasi** - bila terpaksa, luas cacat diestimasi dari bbox dan
+   keterbatasannya dinyatakan apa adanya di proposal
+
+Yang tidak boleh dipotong: F-01, F-02, F-03, F-04, F-13, F-14, dan terutama
+F-16 (bukti fine-tuning), karena itu kewajiban panitia dan bukan fitur.
+
+### Aturan timeline yang tidak boleh dilanggar
 
 1. **H-10 milik Anggota 2.** Kontrak API + mock endpoint harus selesai hari pertama. Tanpa itu, dua orang lain terhambat sepanjang lomba.
 2. **Fine-tuning selesai H-8.** Ini jalur kritis. Kalau molor, semua ikut molor.
@@ -1041,7 +1032,7 @@ proposal: menunjukkan tim punya visi jangka panjang, bukan sekadar demo sekali p
 | 7 | Auth & RBAC multi-peran | "otentikasi kompleks" |
 | 8 | Monitoring Prometheus + Grafana | — |
 
-> 💡 **Rancangan arsitektur async yang dibuang tetap disimpan** di riwayat git dan `LOG.md`.
+> **Rancangan arsitektur async yang dibuang tetap disimpan** di riwayat git dan `LOG.md`.
 > Saat Final, tinggal diambil lagi.
 
 ---
@@ -1054,7 +1045,7 @@ Untuk Anggota 3. Struktur bab **ditentukan panitia** — ikuti persis.
 
 | Bab | Isi | Est. halaman |
 |---|---|---|
-| — | **Cover** (tidak dihitung) — nama tim, judul inovasi. ⚠️ **TANPA nama institusi** (R9.4) | — |
+| — | **Cover** (tidak dihitung) — nama tim, judul inovasi.  **TANPA nama institusi** (R9.4) | — |
 | 1 | **Nama Kelompok dan Judul/Nama Inovasi** | 0,5 |
 | 2 | **Latar Belakang** — masalah QC manual, data pendukung bersumber, kenapa AI (§4) | 3 |
 | 3 | **Tujuan dan Manfaat Pengembangan** — apa yang dicapai, siapa yang diuntungkan, dampak ekonomi | 2 |
@@ -1063,7 +1054,6 @@ Untuk Anggota 3. Struktur bab **ditentukan panitia** — ikuti persis.
 | 6 | **Kesimpulan** — ringkasan + rencana tahap Final (§15) | 1,5 |
 | — | **Daftar Pustaka** (tidak dihitung) | — |
 | — | **Lampiran** (tidak dihitung) — screenshot, tabel metrik lengkap, diagram besar | — |
-
 **Total inti: ~19 halaman.** Aman di bawah batas 20.
 
 ### 16.2 Bab Metodologi — tiga sub-bab yang diminta panitia
@@ -1111,17 +1101,16 @@ Di sinilah menjelaskan **kenapa memilih ini, bukan itu**:
 
 ### 16.4 Aturan penulisan
 
-- ✅ Setiap angka wajib punya sumber atau berasal dari eksperimen sendiri (R7.2)
-- ✅ Bebas plagiarisme — parafrase + sitasi yang benar
-- ❌ **Jangan sebut nama kampus/sekolah/institusi di mana pun** (R9.4)
-- ✅ Sertakan diagram (dari D14) — memecah dinding teks dan memudahkan juri
+-  Setiap angka wajib punya sumber atau berasal dari eksperimen sendiri (R7.2)
+-  Bebas plagiarisme — parafrase + sitasi yang benar
+-  **Jangan sebut nama kampus/sekolah/institusi di mana pun** (R9.4)
+-  Sertakan diagram (dari D14) — memecah dinding teks dan memudahkan juri
 
 ---
 
 ## 17. Panduan Video
 
 ### 17.1 Video Proof of Work — maks 7 menit, **UNLISTED**
-
 **Judul persis:** `COMPFEST 18 AIC: PROOF OF WORK - [Nama Tim] - [Nama Proyek]`
 
 Tujuannya membuktikan **kalian benar-benar mengerjakannya**. Saran struktur:
@@ -1136,7 +1125,6 @@ Tujuannya membuktikan **kalian benar-benar mengerjakannya**. Saran struktur:
 | 6:30–7:00 | Penutup: rencana tahap Final |
 
 ### 17.2 Video Karya Inovasi — maks 5 menit, **PUBLIC**
-
 **Judul persis:** `COMPFEST 18 AIC: [Nama Tim] - [Nama Proyek]`
 
 Panitia meminta video menunjukkan **use case aplikasi dan teknologi AI yang digunakan**. Ini video
@@ -1168,23 +1156,22 @@ Panitia meminta video menunjukkan **use case aplikasi dan teknologi AI yang digu
 
 | Risiko | Dampak | Mitigasi |
 |---|---|---|
-| 🔴 **Waktu hanya 10 hari** | Tidak selesai | Ruang lingkup sudah dipangkas sesuai batasan panitia; titik potong §14 sudah disiapkan; freeze fitur H-1 |
-| 🔴 **Melanggar batasan ruang lingkup** | Nilai turun / dianggap tidak patuh | §2 jadi acuan; sebelum menambah apa pun, cek R9.1 |
-| 🔴 **Lupa fine-tuning** | **Melanggar aturan wajib** | A3–A6 masuk jalur kritis; F-16 tidak boleh dipotong; bukti disimpan di `ml/` |
-| 🔴 **Ada berkas kurang saat submit** | **Diskualifikasi** | Checklist §3.2 dijalankan H-1 oleh Anggota 3 |
-| 🟠 `docker compose up` gagal di komputer panitia | Nilai reprodusibilitas hangus | C14 — uji di komputer bersih; D16 — Anggota 3 ikuti README dari nol |
-| 🟠 Model tidak bisa diunduh panitia | Sistem tidak jalan | GitHub Releases + langkah jelas di README (§12.7) |
-| 🟠 Nama institusi ikut ter-commit | Melanggar R9.4 | Audit D18 di H-1: repo, kode, proposal, video, slide |
-| 🟠 Video salah visibility/judul | Panitia tidak bisa akses | Checklist §17.3; uji link di incognito |
-| 🟠 Inferensi lambat saat demo | Demo tersendat | ONNX + YOLO11n; uji di laptop yang benar-benar dipakai demo |
-| 🟡 Riwayat commit terlihat menumpuk di akhir | Dicurigai tidak dikerjakan selama periode lomba | Commit sering & deskriptif tiap hari (R6.6) |
-| 🟡 Angka metrik dikarang | **Fatal** — panitia bisa minta live demo & klarifikasi | R7.2; semua angka dari run sungguhan |
-| 🟡 Anggota 1 kelebihan beban | Jalur kritis macet | Mock endpoint H-10 (C4); Anggota 3 bantu dataset (D12); fine-tune secukupnya |
+|  **Waktu hanya 10 hari** | Tidak selesai | Ruang lingkup sudah dipangkas sesuai batasan panitia; titik potong §14 sudah disiapkan; freeze fitur H-1 |
+|  **Melanggar batasan ruang lingkup** | Nilai turun / dianggap tidak patuh | §2 jadi acuan; sebelum menambah apa pun, cek R9.1 |
+|  **Lupa fine-tuning** | **Melanggar aturan wajib** | A3–A6 masuk jalur kritis; F-16 tidak boleh dipotong; bukti disimpan di `AI_model/` |
+|  **Ada berkas kurang saat submit** | **Diskualifikasi** | Checklist §3.2 dijalankan H-1 oleh Anggota 3 |
+|  `docker compose up` gagal di komputer panitia | Nilai reprodusibilitas hangus | C14 — uji di komputer bersih; D16 — Anggota 3 ikuti README dari nol |
+|  Model tidak bisa diunduh panitia | Sistem tidak jalan | GitHub Releases + langkah jelas di README (§12.7) |
+|  Nama institusi ikut ter-commit | Melanggar R9.4 | Audit D18 di H-1: repo, kode, proposal, video, slide |
+|  Video salah visibility/judul | Panitia tidak bisa akses | Checklist §17.3; uji link di incognito |
+|  Inferensi lambat saat demo | Demo tersendat | ONNX + YOLO11n; uji di laptop yang benar-benar dipakai demo |
+|  Riwayat commit terlihat menumpuk di akhir | Dicurigai tidak dikerjakan selama periode lomba | Commit sering & deskriptif tiap hari (R6.6) |
+|  Angka metrik dikarang | **Fatal** — panitia bisa minta live demo & klarifikasi | R7.2; semua angka dari run sungguhan |
+|  Anggota 1 kelebihan beban | Jalur kritis macet | Mock endpoint H-10 (C4); Anggota 3 bantu dataset (D12); fine-tune secukupnya |
 
 ---
 
 ## 19. Setup
-
 **Prasyarat:** Docker Desktop · Node 20+ · pnpm · Python 3.11 · uv · Git
 
 ### Cara panitia menjalankan (harus sesederhana ini)
@@ -1197,19 +1184,19 @@ docker compose up --build
 # → buka http://localhost:3000
 ```
 
-> 🚨 Kalau langkah di atas gagal di komputer bersih, itu **masalah paling gawat** di proyek ini.
+>  Kalau langkah di atas gagal di komputer bersih, itu **masalah paling gawat** di proyek ini.
 > Uji berkala (R5.6), bukan cuma di akhir.
 
 ### Cara developer menjalankan
 
 ```bash
 # backend
-cd apps/api
+cd Backend
 uv sync
 uv run uvicorn app.main:app --reload          # → :8000/docs
 
 # frontend
-cd apps/web
+cd Frontend
 pnpm install
 pnpm dev                                       # → :3000
 
