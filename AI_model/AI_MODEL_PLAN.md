@@ -62,7 +62,7 @@ Tiap langkah dirancang agar selesai sebagai satu unit kerja yang berdiri sendiri
 | **5** | **Fine-Tune Segmentation** | Model seg + perhitungan luas cacat % | 3 jam | H-7 selesai |
 | **6** | **Anomaly Detection + Ambang EVT** | PaDiM + ambang berbasis Extreme Value Theory | 4 jam | H-7 selesai |
 | **7** | **Lapisan Statistik & Kalibrasi** | Conformal prediction, Platt scaling, ambang sensitif biaya | 3 jam | H-7 selesai |
-| **8** | Lapisan Privasi | EXIF scrub, face blur, ephemeral buffer, hash audit | 2 jam | H-7 |
+| **8** | **Lapisan Privasi** | EXIF scrub, face blur, ephemeral buffer, hash audit | 2 jam | H-6 selesai |
 | **9** | **Decision Engine + Ekspor ONNX** | Mesin keputusan 3 kelas + ONNX + tolok ukur latensi | 3 jam | H-7 sebagian |
 | **10** | **Integrasi & Laporan Evaluasi** | `run_inspection()` siap Backend + EXPERIMENTS.md terisi | 3 jam | H-7 selesai |
 
@@ -316,25 +316,35 @@ Rincian lengkap di [EXPERIMENTS.md bagian 6](./EXPERIMENTS.md).
 
 ---
 
-### Step 8 - Lapisan Privasi
+### Step 8 - Lapisan Privasi `[SELESAI 19 Agu 2026]`
 
-**Tujuan:** memenuhi permintaan "sistem privasi maksimal" dengan implementasi nyata, bukan klaim.
-
-**Yang dibuat:** ```
-src/visionqc_ai/privacy/
-|-- exif.py              # hapus SELURUH metadata (GPS, perangkat, waktu)
-|-- face_blur.py         # deteksi & buramkan wajah sebelum inferensi
-|-- ephemeral.py         # context manager: buffer di-nolkan setelah dipakai
-|-- ocr_filter.py        # allowlist regex - hanya pola kode batch yang dipertahankan
-|-- audit.py             # log hanya SHA-256, tidak pernah gambar mentah
-reports/privacy_audit.md
+**Dibuat:**
+```
+src/visionqc_ai/privacy/{exif,face_blur,ephemeral,ocr_filter,audit}.py
+tests/test_privacy.py    reports/privacy_audit.md
 ```
 
-Rincian ancaman & mitigasi ada di [PRIVACY.md](./PRIVACY.md).
+Lapisan ini berjalan **sebelum** gambar mencapai model, sehingga model tidak
+pernah melihat data yang bukan urusannya.
+
+| Ancaman | Mitigasi |
+|---|---|
+| Metadata membocorkan lokasi dan perangkat | Gambar dikodekan ulang dari piksel |
+| Wajah operator ikut terpotret | Diburamkan dengan YuNet sebelum inferensi |
+| Gambar tersimpan di disk | Buffer ditimpa nol, termasuk saat terjadi galat |
+| OCR membaca nama dan alamat | Daftar-izin pola kode batch |
+| Catatan memuat gambar | Hanya SHA-256 yang disimpan |
+
+Biayanya sekitar 23 milidetik per gambar. Sebelas uji lolos, seluruhnya memakai
+gambar sintetik karena memakai foto orang sungguhan untuk menguji fitur privasi
+bertentangan dengan tujuan fitur itu.
+
+Rincian beserta pemetaan ke UU PDP ada di
+[reports/privacy_audit.md](./reports/privacy_audit.md).
 
 ---
 
-### Step 9 - Mesin Keputusan dan Ekspor ONNX `[SEBAGIAN 18 Agu 2026]`
+### Step 9 - Mesin Keputusan dan Ekspor ONNX `[SELESAI 18 Agu 2026]`
 
 **Dibuat:**
 ```
@@ -361,7 +371,7 @@ pengaman.
 PASS, karena himpunan conformal memuat kedua label dengan selisih 0,0002.
 Dinyatakan sebagai keterbatasan di [EXPERIMENTS.md bagian 6.6](./EXPERIMENTS.md).
 
-**Belum dibuat:** `annotate.py` dan `pipeline.py`, digeser ke Step 10.
+`annotate.py` dan `pipeline.py` dirampungkan bersama Step 10.
 
 ---
 

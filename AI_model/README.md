@@ -199,7 +199,7 @@ python -c "import torch; print(torch.cuda.is_available(), torch.cuda.get_device_
 | 5 | Fine-Tune Segmentation | selesai |
 | 6 | Anomaly Detection + Ambang EVT | selesai |
 | 7 | Lapisan Statistik & Kalibrasi | selesai |
-| 8 | Lapisan Privasi | belum |
+| 8 | Lapisan Privasi | selesai |
 | 9 | Decision Engine + Ekspor ONNX | selesai |
 | 10 | Integrasi & Laporan Evaluasi | selesai |
 

@@ -137,9 +137,13 @@ privacy:
   ephemeral_buffers: true  # A3 - gambar tidak pernah menyentuh disk
   hash_only_logging: true  # A6 - log hanya SHA-256
   ocr_allowlist_only: true  # A4 - hanya pola kode batch yang dipertahankan
+  # Daftar-izin kode batch. Pola pertama sebelumnya tidak cocok dengan format
+  # yang dicontohkan kontrak API sendiri, yaitu B240815-021, karena hanya
+  # mengizinkan satu blok angka tanpa pemisah di tengahnya.
   ocr_patterns:
-    - '^[A-Z]{1,3}[-/]?\d{6,10}$'
+    - '^[A-Z]{1,3}\d{4,10}(?:[-/]\d{2,5})?$'
     - '^\d{2}[/.]\d{2}[/.]\d{2,4}$'
+    - '^(?:LOT|BN|EXP)[-: ]?[A-Z0-9]{4,12}$'
   no_network_calls: true  # A8 - diverifikasi lewat pengujian di Step 10
 
 # MASUKAN

@@ -20,6 +20,14 @@
       "sha256": "cc28e28fc9a39d1dc5cef61eab73e7eca70bf12981f93d458baad341a082919a",
       "required": false,
       "description": "Segmentasi cacat, YOLO11n-seg hasil fine-tuning, imgsz 640, opset 12"
+    },
+    {
+      "name": "face_detection_yunet.onnx",
+      "target": "models/onnx/face_detection_yunet.onnx",
+      "size_bytes": 232589,
+      "sha256": "8f2383e4dd3cfbb4553ea8718107fc0423210dc964f9f4280604804ed2552fa4",
+      "required": false,
+      "description": "Pendeteksi wajah YuNet untuk lapisan privasi; bila tidak ada, peredaman wajah dilaporkan tidak aktif"
     }
   ]
 }

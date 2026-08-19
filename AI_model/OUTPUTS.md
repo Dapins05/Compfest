@@ -26,7 +26,7 @@ Dokumen lain punya peran berbeda:
 | 5 | Fine-Tune Segmentation | selesai | 1 modul evaluasi mask, 1 skrip, bobot terlatih, `segmentation_comparison.json`, 3 gambar |
 | 6 | Anomaly Detection + Ambang EVT | selesai | 2 modul, 1 skrip, 5 model, `anomaly_results.json`, 5 gambar |
 | 7 | Lapisan Statistik & Kalibrasi | selesai | 3 modul, 1 skrip, `calibration_results.json`, 3 gambar |
-| 8 | Lapisan Privasi | belum | belum ada |
+| 8 | Lapisan Privasi | selesai | 5 modul privasi, 11 uji, `privacy_audit.md` |
 | 9 | Decision Engine + Ekspor ONNX | selesai | mesin keputusan, ekspor ONNX, tolok ukur latensi |
 | 10 | Integrasi & Laporan Evaluasi | selesai | `run_inspection()`, skema Pydantic, anotasi, pipeline, 12 uji, laporan evaluasi |
 
@@ -366,7 +366,36 @@ sasaran satu detik. Seluruh 12 uji lolos.
 
 ---
 
-## 11. Menghasilkan Ulang Semuanya
+## 11. Step 8 - Lapisan Privasi
+
+### Kode
+
+| Berkas | Tanggung jawab |
+|---|---|
+| `src/visionqc_ai/privacy/exif.py` | membuang seluruh metadata lewat pengodean ulang |
+| `src/visionqc_ai/privacy/face_blur.py` | mendeteksi dan memburamkan wajah dengan YuNet |
+| `src/visionqc_ai/privacy/ephemeral.py` | menimpa buffer gambar dengan nol setelah dipakai |
+| `src/visionqc_ai/privacy/ocr_filter.py` | daftar-izin pola kode batch |
+| `src/visionqc_ai/privacy/audit.py` | catatan hanya berisi SHA-256 |
+
+Lapisan ini berjalan di dalam `inference/pipeline.py` **sebelum** gambar
+mencapai model.
+
+### Bukti yang tersimpan
+
+| Berkas | Isi |
+|---|---|
+| `reports/privacy_audit.md` | pemetaan tiap klaim privasi ke berkas dan uji yang membuktikannya |
+
+### Angka kunci
+
+Menambah sekitar 23 milidetik per gambar, dari 140 menjadi 163 milidetik.
+Sebelas uji privasi lolos, seluruhnya memakai gambar sintetik.
+
+
+---
+
+## 12. Menghasilkan Ulang Semuanya
 
 Dari repo bersih, dengan `data/raw/` sudah terisi dataset publik:
 
@@ -398,9 +427,8 @@ sifat nondeterministik operasi CUDA tertentu.
 
 ---
 
-## 12. Yang Belum Ada
+## 13. Yang Belum Ada
 
-Belum ada satu pun keluaran untuk Step 3 (generator cacat sintetik) dan
-Step 8 (lapisan privasi). Seluruh sel
+Belum ada satu pun keluaran untuk Step 3 (generator cacat sintetik). Seluruh sel
 metrik yang berkaitan di `EXPERIMENTS.md` masih bertuliskan `belum diukur` dan
 tidak boleh diisi sebelum ada run yang benar-benar dijalankan.

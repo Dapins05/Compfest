@@ -31,6 +31,7 @@ from visionqc_ai.inference.annotate import (
     to_base64_jpeg,
 )
 from visionqc_ai.inference.decision import DecisionConfig, DetectedDefect, decide
+from visionqc_ai.privacy import AuditRecord, blur_faces, hash_image, strip_metadata
 from visionqc_ai.schemas import (
     AnomalyResult,
     BBox,
@@ -68,6 +69,9 @@ class InspectionPipeline:
         self.decision_config = DecisionConfig.from_yaml(self.config)
         self.device = device
         self.input_limits = self.config.get("input", {})
+        self.privacy = self.config.get("privacy", {})
+        self.face_blur_available = True
+        self.last_audit: AuditRecord | None = None
         self._detector = self._load(self.config["models"]["detection"]["path"])
         self._segmenter = self._load(self.config["models"]["segmentation"]["path"])
 
@@ -158,11 +162,27 @@ class InspectionPipeline:
         jalur anomali tidak ikut menentukan keputusan.
         """
         started = time.perf_counter()
+        digest = hash_image(image_bytes)
+
+        # Lapisan privasi dijalankan sebelum apa pun menyentuh model. Metadata
+        # dibuang lebih dulu, lalu wajah diburamkan, sehingga model tidak
+        # pernah melihat data yang bukan urusannya.
+        stripped = self.privacy.get("strip_exif", True)
+        if stripped:
+            image_bytes = strip_metadata(image_bytes)
 
         buffer = np.frombuffer(image_bytes, dtype=np.uint8)
         image = cv2.imdecode(buffer, cv2.IMREAD_COLOR)
         if image is None:
             raise ValueError("berkas tidak dapat dibaca sebagai gambar")
+
+        faces = 0
+        if self.privacy.get("blur_faces", True):
+            blurred = blur_faces(
+                image, kernel=int(self.privacy.get("face_blur_kernel", 45))
+            )
+            image, faces = blurred.image, blurred.faces_blurred
+            self.face_blur_available = blurred.detector_available
         height, width = image.shape[:2]
         minimum = int(self.input_limits.get("min_dimension", 0))
         if min(height, width) < minimum:
@@ -194,6 +214,14 @@ class InspectionPipeline:
         annotated = draw_verdict_banner(annotated, verdict.label, verdict.reason)
 
         threshold = self.decision_config.anomaly_threshold
+        latency = round((time.perf_counter() - started) * 1000)
+        self.last_audit = AuditRecord(
+            image_sha256=digest,
+            verdict=verdict.label,
+            latency_ms=latency,
+            faces_blurred=faces,
+            metadata_stripped=stripped,
+        )
         return InspectionResult(
             verdict=verdict.label,
             reason=verdict.reason,
@@ -221,7 +249,7 @@ class InspectionPipeline:
             ),
             annotated_image_base64=to_base64_jpeg(annotated),
             model_version=MODEL_VERSION,
-            latency_ms=round((time.perf_counter() - started) * 1000),
+            latency_ms=latency,
         )
 
 
