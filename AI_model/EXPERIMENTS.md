@@ -519,7 +519,44 @@ kerugian.
 Hasil ini menjadi bukti empiris yang mendasari Step 7: angka 1 persen diwarisi
 dari kebiasaan industri, dan data di sini memperlihatkan harganya.
 
-### 5.6 Keterbatasan
+### 5.6 Model gabungan yang benar-benar dipakai saat penyajian
+
+Model per kategori pada bagian 5.3 tidak dapat dipasang langsung ke pipeline.
+Gambar yang diunggah tidak menyatakan kategorinya, dan model yang hanya
+mengenal botol menandai kacang mete sebagai anomali. Percobaan memasang model
+`bottle` membuat enam dari tujuh gambar normal ditahan ke manusia.
+
+Karena itu satu model dilatih pada **gabungan** keempat kategori yang juga
+dilatih detektor.
+
+| | Nilai |
+|---|---|
+| Gambar latih | 200 dari 1.473 normal gabungan |
+| Kalibrasi | 294 normal yang tidak ikut dilatih |
+| Uji | 259 normal, 52 cacat |
+| AUROC gambar | **0,8903** |
+| Ambang EVT | **39,7942** |
+| GPD | xi = +0,2411 - sigma = 4,5026 - u = 25,7742 - KS p = **0,970** |
+| Laju alarm palsu | 1,0 persen kalibrasi - 2,7 persen uji |
+
+Ekspor ONNX diverifikasi terhadap PyTorch pada 16 gambar dengan selisih
+maksimum 0,000076, sehingga skor yang dihasilkan saat penyajian sebanding
+dengan ambang yang dihitung. Latensinya 20,9 milidetik di CPU.
+
+Perilaku pada split uji deteksi:
+
+| | Nilai |
+|---|---|
+| Gambar normal melampaui ambang | **0 dari 7** |
+| Gambar cacat melampaui ambang | **23 dari 52** |
+| Skor normal | median 18,9 - maksimum 37,9 |
+| Skor cacat | median 38,1 - maksimum 141,7 |
+
+Dua cacat yang masih lolos sebagai PASS memperoleh skor 24,5 dan 19,4, yaitu
+di dalam rentang gambar normal. Model anomali memang tidak melihat keduanya
+menyimpang; ini keterbatasan nyata, bukan kesalahan penyetelan.
+
+### 5.7 Keterbatasan
 
 1. `chewinggum` mencatat laju alarm palsu 6,7 persen pada split uji padahal
    targetnya 1 persen. Kalibrasi pada 85 sampel ternyata belum cukup mewakili
