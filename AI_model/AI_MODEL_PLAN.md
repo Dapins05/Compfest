@@ -427,7 +427,7 @@ Daftar ini mencegah ada langkah yang tertahan di tengah jalan.
 | # | Kebutuhan | Kenapa |
 |---|---|---|
 | 9 | **Skema `InspectionResult` dari Anggota 2** | Harus sinkron persis dengan Backend, kalau tidak integrasi gagal |
-| 10 | **Kesepakatan cara distribusi bobot model** | GitHub Releases (rekomendasi) atau Hugging Face |
+| 10 | ~~Kesepakatan distribusi bobot model~~ | BERES - GitHub Release `models-v1.0.0` beserta pengunduh dan verifikasi SHA-256 |
 
 ### Opsional - sangat menaikkan kualitas demo
 

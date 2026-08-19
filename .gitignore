@@ -9,7 +9,12 @@ LOG.md
 *.engine
 *.pb
 *.tflite
-AI_model/models/
+# Bobot model tidak masuk git karena ukurannya, tetapi daftar resminya harus.
+# models.json memuat sidik jari SHA-256 yang dipakai memverifikasi unduhan;
+# tanpa berkas itu di dalam git, keaslian bobot tidak dapat diperiksa siapa pun.
+AI_model/models/**
+!AI_model/models/
+!AI_model/models/models.json
 AI_model/data/
 runs/
 wandb/
