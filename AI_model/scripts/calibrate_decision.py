@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import random
 import sys
 from datetime import date
 from pathlib import Path
@@ -49,6 +50,43 @@ from visionqc_ai.statistics.cost_sensitive import (  # noqa: E402
 )
 
 log = logging.getLogger("calibrate_decision")
+
+
+def gather_extra_normals(
+    project_root: Path, dataset_root: Path, *, per_side: int, seed: int
+) -> tuple[list[Path], list[Path]]:
+    """Kumpulkan gambar normal tambahan untuk kalibrasi dan pengujian.
+
+    Split deteksi dibangun dari gambar cacat dan hanya menyertakan sedikit
+    gambar latar, sehingga contoh normalnya terlalu sedikit untuk menghitung
+    kuantil conformal maupun kalibrasi yang dapat dipercaya.
+
+    Gambar yang sudah dipakai split deteksi mana pun dikecualikan, sehingga
+    yang tersisa dijamin tidak pernah dilihat model saat pelatihan dan tidak
+    tumpang tindih dengan data uji yang sudah dilaporkan. Kategori diambil dari
+    yang memang dilatih detektor; menyertakan kategori lain berarti menguji
+    model pada produk yang tidak pernah dipelajarinya.
+    """
+    used = {
+        path.stem
+        for split in ("train", "val", "test")
+        for path in (dataset_root / "images" / split).glob("*.jpg")
+    }
+    categories = ("bottle", "chewinggum", "cashew", "pipe_fryum")
+
+    pool: list[Path] = []
+    anomaly_root = project_root / "data" / "processed" / "anomaly"
+    for category in categories:
+        for subset in ("train/good", "test/good"):
+            pool += [
+                path
+                for path in sorted((anomaly_root / category / subset).glob("*.jpg"))
+                if path.stem not in used
+            ]
+
+    random.Random(seed).shuffle(pool)
+    chosen = pool[: per_side * 2]
+    return chosen[:per_side], chosen[per_side : per_side * 2]
 
 
 def plot_reliability(before, after, target: Path) -> None:
@@ -171,6 +209,18 @@ def main() -> int:
         default=PROJECT_ROOT / "configs/inference.yaml",
     )
     parser.add_argument("--bins", type=int, default=10)
+    parser.add_argument(
+        "--review-budget",
+        type=float,
+        default=0.15,
+        help="proporsi maksimum gambar yang boleh diserahkan ke manusia",
+    )
+    parser.add_argument(
+        "--extra-normals",
+        type=int,
+        default=300,
+        help="gambar normal tambahan per sisi; nol untuk memakai split apa adanya",
+    )
     args = parser.parse_args()
 
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -210,8 +260,25 @@ def main() -> int:
     }
     log.info("")
     log.info("[1/4] Skor tingkat gambar")
-    calib = image_level_scores(args.weights, split="val", **common)
-    test = image_level_scores(args.weights, split="test", **common)
+    extra_calib, extra_test = (
+        gather_extra_normals(
+            PROJECT_ROOT, args.dataset, per_side=args.extra_normals, seed=42
+        )
+        if args.extra_normals
+        else ([], [])
+    )
+    if extra_calib or extra_test:
+        log.info(
+            "  normal tambahan: %d kalibrasi, %d uji (tak pernah dilihat model)",
+            len(extra_calib),
+            len(extra_test),
+        )
+    calib = image_level_scores(
+        args.weights, split="val", extra_normals=extra_calib, **common
+    )
+    test = image_level_scores(
+        args.weights, split="test", extra_normals=extra_test, **common
+    )
     calib_probs = [s.score for s in calib]
     calib_labels = [int(s.is_defect) for s in calib]
     test_probs = [s.score for s in test]
@@ -268,30 +335,80 @@ def main() -> int:
 
     log.info("")
     log.info("[3/4] Conformal prediction")
+
+    candidates_alpha = (0.01, 0.05, 0.10, 0.15, 0.20)
+    sweep_calibration = []
+    for candidate in candidates_alpha:
+        q = calibrate(calib_calibrated, calib_labels, alpha=candidate, mode="mondrian")
+        c = evaluate_coverage(calib_calibrated, calib_labels, q)
+        sweep_calibration.append(
+            {
+                "alpha": candidate,
+                "coverage": c.empirical_coverage,
+                "review_rate": c.review_rate,
+                "normal_coverage": c.per_class_coverage.get(0, 0.0),
+            }
+        )
+
+    # Alpha dipilih pada set KALIBRASI, tidak pernah pada set uji. Aturannya:
+    # ambil jaminan sekuat mungkin, yaitu alpha sekecil mungkin, yang masih
+    # menyisakan cukup banyak keputusan untuk diambil sistem sendiri. Sistem QC
+    # yang menyerahkan mayoritas produk ke manusia tidak menyelesaikan apa pun.
+    affordable = [
+        row for row in sweep_calibration if row["review_rate"] <= args.review_budget
+    ]
+    selected = min(affordable, key=lambda row: row["alpha"]) if affordable else None
+    if selected is None:
+        log.warning(
+            "  tidak ada alpha yang memenuhi batas menahan %.0f persen; memakai config",
+            args.review_budget * 100,
+        )
+    else:
+        alpha = selected["alpha"]
+
+    log.info("  sapuan alpha pada SET KALIBRASI (dasar pemilihan):")
+    log.info("  %6s %10s %10s %12s", "alpha", "cakupan", "ditahan", "cakupan normal")
+    for row in sweep_calibration:
+        log.info(
+            "  %6.2f %10.4f %10.4f %12.4f%s",
+            row["alpha"],
+            row["coverage"],
+            row["review_rate"],
+            row["normal_coverage"],
+            "  <- dipilih" if selected and row["alpha"] == alpha else "",
+        )
+
     quantiles = calibrate(calib_calibrated, calib_labels, alpha=alpha, mode="mondrian")
     coverage = evaluate_coverage(test_calibrated, test_labels, quantiles)
+    log.info("")
+    log.info(
+        "  alpha terpilih   : %.2f (batas menahan %.0f persen)",
+        alpha,
+        args.review_budget * 100,
+    )
     log.info(
         "  kuantil per kelas: %s",
         {k: round(v, 4) for k, v in quantiles.quantiles.items()},
     )
     log.info(
-        "  cakupan empiris  : %.4f (jaminan %.2f) -> %s",
+        "  cakupan pada UJI : %.4f (jaminan %.2f) -> %s",
         coverage.empirical_coverage,
         coverage.target_coverage,
         "tercapai" if coverage.guarantee_met else "TIDAK tercapai",
     )
+    log.info(
+        "  cakupan per kelas: %s",
+        {k: round(v, 4) for k, v in coverage.per_class_coverage.items()},
+    )
     log.info("  ukuran himpunan  : rerata %.3f", coverage.average_set_size)
     log.info(
-        "  keputusan diambil: %.1f%% | diserahkan ke manusia: %.1f%%",
+        "  keputusan diambil: %.1f persen | diserahkan: %.1f persen",
         coverage.singleton_rate * 100,
         coverage.review_rate * 100,
     )
 
-    log.info("")
-    log.info("  sapuan alpha (cakupan dan biaya menahan keputusan):")
-    log.info("  %6s %10s %10s %12s", "alpha", "cakupan", "review", "cakupan normal")
     alpha_sweep = []
-    for candidate in (0.01, 0.05, 0.10, 0.15, 0.20):
+    for candidate in candidates_alpha:
         q = calibrate(calib_calibrated, calib_labels, alpha=candidate, mode="mondrian")
         c = evaluate_coverage(test_calibrated, test_labels, q)
         alpha_sweep.append(
@@ -302,14 +419,6 @@ def main() -> int:
                 "normal_coverage": c.per_class_coverage.get(0, 0.0),
                 "quantiles": {str(k): v for k, v in q.quantiles.items()},
             }
-        )
-        log.info(
-            "  %6.2f %10.4f %10.4f %12.4f%s",
-            candidate,
-            c.empirical_coverage,
-            c.review_rate,
-            c.per_class_coverage.get(0, 0.0),
-            "  <- dipakai" if abs(candidate - alpha) < 1e-9 else "",
         )
 
     log.info("")
@@ -364,6 +473,7 @@ def main() -> int:
     payload: dict[str, Any] = {
         "generated_on": date.today().isoformat(),
         "weights": str(args.weights),
+        "extra_normals_per_side": args.extra_normals,
         "counts": {
             "calibration": len(calib),
             "calibration_defects": int(sum(calib_labels)),
@@ -380,7 +490,13 @@ def main() -> int:
         "calibration_before": before.to_dict(),
         "calibration_after": after.to_dict(),
         "conformal": quantiles.to_dict()
-        | {"coverage": coverage.to_dict(), "alpha_sweep": alpha_sweep},
+        | {
+            "coverage": coverage.to_dict(),
+            "alpha_sweep_test": alpha_sweep,
+            "alpha_sweep_calibration": sweep_calibration,
+            "review_budget": args.review_budget,
+            "alpha_selected_on": "calibration",
+        },
         "cost": costs.to_dict()
         | comparison
         | {"assumed_defect_prevalence": prevalence},

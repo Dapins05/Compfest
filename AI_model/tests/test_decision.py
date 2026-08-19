@@ -56,9 +56,7 @@ def test_keyakinan_rendah_diserahkan_ke_manusia(config: DecisionConfig) -> None:
 def test_anomali_tinggi_tanpa_cacat_dikenali(config: DecisionConfig) -> None:
     """Jaring pengaman untuk cacat jenis baru yang belum pernah dilabeli."""
     high = config.anomaly_threshold + 10.0
-    verdict = decide(
-        [], defect_area_pct=0.0, anomaly_score=high, config=config
-    )
+    verdict = decide([], defect_area_pct=0.0, anomaly_score=high, config=config)
     assert verdict.label == REVIEW
     assert verdict.anomaly_score == pytest.approx(high)
 
@@ -92,14 +90,15 @@ def test_hasil_memuat_angka_pendukung(config: DecisionConfig) -> None:
         assert key in payload
 
 
-def test_gambar_bersih_belum_menghasilkan_pass(config: DecisionConfig) -> None:
-    """Menjaga keterbatasan yang sudah diketahui tetap terlihat.
+def test_gambar_bersih_menghasilkan_pass(config: DecisionConfig) -> None:
+    """Gambar tanpa deteksi dan tanpa anomali harus diloloskan.
 
-    Gambar tanpa deteksi seharusnya PASS, tetapi himpunan conformal masih
-    memuat kedua label karena set kalibrasi hanya berisi tujuh gambar normal.
-    Uji ini sengaja mengunci perilaku yang salah agar perbaikannya kelak
-    terdeteksi, bukan lewat begitu saja. Rinciannya di EXPERIMENTS.md bagian 6.6.
+    Uji ini sebelumnya mengunci perilaku yang salah: gambar bersih menghasilkan
+    REVIEW karena himpunan conformal memuat kedua label. Penyebabnya set
+    kalibrasi hanya berisi tujuh gambar normal. Setelah set itu diperluas
+    dengan gambar normal yang tidak pernah dilihat model, perilakunya benar.
+    Sistem QC yang tidak pernah dapat meloloskan produk tidak berguna.
     """
     verdict = run(config, [], area=0.0, anomaly=0.0)
-    assert verdict.label == REVIEW, "bila ini gagal, keterbatasan sudah teratasi"
-    assert verdict.label != PASS
+    assert verdict.label == PASS
+    assert verdict.prediction_set == ("normal",)
