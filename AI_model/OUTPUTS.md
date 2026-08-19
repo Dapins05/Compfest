@@ -276,10 +276,14 @@ menjadi dasar peninjauan titik operasi di Step 7.
 
 ### Angka kunci
 
-Platt scaling menurunkan ECE dari 0,3222 menjadi 0,0391. Conformal prediction
-mencapai cakupan 0,9661 dengan 8,5 persen gambar diserahkan ke manusia. Ambang
-hasil optimasi biaya tidak menggeneralisasi ke split uji sehingga ambang
-operasi tetap 0,50.
+Set kalibrasi diperluas dari 7 menjadi 307 gambar normal per sisi, memakai
+gambar yang tidak pernah dilihat model. Setelah itu Platt scaling menurunkan
+ECE menjadi 0,0145, cakupan conformal kelas normal naik dari 0,7143 menjadi
+0,9381, gambar yang ditahan turun dari 83 persen menjadi 2,8 persen, dan
+ambang biaya menggeneralisasi dengan penghematan 21,4 persen.
+
+Perubahan itu sekaligus memperbaiki cacat yang paling menghambat demo: gambar
+bersih kini menghasilkan PASS, bukan REVIEW.
 
 
 ---

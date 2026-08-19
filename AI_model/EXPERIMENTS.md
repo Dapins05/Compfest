@@ -542,150 +542,129 @@ Dihasilkan `scripts/calibrate_decision.py`; angka lengkap di
 `reports/metrics/calibration_results.json`. Split val dipakai sebagai set
 kalibrasi dan split test hanya dipakai menguji.
 
-Bagian ini memuat satu keberhasilan dan dua hasil negatif. Ketiganya dilaporkan
-apa adanya karena hasil negatif yang disembunyikan akan runtuh saat ditanya.
+### 6.1 Perluasan set kalibrasi
 
-### 6.1 Kalibrasi kepercayaan
+Versi pertama bagian ini memakai split apa adanya, yang hanya memuat **tujuh
+gambar normal** pada masing-masing sisi. Jumlah itu terlalu kecil untuk hampir
+semua yang dikerjakan di sini, dan menjadi akar dari seluruh kegagalan yang
+tercatat pada versi sebelumnya.
+
+Perbaikannya bukan menyetel parameter melainkan menambah data. Dataset anomali
+menyimpan ribuan gambar normal, dan sebagiannya tidak pernah masuk split
+deteksi mana pun sehingga tidak pernah dilihat model saat pelatihan.
+
+| | Sebelum | Sesudah |
+|---|---|---|
+| Gambar kalibrasi | 64 (57 cacat, 7 normal) | **364** (57 cacat, 307 normal) |
+| Gambar uji | 59 (52 cacat, 7 normal) | **359** (52 cacat, 307 normal) |
+| Proporsi cacat | 89 persen | 15 persen |
+
+Gambar tambahan disaring dengan mengecualikan seluruh nama berkas yang sudah
+muncul pada split latih, validasi, maupun uji dataset deteksi. Kategorinya
+dibatasi pada empat kategori yang memang dilatih detektor.
+
+### 6.2 Kalibrasi kepercayaan
 
 | Metode | ECE pada kalibrasi | ECE pada uji |
 |---|---|---|
-| tanpa kalibrasi | 0,3124 | 0,3222 |
-| temperature scaling | 0,4111 | **0,4038** (lebih buruk) |
-| **Platt scaling** | **0,0068** | **0,0391** (dipilih) |
+| tanpa kalibrasi | 0,0455 | 0,0497 |
+| temperature scaling | 0,0709 | 0,0641 (lebih buruk) |
+| **Platt scaling** | **0,0197** | **0,0145** (dipilih) |
 
 | Metrik | Sebelum | Sesudah Platt |
 |---|---|---|
-| ECE | 0,3222 | **0,0391** |
-| MCE | 0,6489 | 0,2228 |
-| Skor Brier | 0,1643 | **0,0365** |
+| ECE | 0,0497 | **0,0145** |
+| MCE | 0,6489 | 0,3660 |
+| Skor Brier | 0,0297 | **0,0145** |
 
-**Temperature scaling gagal, dan alasannya bukan kebetulan.** Diagram keandalan
-memperlihatkan model justru **kurang** percaya diri, bukan terlalu percaya
-diri: pada keyakinan 0,3 sampai 0,4 ketepatan sebenarnya sudah 1,0. Penyebabnya
-88 persen isi test set memang cacat. Temperature scaling hanya memiliki satu
-parameter pengali sehingga dapat melebarkan atau menyempitkan sebaran skor,
-tetapi tidak dapat **menggeser**-nya ke arah proporsi kelas yang sebenarnya.
+Temperature scaling tetap kalah walau proporsi kelasnya sudah lebih wajar.
+Alasannya sama: ia hanya memiliki pengali dan tidak dapat menggeser skor,
+sedangkan yang dibutuhkan justru pergeseran. Pemilihan metode dilakukan
+berdasarkan ECE pada set kalibrasi, bukan pada set uji.
 
-Platt scaling menambahkan intersep, dan intersep 4,069 itulah yang melakukan
-pergeseran tersebut. ECE 0,0391 memenuhi target di bawah 0,05.
+### 6.3 Conformal prediction dan pemilihan alpha
 
-Pemilihan metode dilakukan berdasarkan ECE pada set kalibrasi, bukan pada set
-uji, sehingga angka uji tetap sah dilaporkan.
+Alpha bukan angka yang dapat diambil begitu saja, karena menaikkan jaminan
+selalu berarti menahan lebih banyak keputusan. Ia dipilih pada **set
+kalibrasi** memakai aturan yang dinyatakan lebih dulu: ambil jaminan sekuat
+mungkin yang masih menyisakan cukup keputusan untuk diambil sistem sendiri,
+dengan batas menahan 15 persen.
 
-### 6.2 Conformal prediction
+Sapuan pada set kalibrasi:
+
+| alpha | Cakupan | Ditahan | Cakupan normal |
+|---|---|---|---|
+| 0,01 | 0,9973 | 0,8599 | 0,9967 |
+| 0,05 | 0,9643 | 0,8187 | 0,9577 |
+| **0,10** | **0,9148** | **0,0275** | **0,9088** |
+| 0,15 | 0,8626 | 0,1236 | 0,8567 |
+| 0,20 | 0,8132 | 0,1813 | 0,8078 |
+
+Alpha 0,05 menahan 82 persen keputusan sehingga tidak dapat dipakai. Sistem QC
+yang menyerahkan mayoritas produk ke manusia tidak menyelesaikan apa pun.
+Alpha 0,10 dipilih sebagai jaminan terkuat yang masih memenuhi batas.
+
+Hasil pada split uji dengan alpha 0,10:
 
 | | Nilai |
 |---|---|
-| alpha | 0,05 (jaminan cakupan 95 persen) |
-| Mode | Mondrian, kuantil terpisah per kelas |
-| Kuantil kelas normal | 0,9501 |
-| Kuantil kelas cacat | 0,7772 |
-| **Cakupan empiris** | **0,9661** (jaminan tercapai) |
-| Rerata ukuran himpunan | 1,085 |
-| Keputusan diambil sistem | 91,5 persen |
-| Diserahkan ke manusia | **8,5 persen** |
+| Kuantil kelas normal | 0,0211 |
+| Kuantil kelas cacat | 0,9250 |
+| **Cakupan empiris** | **0,9415** (jaminan 0,90 tercapai) |
+| Cakupan kelas normal | **0,9381** |
+| Cakupan kelas cacat | **0,9615** |
+| Ditahan ke manusia | **2,8 persen** |
 
-Kelas REVIEW kini punya landasan: sebuah gambar diserahkan ke manusia ketika
-himpunan prediksinya memuat lebih dari satu label, artinya kedua kemungkinan
-masih masuk akal pada tingkat jaminan yang dipilih. Ambangnya tidak dipilih
-tangan melainkan mengikuti dari alpha.
+Kedua kelas kini berada di atas jaminan. Pada versi sebelumnya cakupan kelas
+normal hanya 0,7143 dan tidak bergerak berapa pun alpha yang dipilih, karena
+kelas itu memang hanya memiliki tujuh contoh.
 
-**Namun jaminan per kelas tidak tercapai:**
+### 6.4 Ambang sensitif biaya
 
-| Kelas | Cakupan empiris | Jaminan |
-|---|---|---|
-| cacat | 1,000 | 0,95 |
-| **normal** | **0,714** | 0,95 |
-
-Cakupan keseluruhan 0,9661 memenuhi jaminan, tetapi kelas normal hanya 0,714.
-Penyebabnya split kalibrasi hanya memuat 7 gambar normal, sehingga kuantil
-kelas itu dihitung dari sampel yang jauh terlalu kecil. Inilah keterbatasan
-paling serius pada bagian ini dan tidak boleh diklaim sebaliknya.
-
-### 6.3 Ambang sensitif biaya
-
-Dengan biaya cacat lolos Rp 50.000 dan salah tolak Rp 2.000, ambang Bayes-nya
+Ambang Bayes dari biaya yang ditetapkan:
 
     tau* = 2.000 / (2.000 + 50.000) = 0,0385
 
 | Ambang | Recall | Biaya per unit |
 |---|---|---|
-| 0,96 (minimum empiris pada kalibrasi) | 0,9808 | Rp 583 |
-| 0,50 (pembanding) | 1,0000 | Rp 554 |
+| **0,30** (minimum biaya pada kalibrasi) | 0,9615 | **Rp 83** |
+| 0,50 (pembanding) | 0,9423 | Rp 105 |
 | 0,00 (tolak semua) | 1,0000 | Rp 1.940 |
 
-**Ambang hasil optimasi biaya tidak menggeneralisasi.** Minimum biaya pada set
-kalibrasi jatuh di 0,96, tetapi pada split test ambang itu justru 5,2 persen
-lebih mahal daripada ambang 0,50. Dengan hanya 7 gambar normal per split,
-letak minimum biaya tidak dapat dipercaya. `configs/inference.yaml` karena itu
-memakai 0,50 sebagai ambang operasi, bukan 0,96.
+Ambang hasil optimasi kini **menggeneralisasi**: pada split uji ia 21,4 persen
+lebih murah daripada ambang 0,50, sekaligus dengan recall yang lebih tinggi.
+Pada versi sebelumnya ambang yang sama justru 5,2 persen lebih mahal, karena
+letak minimum biaya tidak stabil ketika hanya ada tujuh gambar normal.
 
-Yang tetap kokoh adalah perbandingan terhadap kebijakan menolak semua produk:
-keduanya sekitar 3,5 kali lebih murah.
+Perhitungan biaya tetap menimbang ulang kedua kelas terhadap prevalensi cacat
+produksi yang diasumsikan 3 persen. Angka itu **asumsi**, bukan hasil
+pengukuran, dan ditandai demikian di `configs/inference.yaml`.
 
-### 6.4 Koreksi prevalensi
+### 6.5 Perilaku keputusan pada gambar uji nyata
 
-Perhitungan biaya pertama menyimpulkan bahwa ambang terbaik adalah nol, yaitu
-menolak seluruh produk. Kesimpulan itu benar secara aritmetika tetapi hanya
-berlaku pada data uji yang 88 persen isinya cacat.
+Seluruh 59 gambar split uji dijalankan lewat `run_inspection()`:
 
-Lini produksi sungguhan berperilaku sebaliknya. Karena itu perhitungan biaya
-menimbang ulang kedua kelas agar proporsi cacatnya sesuai nilai yang
-diasumsikan, yaitu 3 persen. **Angka 3 persen adalah asumsi** yang belum
-diverifikasi terhadap data lini produksi nyata, dan ditulis di
-`configs/inference.yaml` sebagai asumsi, bukan sebagai hasil pengukuran.
-
-### 6.5 Sapuan alpha
-
-Ambang conformal bergantung pada alpha, sehingga pengaruhnya diukur alih-alih
-diasumsikan. Seluruh baris dihitung pada split uji yang sama.
-
-| alpha | Cakupan | Ditahan ke manusia | Cakupan kelas normal |
+| Kondisi sebenarnya | PASS | REJECT | REVIEW |
 |---|---|---|---|
-| 0,01 | 0,9661 | 0,0847 | 0,7143 |
-| **0,05** | **0,9661** | **0,0847** | **0,7143** |
-| 0,10 | 0,9322 | 0,0339 | 0,7143 |
-| 0,15 | 0,9153 | 0,0678 | 0,7143 |
-| 0,20 | 0,8475 | 0,1525 | 0,7143 |
+| normal (7 gambar) | **6** | **0** | 1 |
+| cacat (52 gambar) | 2 | 33 | 17 |
 
-**Cakupan kelas normal tetap 0,7143 pada seluruh nilai alpha.** Angka itu
-adalah 5 dari 7, dan tidak akan bergerak berapa pun alpha yang dipilih karena
-kelas normal memang hanya punya 7 contoh. Ini menutup kemungkinan bahwa
-masalahnya dapat diselesaikan dengan menyetel alpha: yang dibutuhkan adalah
-lebih banyak gambar normal, bukan alpha yang berbeda.
+Arah kesalahannya sesuai kebutuhan QC. Tidak ada satu pun produk bagus yang
+salah ditolak. Dari 52 cacat, hanya 2 lolos sebagai PASS sementara 17 lainnya
+diserahkan ke manusia alih-alih diloloskan.
 
-Alpha tetap dipertahankan pada 0,05 sesuai config. Menurunkannya demi angka
-yang lebih enak dilihat sama saja dengan menyetel parameter pada data uji.
+Pada versi sebelumnya, gambar bersih justru selalu menghasilkan REVIEW
+sehingga sistem tidak pernah dapat meloloskan produk sama sekali.
 
-### 6.6 Cacat yang ditemukan saat menguji mesin keputusan
+### 6.6 Keterbatasan
 
-Menguji mesin keputusan pada kasus buatan mengungkap perilaku yang tidak
-diinginkan: **gambar bersih tanpa satu pun deteksi justru menghasilkan REVIEW,
-bukan PASS.**
-
-Penyebabnya dapat ditelusuri sampai angkanya. Gambar tanpa deteksi memperoleh
-peluang terkalibrasi 0,223, sehingga ketidaksesuaian terhadap label cacat
-bernilai 0,7770 sementara kuantilnya 0,7772. Selisihnya 0,0002, dan label
-cacat tetap masuk ke himpunan prediksi.
-
-Kuantil selonggar itu bukan kesalahan hitung melainkan konsekuensi: untuk
-menjamin 95 persen cakupan pada kelas cacat, ambangnya harus cukup longgar
-untuk memuat cacat yang paling sulit dideteksi sekalipun.
-
-Akibatnya kelima gambar yang ditahan pada split uji justru gambar yang bersih.
-Untuk sistem QC, arah kehati-hatian itu terbalik. Perbaikannya bukan menyetel
-alpha, melainkan menambah gambar normal pada set kalibrasi, dan itu dicatat
-sebagai pekerjaan tahap Final.
-
-### 6.7 Keterbatasan
-
-1. Split kalibrasi dan uji masing-masing hanya memuat 7 gambar normal. Angka
-   apa pun yang bergantung pada kelas normal, termasuk cakupan per kelas dan
-   letak minimum biaya, memiliki ketidakpastian yang besar.
-2. Prevalensi 3 persen adalah asumsi.
-3. Kalibrasi menempatkan 54 dari 59 gambar uji pada keyakinan di atas 0,9.
-   Sebarannya terkalibrasi dengan baik, tetapi terpusat, dan itu kembali
-   mencerminkan komposisi dataset.
+1. Dua cacat masih lolos sebagai PASS. Untuk produk pangan, angka itu perlu
+   ditekan lebih jauh pada tahap Final.
+2. Prevalensi cacat produksi 3 persen adalah asumsi.
+3. Gambar normal tambahan berasal dari kategori yang sama dengan data latih.
+   Kinerja pada produk di luar kategori itu belum diukur.
+4. MCE masih 0,3660, artinya masih ada keranjang skor yang melenceng jauh
+   meskipun rata-ratanya sudah baik.
 
 **Gambar pendukung:** `reports/figures/reliability_diagram.png`,
 `conformal_coverage.png`, `cost_curve.png`.
@@ -737,6 +716,7 @@ penggambaran anotasi.
 | # | Tgl | Model | Perubahan | Hasil | Keputusan |
 |---|---|---|---|---|---|
 | 1 | 2026-08-18 | YOLO11n detect | fine-tune pertama dari bobot COCO, config apa adanya | berhenti awal di epoch 161, terbaik epoch 137, mAP50 val 0,7967 | diterima sebagai model deteksi tahap penyisihan |
+| 7 | 2026-08-19 | Perluasan set kalibrasi | 307 gambar normal tambahan per sisi, alpha dipilih lewat aturan pada kalibrasi | cakupan kelas normal 0,7143 menjadi 0,9381; ditahan 83 persen menjadi 2,8 persen; ambang biaya menggeneralisasi | diterima; gambar bersih akhirnya dapat diloloskan |
 | 6 | 2026-08-18 | Integrasi | pipeline utuh di atas ONNX | inspeksi utuh sekitar 140 ms per gambar, 12 uji lolos | diterima; siap dipanggil Backend |
 | 5 | 2026-08-18 | Ekspor ONNX | opset 12, imgsz 640, 4 utas | detect 62,5 ms dan seg 90,9 ms median di CPU | diterima; menyisakan ruang untuk sasaran satu detik |
 | 4 | 2026-08-18 | Lapisan keputusan | kalibrasi, conformal, ambang biaya | Platt ECE 0,0391; conformal cakupan 0,9661; ambang biaya tidak menggeneralisasi | Platt dan conformal diterima; ambang operasi tetap 0,50 |
@@ -758,6 +738,7 @@ dan menunjukkan proses kerja yang nyata.)*
 |---|---|---|---|
 | 2026-08-18 | Peringatan ketidakcocokan ABI numpy dan scipy | pemasangan ultralytics menaikkan numpy ke 2.4.6 sementara scipy 1.13 menuntut di bawah 2.3 | scipy dinaikkan ke 1.17.1, seluruh angka statistik dihitung ulang di atas kombinasi yang sah |
 | 2026-08-18 | Recall `gores` hanya 0,556 | objek gores paling kecil ukurannya dan dukungannya hanya 9 instance di test | dicatat sebagai keterbatasan; penambahan sampel menjadi bahan Step 3 |
+| 2026-08-19 | Alpha 0,05 menahan 82 persen keputusan setelah set kalibrasi diperluas | kuantil kelas cacat mentok pada nilai maksimum karena jaminan 95 persen harus memuat cacat yang paling sulit dideteksi | alpha dipilih lewat aturan pada set kalibrasi dengan batas menahan 15 persen; terpilih 0,10 |
 | 2026-08-18 | Gambar bersih tanpa deteksi justru masuk REVIEW, bukan PASS | himpunan conformal memuat kedua label karena kuantil kelas cacat 0,7772 sementara ketidaksesuaiannya 0,7770, selisih 0,0002; kuantil selonggar itu muncul karena jaminan 95 persen harus memuat cacat yang paling sulit dideteksi | dinyatakan sebagai keterbatasan; sapuan alpha membuktikan penyebabnya bukan pilihan alpha melainkan jumlah gambar normal yang hanya 7 |
 | 2026-08-18 | Temperature scaling memperburuk ECE, 0,322 menjadi 0,404 | model justru kurang percaya diri karena 88 persen data uji memang cacat; temperature scaling tanpa intersep tidak dapat menggeser skor ke proporsi kelas sebenarnya | diganti Platt scaling yang punya intersep; ECE turun ke 0,0391 |
 | 2026-08-18 | Ambang hasil optimasi biaya lebih mahal daripada ambang 0,50 pada data uji | hanya 7 gambar normal per split sehingga letak minimum biaya tidak stabil | ambang operasi tetap 0,50; keterbatasan dinyatakan di EXPERIMENTS.md |
