@@ -147,6 +147,32 @@ Keluaran: `data/processed/{detect,seg,anomaly}/`,
 
 ---
 
+## Mengunduh Bobot Model
+
+Bobot model tidak disimpan di git karena ukurannya. Unduh sekali setelah
+mengkloning repo, sebelum menjalankan apa pun:
+
+```bash
+cd AI_model
+python scripts/download_models.py
+```
+
+Skrip ini hanya memakai pustaka bawaan Python sehingga dapat dijalankan
+sebelum `pip install`. Setiap berkas diverifikasi dengan SHA-256 terhadap
+daftar di `models/models.json`; unduhan yang rusak dibuang alih-alih dipakai,
+karena model cacat tetap berjalan dan memberi hasil keliru tanpa gejala.
+
+Memeriksa tanpa mengunduh:
+
+```bash
+python scripts/download_models.py --check
+```
+
+Sumbernya adalah GitHub Release `models-v1.0.0` pada repo ini. Unduhan
+anonim hanya berhasil bila repo bersifat publik.
+
+---
+
 ## Setup
 
 ```bash

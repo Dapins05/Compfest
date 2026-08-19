@@ -43,11 +43,23 @@ Dokumen lain punya peran berbeda:
 | `reports/figures/` | bukti visual, format PNG | **ya, sengaja** |
 | `data/raw/` | dataset mentah hasil unduhan | tidak, terlalu besar |
 | `data/processed/` | dataset siap latih | tidak, dapat dibuat ulang |
-| `models/` | bobot model | tidak, terlalu besar |
+| `models/` | bobot model | tidak, didistribusi lewat GitHub Release |
 
 Isi `reports/` sengaja ikut di-commit karena itulah bukti evaluasi yang
 diminta panitia. Yang dikecualikan hanya berkas berukuran besar yang dapat
 dihasilkan ulang dari kode dan dataset publik.
+
+Bobot model dikecualikan dari git tetapi **tidak** dibiarkan hilang. Berkasnya
+diterbitkan sebagai GitHub Release `models-v1.0.0`, sementara daftar resmi
+beserta sidik jari SHA-256-nya tetap di dalam git pada `models/models.json`.
+Dengan begitu keaslian setiap unduhan dapat diperiksa tanpa perlu menyimpan
+berkas besar di dalam riwayat git.
+
+| Berkas | Ukuran | Peran |
+|---|---|---|
+| `models/models.json` | kecil, di dalam git | daftar resmi dan sidik jari |
+| `scripts/download_models.py` | kecil, di dalam git | pengunduh dan pemeriksa |
+| `models/onnx/*.onnx` | 21,2 MB, di luar git | diunduh dari Release |
 
 ---
 
@@ -85,6 +97,7 @@ Menetapkan arah kerja. Belum ada kode yang dapat dijalankan.
 | `src/visionqc_ai/data/validate.py` | validasi statistik dataset |
 | `src/visionqc_ai/data/writer.py` | penulisan tiga tata letak keluaran |
 | `scripts/prepare_dataset.py` | menjalankan seluruh rantai |
+| `scripts/download_models.py` | mengunduh dan memverifikasi bobot model |
 | `scripts/preview_dataset.py` | lembar kontak pemeriksaan anotasi |
 | `configs/dataset.yaml` | kategori, preprocessing, split, ambang validasi |
 
@@ -354,6 +367,8 @@ sasaran satu detik. Seluruh 12 uji lolos.
 Dari repo bersih, dengan `data/raw/` sudah terisi dataset publik:
 
 ```bash
+python scripts/download_models.py     # bobot model, sebelum apa pun
+
 pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
 pip install -r requirements.txt
 
