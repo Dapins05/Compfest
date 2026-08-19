@@ -1,0 +1,11 @@
+{
+  "generated_on": "2026-08-19",
+  "category": "combined",
+  "checkpoint": "models\\finetuned\\anomaly\\Padim\\combined\\v0\\weights\\lightning\\model.ckpt",
+  "onnx_path": "models\\onnx\\padim-combined.onnx",
+  "size_mb": 168.45,
+  "imgsz": 256,
+  "opset": 16,
+  "max_abs_difference_vs_torch": 7.62939453125e-05,
+  "verified_on_images": 16
+}

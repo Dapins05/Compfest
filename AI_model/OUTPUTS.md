@@ -320,10 +320,16 @@ Mesin keputusan menggabungkan peluang terkalibrasi Platt, himpunan prediksi
 conformal, ambang luas cacat, bobot keparahan kelas, dan ambang anomali hasil
 teori nilai ekstrem. Seluruh nilainya statis dari `configs/inference.yaml`.
 
-### Belum dibuat
+### Penilaian anomali
 
-`annotate.py` dan `pipeline.py` digeser ke Step 10 bersama `run_inspection()`,
-karena ketiganya hanya bermakna bila dirakit sekaligus.
+`src/visionqc_ai/inference/anomaly.py` menilai anomali di atas berkas ONNX dan
+tersambung ke pipeline, sehingga jalur anomali benar-benar ikut menentukan
+keputusan. Modelnya dilatih pada gabungan empat kategori; model satu kategori
+tidak dapat dipakai karena bagi model yang hanya mengenal botol, kacang mete
+pun terbaca sebagai anomali.
+
+`scripts/export_anomaly.py` mengekspor dan **memverifikasi** hasilnya terhadap
+PyTorch, karena berkas yang terbentuk belum tentu menghasilkan skor yang sama.
 
 
 ---

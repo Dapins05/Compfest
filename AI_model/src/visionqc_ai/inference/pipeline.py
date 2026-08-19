@@ -30,6 +30,7 @@ from visionqc_ai.inference.annotate import (
     draw_verdict_banner,
     to_base64_jpeg,
 )
+from visionqc_ai.inference.anomaly import AnomalyScorer
 from visionqc_ai.inference.decision import DecisionConfig, DetectedDefect, decide
 from visionqc_ai.privacy import AuditRecord, blur_faces, hash_image, strip_metadata
 from visionqc_ai.schemas import (
@@ -74,6 +75,13 @@ class InspectionPipeline:
         self.last_audit: AuditRecord | None = None
         self._detector = self._load(self.config["models"]["detection"]["path"])
         self._segmenter = self._load(self.config["models"]["segmentation"]["path"])
+        anomaly_config = self.config["models"]["anomaly"]
+        self._anomaly = AnomalyScorer(
+            project_root / anomaly_config["path"],
+            imgsz=int(anomaly_config.get("imgsz", 256)),
+            threads=int(self.config.get("runtime", {}).get("intra_op_threads", 4)),
+        )
+        self.anomaly_available = self._anomaly.available
 
     def _load(self, relative: str) -> Any:
         """Muat sebuah model bila berkasnya ada; kembalikan None bila tidak.
@@ -153,13 +161,14 @@ class InspectionPipeline:
         return 100.0 * float(np.count_nonzero(union)) / (width * height)
 
     def inspect(
-        self, image_bytes: bytes, *, anomaly_score: float = 0.0
+        self, image_bytes: bytes, *, anomaly_score: float | None = None
     ) -> InspectionResult:
         """Periksa satu gambar dan kembalikan hasil lengkapnya.
 
-        ``anomaly_score`` disediakan pemanggil karena model anomali dilatih per
-        kategori produk dan belum diekspor ke ONNX. Nilai bawaan nol berarti
-        jalur anomali tidak ikut menentukan keputusan.
+        Skor anomali dihitung sendiri dari model anomali bila tersedia.
+        ``anomaly_score`` hanya perlu diisi bila pemanggil ingin memakai skor
+        dari sumber lain, misalnya model khusus untuk kategori produk yang
+        berbeda dari model bawaan.
         """
         started = time.perf_counter()
         digest = hash_image(image_bytes)
@@ -201,6 +210,13 @@ class InspectionPipeline:
             if self._segmenter is not None
             else _Prediction([], [])
         )
+
+        if anomaly_score is None:
+            measured = self._anomaly.score(image)
+            anomaly_score = measured.score
+            self.anomaly_available = measured.available
+        else:
+            self.anomaly_available = True
 
         area_pct = self._area_percentage(segmented.polygons, width, height)
         verdict = decide(
@@ -260,7 +276,7 @@ def run_inspection(
     image_bytes: bytes,
     *,
     project_root: Path | None = None,
-    anomaly_score: float = 0.0,
+    anomaly_score: float | None = None,
 ) -> InspectionResult:
     """Pintu masuk tunggal dari Backend ke modul AI.
 

@@ -28,6 +28,14 @@
       "sha256": "8f2383e4dd3cfbb4553ea8718107fc0423210dc964f9f4280604804ed2552fa4",
       "required": false,
       "description": "Pendeteksi wajah YuNet untuk lapisan privasi; bila tidak ada, peredaman wajah dilaporkan tidak aktif"
+    },
+    {
+      "name": "padim-combined.onnx",
+      "target": "models/onnx/padim-combined.onnx",
+      "size_bytes": 176629540,
+      "sha256": "2acdeb97a7637d3255370c6fea6b3122f79dfae5fd8a88f78e7d94f25d2aba82",
+      "required": false,
+      "description": "Deteksi anomali PaDiM pada gabungan empat kategori; bila tidak ada, penilaian anomali dilaporkan tidak aktif"
     }
   ]
 }
