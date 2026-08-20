@@ -15,6 +15,8 @@ sepadan.
 
 from __future__ import annotations
 
+import os
+import threading
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -32,7 +34,19 @@ from visionqc_ai.inference.annotate import (
 )
 from visionqc_ai.inference.anomaly import AnomalyScorer
 from visionqc_ai.inference.decision import DecisionConfig, DetectedDefect, decide
-from visionqc_ai.privacy import AuditRecord, blur_faces, hash_image, strip_metadata
+from visionqc_ai.inference.validation import (
+    InvalidImageError,
+    validate_bytes,
+    validate_dimensions,
+)
+from visionqc_ai.privacy import (
+    AuditRecord,
+    blur_faces,
+    ephemeral_buffer,
+    hash_image,
+    strip_metadata,
+)
+from visionqc_ai.privacy.face_blur import MODEL_FILENAME as FACE_MODEL_FILENAME
 from visionqc_ai.schemas import (
     AnomalyResult,
     BBox,
@@ -42,6 +56,31 @@ from visionqc_ai.schemas import (
 )
 
 MODEL_VERSION = "visionqc-detect-seg-v1"
+
+ROOT_ENV_VAR = "VISIONQC_ROOT"
+
+
+def default_project_root() -> Path:
+    """Cari akar proyek yang memuat configs/inference.yaml.
+
+    Menghitung akar dari kedalaman folder sumber hanya benar selama paket
+    dijalankan dari pohon sumbernya. Begitu paket dipasang ke tempat lain,
+    hitungan itu menunjuk ke folder yang keliru dan kegagalannya baru terlihat
+    saat model gagal dimuat. Karena itu akar ditelusuri dari penanda yang
+    nyata, dan dapat ditimpa lewat variabel lingkungan bila Backend menaruh
+    berkas config di tempat lain.
+    """
+    override = os.environ.get(ROOT_ENV_VAR)
+    if override:
+        return Path(override).resolve()
+    here = Path(__file__).resolve()
+    for candidate in here.parents:
+        if (candidate / "configs" / "inference.yaml").is_file():
+            return candidate
+    raise FileNotFoundError(
+        "configs/inference.yaml tidak ditemukan dari "
+        f"{here}; setel {ROOT_ENV_VAR} atau berikan project_root secara eksplisit"
+    )
 
 
 @dataclass
@@ -73,6 +112,11 @@ class InspectionPipeline:
         self.privacy = self.config.get("privacy", {})
         self.face_blur_available = True
         self.last_audit: AuditRecord | None = None
+        # Inferensi dijalankan satu per satu. Backend FastAPI melayani endpoint
+        # sinkron di atas threadpool, sehingga dua permintaan dapat memasuki
+        # pipeline yang sama pada saat bersamaan, sementara objek model dan
+        # pendeteksi wajah menyimpan status di dalam dirinya.
+        self._lock = threading.Lock()
         self._detector = self._load(self.config["models"]["detection"]["path"])
         self._segmenter = self._load(self.config["models"]["segmentation"]["path"])
         anomaly_config = self.config["models"]["anomaly"]
@@ -82,6 +126,9 @@ class InspectionPipeline:
             threads=int(self.config.get("runtime", {}).get("intra_op_threads", 4)),
         )
         self.anomaly_available = self._anomaly.available
+        self.face_model_path = project_root / "models" / "onnx" / FACE_MODEL_FILENAME
+        if self.config.get("runtime", {}).get("warmup_on_startup", False):
+            self.warmup()
 
     def _load(self, relative: str) -> Any:
         """Muat sebuah model bila berkasnya ada; kembalikan None bila tidak.
@@ -145,20 +192,69 @@ class InspectionPipeline:
         return _Prediction(boxes=boxes, polygons=polygons)
 
     @staticmethod
-    def _area_percentage(
+    def _union_mask(
         polygons: list[tuple[str, np.ndarray]], width: int, height: int
-    ) -> float:
-        """Luas gabungan seluruh mask terhadap luas gambar, dalam persen.
+    ) -> np.ndarray | None:
+        """Gabungkan seluruh poligon menjadi satu mask biner.
 
         Digabung lebih dulu supaya cacat yang saling bertumpang tindih tidak
         terhitung dua kali.
         """
         if not polygons:
-            return 0.0
+            return None
         union = np.zeros((height, width), dtype=np.uint8)
         for _, points in polygons:
             cv2.fillPoly(union, [points.astype(np.int32)], 1)
-        return 100.0 * float(np.count_nonzero(union)) / (width * height)
+        return union
+
+    @staticmethod
+    def _area_percentage(mask: np.ndarray | None, width: int, height: int) -> float:
+        """Luas mask terhadap luas gambar, dalam persen."""
+        if mask is None:
+            return 0.0
+        return 100.0 * float(np.count_nonzero(mask)) / (width * height)
+
+    @classmethod
+    def _box_area_percentage(
+        cls,
+        mask: np.ndarray | None,
+        box: tuple[int, int, int, int],
+        width: int,
+        height: int,
+    ) -> float | None:
+        """Luas cacat di dalam satu kotak, terhadap luas gambar, dalam persen.
+
+        Dihitung dari irisan mask segmentasi dengan wilayah kotak, bukan dari
+        pemasangan poligon ke kotak. Irisan tidak memerlukan tebakan pasangan
+        mana yang cocok, sehingga angkanya tidak bergantung pada heuristik.
+        """
+        if mask is None:
+            return None
+        x, y, w, h = box
+        x1, y1 = max(0, x), max(0, y)
+        x2, y2 = min(width, x + w), min(height, y + h)
+        if x2 <= x1 or y2 <= y1:
+            return 0.0
+        inside = int(np.count_nonzero(mask[y1:y2, x1:x2]))
+        return round(100.0 * inside / (width * height), 4)
+
+    def warmup(self) -> None:
+        """Jalankan satu inferensi tiruan supaya permintaan pertama tidak lambat.
+
+        Pemuatan bobot dan penyiapan grafik ONNX baru terjadi pada inferensi
+        pertama. Tanpa langkah ini, pengguna pertama menanggung beberapa detik
+        tambahan yang tidak ada hubungannya dengan gambarnya.
+        """
+        if not self.ready:
+            return
+        size = max(int(self.input_limits.get("min_dimension", 224)), 224)
+        blank = np.zeros((size, size, 3), dtype=np.uint8)
+        imgsz = int(self.config["models"]["detection"]["imgsz"])
+        self._predict(self._detector, blank, imgsz)
+        if self._segmenter is not None:
+            self._predict(self._segmenter, blank, imgsz)
+        if self._anomaly.available:
+            self._anomaly.score(blank)
 
     def inspect(
         self, image_bytes: bytes, *, anomaly_score: float | None = None
@@ -169,9 +265,21 @@ class InspectionPipeline:
         ``anomaly_score`` hanya perlu diisi bila pemanggil ingin memakai skor
         dari sumber lain, misalnya model khusus untuk kategori produk yang
         berbeda dari model bawaan.
+
+        Melempar :class:`InvalidImageError` bila berkasnya sendiri yang tidak
+        memenuhi syarat, sehingga pemanggil dapat memisahkannya dari kegagalan
+        sistem.
         """
+        with self._lock:
+            return self._inspect(image_bytes, anomaly_score=anomaly_score)
+
+    def _inspect(
+        self, image_bytes: bytes, *, anomaly_score: float | None = None
+    ) -> InspectionResult:
+        """Badan inspeksi yang berjalan di dalam kunci."""
         started = time.perf_counter()
         digest = hash_image(image_bytes)
+        validate_bytes(image_bytes, self.input_limits)
 
         # Lapisan privasi dijalankan sebelum apa pun menyentuh model. Metadata
         # dibuang lebih dulu, lalu wajah diburamkan, sehingga model tidak
@@ -183,21 +291,19 @@ class InspectionPipeline:
         buffer = np.frombuffer(image_bytes, dtype=np.uint8)
         image = cv2.imdecode(buffer, cv2.IMREAD_COLOR)
         if image is None:
-            raise ValueError("berkas tidak dapat dibaca sebagai gambar")
+            raise InvalidImageError("berkas tidak dapat dibaca sebagai gambar")
+        validate_dimensions(image.shape[0], image.shape[1], self.input_limits)
 
         faces = 0
         if self.privacy.get("blur_faces", True):
             blurred = blur_faces(
-                image, kernel=int(self.privacy.get("face_blur_kernel", 45))
+                image,
+                kernel=int(self.privacy.get("face_blur_kernel", 45)),
+                model_path=self.face_model_path,
             )
             image, faces = blurred.image, blurred.faces_blurred
             self.face_blur_available = blurred.detector_available
         height, width = image.shape[:2]
-        minimum = int(self.input_limits.get("min_dimension", 0))
-        if min(height, width) < minimum:
-            raise ValueError(
-                f"dimensi terkecil {min(height, width)} piksel, minimum {minimum}"
-            )
         if not self.ready:
             raise RuntimeError(
                 "model deteksi belum tersedia; jalankan scripts/export_onnx.py"
@@ -218,7 +324,8 @@ class InspectionPipeline:
         else:
             self.anomaly_available = True
 
-        area_pct = self._area_percentage(segmented.polygons, width, height)
+        union = self._union_mask(segmented.polygons, width, height)
+        area_pct = self._area_percentage(union, width, height)
         verdict = decide(
             [DetectedDefect(name, conf) for name, _, conf in detected.boxes],
             defect_area_pct=area_pct,
@@ -228,6 +335,15 @@ class InspectionPipeline:
 
         annotated = draw_defects(image, detected.boxes, segmented.polygons)
         annotated = draw_verdict_banner(annotated, verdict.label, verdict.reason)
+        encoded = to_base64_jpeg(annotated)
+        if self.privacy.get("ephemeral_buffers", True):
+            # Piksel gambar sudah tidak dibutuhkan setelah keluaran terbentuk.
+            # Menimpanya menutup jendela ketika larik masih dipegang program
+            # padahal isinya bukan lagi urusan sistem.
+            with ephemeral_buffer(image):
+                pass
+            with ephemeral_buffer(annotated):
+                pass
 
         threshold = self.decision_config.anomaly_threshold
         latency = round((time.perf_counter() - started) * 1000)
@@ -248,6 +364,7 @@ class InspectionPipeline:
                     label=CLASS_LABELS_ID.get(name, name),
                     bbox=BBox(x=box[0], y=box[1], w=box[2], h=box[3]),
                     confidence=conf,
+                    area_pct=self._box_area_percentage(union, box, width, height),
                 )
                 for name, box, conf in detected.boxes
             ],
@@ -263,7 +380,7 @@ class InspectionPipeline:
                 severity=verdict.severity,
                 conformal_alpha=self.decision_config.conformal.alpha,
             ),
-            annotated_image_base64=to_base64_jpeg(annotated),
+            annotated_image_base64=encoded,
             model_version=MODEL_VERSION,
             latency_ms=latency,
         )
@@ -284,8 +401,21 @@ def run_inspection(
     selama proses hidup. Backend memanggilnya sekali saat startup agar
     permintaan pertama tidak menanggung biaya pemuatan.
     """
+    return load_pipeline(project_root=project_root).inspect(
+        image_bytes, anomaly_score=anomaly_score
+    )
+
+
+def load_pipeline(*, project_root: Path | None = None) -> InspectionPipeline:
+    """Siapkan pipeline sekali lalu pakai ulang.
+
+    Backend memanggilnya saat startup supaya bobot model dan warmup selesai
+    sebelum permintaan pertama masuk, dan supaya kesiapan model dapat
+    dilaporkan lewat endpoint kesehatan alih-alih baru ketahuan ketika ada
+    pengguna yang gagal dilayani.
+    """
     global _PIPELINE
     if _PIPELINE is None:
-        root = project_root or Path(__file__).resolve().parents[3]
+        root = project_root or default_project_root()
         _PIPELINE = InspectionPipeline(project_root=root)
-    return _PIPELINE.inspect(image_bytes, anomaly_score=anomaly_score)
+    return _PIPELINE

@@ -14,7 +14,7 @@ Tanggal: 19 Agustus 2026.
 |---|---|---|---|
 | Metadata membocorkan lokasi dan perangkat | Gambar dikodekan ulang dari piksel | `privacy/exif.py` | aktif |
 | Wajah operator ikut terpotret | Diburamkan sebelum masuk model | `privacy/face_blur.py` | aktif |
-| Gambar tersimpan di disk | Buffer ditimpa nol setelah dipakai | `privacy/ephemeral.py` | aktif |
+| Gambar tersimpan di disk | Buffer ditimpa nol setelah dipakai | `privacy/ephemeral.py` | aktif sejak 20 Agu 2026 |
 | OCR membaca nama dan alamat | Daftar-izin pola kode batch | `privacy/ocr_filter.py` | aktif, OCR belum terpasang |
 | Catatan memuat gambar | Hanya SHA-256 yang disimpan | `privacy/audit.py` | aktif |
 | Data terkirim ke luar | Tidak ada panggilan jaringan saat inferensi | `inference/pipeline.py` | aktif |
@@ -71,6 +71,13 @@ Menimpa dengan nol tidak menjamin apa pun terhadap penyerang yang menguasai
 mesin, karena Python dapat menyalin data di balik layar. Yang dijamin: tidak
 ada gambar yang sengaja disimpan, dan buffer yang masih dipegang program tidak
 lagi berisi gambar.
+
+**Koreksi terhadap laporan versi sebelumnya.** Baris ini semula dinyatakan
+aktif padahal `ephemeral_buffer` hanya ada sebagai modul dan tidak pernah
+dipanggil dari `inference/pipeline.py`. Modulnya lulus ujinya sendiri, sehingga
+kesenjangan itu tidak terlihat dari hasil uji. Sejak 20 Agustus 2026 pipeline
+benar-benar menimpa buffer gambar dan buffer gambar beranotasi setelah
+keluaran terbentuk, sehingga klaimnya kini sesuai dengan yang dikerjakan kode.
 
 Diuji oleh `test_buffer_dinolkan_setelah_dipakai` dan
 `test_buffer_dinolkan_walau_terjadi_galat`.

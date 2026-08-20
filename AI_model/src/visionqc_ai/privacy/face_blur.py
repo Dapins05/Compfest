@@ -19,6 +19,7 @@ daripada klaim yang dinyatakan gagal.
 
 from __future__ import annotations
 
+import threading
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
@@ -40,6 +41,9 @@ class BlurResult:
     faces_blurred: int
     detector_available: bool
     note: str = ""
+
+
+_DETECTOR_LOCK = threading.Lock()
 
 
 @lru_cache(maxsize=1)
@@ -66,9 +70,15 @@ def detect_faces(
         return [], False
 
     height, width = image.shape[:2]
-    detector.setInputSize((width, height))
-    detector.setScoreThreshold(threshold)
-    _, faces = detector.detect(image)
+    # Pendeteksi ini dipakai ulang lintas permintaan, sedangkan menyetel ukuran
+    # masukan lalu menjalankan deteksi adalah dua langkah terpisah pada objek
+    # yang sama. Tanpa kunci, permintaan lain dapat menyisipkan ukuran berbeda
+    # di antara keduanya dan OpenCV menggugurkan proses karena bentuk buffer
+    # tidak lagi cocok.
+    with _DETECTOR_LOCK:
+        detector.setInputSize((width, height))
+        detector.setScoreThreshold(threshold)
+        _, faces = detector.detect(image)
     if faces is None:
         return [], True
     return [(int(row[0]), int(row[1]), int(row[2]), int(row[3])) for row in faces], True
