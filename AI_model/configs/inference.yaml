@@ -14,7 +14,10 @@ models:
   detection:
     path: models/onnx/yolo11n-defect.onnx
     imgsz: 640
-    conf_threshold: 0.25  # ambang bawah NMS - penyaringan kasar, bukan ambang keputusan
+    # Disamakan dengan decision.binary_threshold. Bila NMS menyaring di atas
+    # ambang keputusan, ambang keputusan tidak akan pernah tercapai dan
+    # nilainya menjadi hiasan belaka.
+    conf_threshold: 0.22
     iou_threshold: 0.45
     max_detections: 30
 
@@ -103,7 +106,27 @@ decision:
     # daripada ambang 0,50.
     operating_threshold: 0.3
 
-  # bagian Kepercayaan minimum sebelum sistem berani memutuskan
+  # bagian Mode keputusan
+  # Mode biner tidak pernah mengembalikan REVIEW: setiap gambar dinyatakan
+  # PASS atau REJECT. Lini produksi yang menyerahkan sebagian produk ke manusia
+  # memang lebih aman, tetapi tujuan sistem ini adalah memutuskan sendiri.
+  #
+  # Ambangnya dipilih pada SET KALIBRASI dengan meminimumkan biaya yang
+  # diharapkan pada model biaya di bawah, bukan dipilih dari hasil set uji.
+  # Memilihnya dari set uji akan membuat angka yang dilaporkan tidak sah.
+  mode: binary
+  binary_threshold: 0.22
+  binary_threshold_selected_on: calibration
+  binary_calibration:
+    recall: 0.9298
+    specificity: 0.9805
+    cost_per_item: 143.2
+    false_rejects: 6
+    missed_defects: 4
+    n: 364
+
+  # Dipakai hanya pada mode three_class, ketika sistem masih boleh menahan
+  # keputusan. Disimpan karena tahap Final berencana memakainya kembali.
   min_confidence: 0.60
 
 # KELAS CACAT

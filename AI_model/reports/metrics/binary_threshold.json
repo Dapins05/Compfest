@@ -1,0 +1,1853 @@
+{
+  "selected_on": "calibration",
+  "threshold": 0.22,
+  "prevalence": 0.03,
+  "costs": {
+    "false_reject": 2000.0,
+    "missed_defect": 50000.0,
+    "review": 500.0,
+    "bayes_threshold": 0.038461538461538464
+  },
+  "calibration": {
+    "threshold": 0.22,
+    "false_rejects": 6,
+    "missed_defects": 4,
+    "total_cost": 52116.96211212069,
+    "cost_per_item": 143.1784673409909,
+    "recall": 0.9298245614035088,
+    "specificity": 0.9804560260586319
+  },
+  "calibration_n": 364,
+  "calibration_defects": 57,
+  "test": {
+    "threshold": 0.22,
+    "false_rejects": 5,
+    "missed_defects": 2,
+    "total_cost": 32054.535204209467,
+    "cost_per_item": 89.28839889751941,
+    "recall": 0.9615384615384616,
+    "specificity": 0.9837133550488599
+  },
+  "test_n": 359,
+  "test_defects": 52,
+  "previous_threshold": {
+    "threshold": 0.6,
+    "false_rejects": 0,
+    "missed_defects": 22,
+    "total_cost": 227826.92307692303,
+    "cost_per_item": 634.6153846153845,
+    "recall": 0.5769230769230769,
+    "specificity": 1.0
+  },
+  "curve": [
+    {
+      "threshold": 0.0,
+      "false_rejects": 307,
+      "missed_defects": 0,
+      "total_cost": 706160.0,
+      "cost_per_item": 1940.0,
+      "recall": 1.0,
+      "specificity": 0.0
+    },
+    {
+      "threshold": 0.005,
+      "false_rejects": 65,
+      "missed_defects": 2,
+      "total_cost": 168670.598319904,
+      "cost_per_item": 463.3807646151209,
+      "recall": 0.9649122807017544,
+      "specificity": 0.7882736156351792
+    },
+    {
+      "threshold": 0.01,
+      "false_rejects": 65,
+      "missed_defects": 2,
+      "total_cost": 168670.598319904,
+      "cost_per_item": 463.3807646151209,
+      "recall": 0.9649122807017544,
+      "specificity": 0.7882736156351792
+    },
+    {
+      "threshold": 0.015,
+      "false_rejects": 65,
+      "missed_defects": 2,
+      "total_cost": 168670.598319904,
+      "cost_per_item": 463.3807646151209,
+      "recall": 0.9649122807017544,
+      "specificity": 0.7882736156351792
+    },
+    {
+      "threshold": 0.02,
+      "false_rejects": 65,
+      "missed_defects": 2,
+      "total_cost": 168670.598319904,
+      "cost_per_item": 463.3807646151209,
+      "recall": 0.9649122807017544,
+      "specificity": 0.7882736156351792
+    },
+    {
+      "threshold": 0.025,
+      "false_rejects": 65,
+      "missed_defects": 2,
+      "total_cost": 168670.598319904,
+      "cost_per_item": 463.3807646151209,
+      "recall": 0.9649122807017544,
+      "specificity": 0.7882736156351792
+    },
+    {
+      "threshold": 0.03,
+      "false_rejects": 65,
+      "missed_defects": 2,
+      "total_cost": 168670.598319904,
+      "cost_per_item": 463.3807646151209,
+      "recall": 0.9649122807017544,
+      "specificity": 0.7882736156351792
+    },
+    {
+      "threshold": 0.035,
+      "false_rejects": 65,
+      "missed_defects": 2,
+      "total_cost": 168670.598319904,
+      "cost_per_item": 463.3807646151209,
+      "recall": 0.9649122807017544,
+      "specificity": 0.7882736156351792
+    },
+    {
+      "threshold": 0.04,
+      "false_rejects": 65,
+      "missed_defects": 2,
+      "total_cost": 168670.598319904,
+      "cost_per_item": 463.3807646151209,
+      "recall": 0.9649122807017544,
+      "specificity": 0.7882736156351792
+    },
+    {
+      "threshold": 0.045,
+      "false_rejects": 65,
+      "missed_defects": 2,
+      "total_cost": 168670.598319904,
+      "cost_per_item": 463.3807646151209,
+      "recall": 0.9649122807017544,
+      "specificity": 0.7882736156351792
+    },
+    {
+      "threshold": 0.05,
+      "false_rejects": 65,
+      "missed_defects": 2,
+      "total_cost": 168670.598319904,
+      "cost_per_item": 463.3807646151209,
+      "recall": 0.9649122807017544,
+      "specificity": 0.7882736156351792
+    },
+    {
+      "threshold": 0.055,
+      "false_rejects": 57,
+      "missed_defects": 2,
+      "total_cost": 150269.0348019887,
+      "cost_per_item": 412.8270186867821,
+      "recall": 0.9649122807017544,
+      "specificity": 0.8143322475570033
+    },
+    {
+      "threshold": 0.06,
+      "false_rejects": 55,
+      "missed_defects": 2,
+      "total_cost": 145668.64392250986,
+      "cost_per_item": 400.1885822046974,
+      "recall": 0.9649122807017544,
+      "specificity": 0.8208469055374593
+    },
+    {
+      "threshold": 0.065,
+      "false_rejects": 49,
+      "missed_defects": 2,
+      "total_cost": 131867.47128407337,
+      "cost_per_item": 362.27327275844334,
+      "recall": 0.9649122807017544,
+      "specificity": 0.8403908794788274
+    },
+    {
+      "threshold": 0.07,
+      "false_rejects": 45,
+      "missed_defects": 2,
+      "total_cost": 122666.68952511573,
+      "cost_per_item": 336.996399794274,
+      "recall": 0.9649122807017544,
+      "specificity": 0.8534201954397395
+    },
+    {
+      "threshold": 0.075,
+      "false_rejects": 43,
+      "missed_defects": 2,
+      "total_cost": 118066.2986456369,
+      "cost_per_item": 324.35796331218927,
+      "recall": 0.9649122807017544,
+      "specificity": 0.8599348534201955
+    },
+    {
+      "threshold": 0.08,
+      "false_rejects": 42,
+      "missed_defects": 2,
+      "total_cost": 115766.1032058975,
+      "cost_per_item": 318.038745071147,
+      "recall": 0.9649122807017544,
+      "specificity": 0.8631921824104235
+    },
+    {
+      "threshold": 0.085,
+      "false_rejects": 39,
+      "missed_defects": 2,
+      "total_cost": 108865.51688667924,
+      "cost_per_item": 299.08109034801987,
+      "recall": 0.9649122807017544,
+      "specificity": 0.8729641693811075
+    },
+    {
+      "threshold": 0.09,
+      "false_rejects": 35,
+      "missed_defects": 3,
+      "total_cost": 109243.68249614263,
+      "cost_per_item": 300.1200068575347,
+      "recall": 0.9473684210526315,
+      "specificity": 0.8859934853420195
+    },
+    {
+      "threshold": 0.095,
+      "false_rejects": 31,
+      "missed_defects": 3,
+      "total_cost": 100042.90073718499,
+      "cost_per_item": 274.84313389336535,
+      "recall": 0.9473684210526315,
+      "specificity": 0.8990228013029316
+    },
+    {
+      "threshold": 0.1,
+      "false_rejects": 31,
+      "missed_defects": 3,
+      "total_cost": 100042.90073718499,
+      "cost_per_item": 274.84313389336535,
+      "recall": 0.9473684210526315,
+      "specificity": 0.8990228013029316
+    },
+    {
+      "threshold": 0.105,
+      "false_rejects": 27,
+      "missed_defects": 3,
+      "total_cost": 90842.11897822733,
+      "cost_per_item": 249.56626092919595,
+      "recall": 0.9473684210526315,
+      "specificity": 0.9120521172638436
+    },
+    {
+      "threshold": 0.11,
+      "false_rejects": 25,
+      "missed_defects": 3,
+      "total_cost": 86241.7280987485,
+      "cost_per_item": 236.92782444711125,
+      "recall": 0.9473684210526315,
+      "specificity": 0.9185667752442996
+    },
+    {
+      "threshold": 0.115,
+      "false_rejects": 24,
+      "missed_defects": 3,
+      "total_cost": 83941.53265900908,
+      "cost_per_item": 230.6086062060689,
+      "recall": 0.9473684210526315,
+      "specificity": 0.9218241042345277
+    },
+    {
+      "threshold": 0.12,
+      "false_rejects": 23,
+      "missed_defects": 3,
+      "total_cost": 81641.33721926967,
+      "cost_per_item": 224.28938796502658,
+      "recall": 0.9473684210526315,
+      "specificity": 0.9250814332247557
+    },
+    {
+      "threshold": 0.125,
+      "false_rejects": 21,
+      "missed_defects": 3,
+      "total_cost": 77040.94633979085,
+      "cost_per_item": 211.6509514829419,
+      "recall": 0.9473684210526315,
+      "specificity": 0.9315960912052117
+    },
+    {
+      "threshold": 0.13,
+      "false_rejects": 20,
+      "missed_defects": 3,
+      "total_cost": 74740.75090005143,
+      "cost_per_item": 205.3317332418995,
+      "recall": 0.9473684210526315,
+      "specificity": 0.9348534201954397
+    },
+    {
+      "threshold": 0.135,
+      "false_rejects": 19,
+      "missed_defects": 3,
+      "total_cost": 72440.55546031203,
+      "cost_per_item": 199.0125150008572,
+      "recall": 0.9473684210526315,
+      "specificity": 0.9381107491856677
+    },
+    {
+      "threshold": 0.14,
+      "false_rejects": 18,
+      "missed_defects": 4,
+      "total_cost": 79719.30738899365,
+      "cost_per_item": 219.00908623349903,
+      "recall": 0.9298245614035088,
+      "specificity": 0.9413680781758957
+    },
+    {
+      "threshold": 0.145,
+      "false_rejects": 17,
+      "missed_defects": 4,
+      "total_cost": 77419.11194925423,
+      "cost_per_item": 212.6898679924567,
+      "recall": 0.9298245614035088,
+      "specificity": 0.9446254071661238
+    },
+    {
+      "threshold": 0.15,
+      "false_rejects": 17,
+      "missed_defects": 4,
+      "total_cost": 77419.11194925423,
+      "cost_per_item": 212.6898679924567,
+      "recall": 0.9298245614035088,
+      "specificity": 0.9446254071661238
+    },
+    {
+      "threshold": 0.155,
+      "false_rejects": 15,
+      "missed_defects": 4,
+      "total_cost": 72818.7210697754,
+      "cost_per_item": 200.051431510372,
+      "recall": 0.9298245614035088,
+      "specificity": 0.9511400651465798
+    },
+    {
+      "threshold": 0.16,
+      "false_rejects": 14,
+      "missed_defects": 4,
+      "total_cost": 70518.52563003599,
+      "cost_per_item": 193.73221326932963,
+      "recall": 0.9298245614035088,
+      "specificity": 0.9543973941368078
+    },
+    {
+      "threshold": 0.165,
+      "false_rejects": 12,
+      "missed_defects": 4,
+      "total_cost": 65918.13475055718,
+      "cost_per_item": 181.093776787245,
+      "recall": 0.9298245614035088,
+      "specificity": 0.9609120521172638
+    },
+    {
+      "threshold": 0.17,
+      "false_rejects": 11,
+      "missed_defects": 4,
+      "total_cost": 63617.93931081776,
+      "cost_per_item": 174.77455854620263,
+      "recall": 0.9298245614035088,
+      "specificity": 0.9641693811074918
+    },
+    {
+      "threshold": 0.17500000000000002,
+      "false_rejects": 10,
+      "missed_defects": 4,
+      "total_cost": 61317.743871078346,
+      "cost_per_item": 168.4553403051603,
+      "recall": 0.9298245614035088,
+      "specificity": 0.9674267100977199
+    },
+    {
+      "threshold": 0.18,
+      "false_rejects": 8,
+      "missed_defects": 4,
+      "total_cost": 56717.35299159952,
+      "cost_per_item": 155.8169038230756,
+      "recall": 0.9298245614035088,
+      "specificity": 0.9739413680781759
+    },
+    {
+      "threshold": 0.185,
+      "false_rejects": 8,
+      "missed_defects": 4,
+      "total_cost": 56717.35299159952,
+      "cost_per_item": 155.8169038230756,
+      "recall": 0.9298245614035088,
+      "specificity": 0.9739413680781759
+    },
+    {
+      "threshold": 0.19,
+      "false_rejects": 8,
+      "missed_defects": 4,
+      "total_cost": 56717.35299159952,
+      "cost_per_item": 155.8169038230756,
+      "recall": 0.9298245614035088,
+      "specificity": 0.9739413680781759
+    },
+    {
+      "threshold": 0.195,
+      "false_rejects": 8,
+      "missed_defects": 4,
+      "total_cost": 56717.35299159952,
+      "cost_per_item": 155.8169038230756,
+      "recall": 0.9298245614035088,
+      "specificity": 0.9739413680781759
+    },
+    {
+      "threshold": 0.2,
+      "false_rejects": 8,
+      "missed_defects": 4,
+      "total_cost": 56717.35299159952,
+      "cost_per_item": 155.8169038230756,
+      "recall": 0.9298245614035088,
+      "specificity": 0.9739413680781759
+    },
+    {
+      "threshold": 0.20500000000000002,
+      "false_rejects": 7,
+      "missed_defects": 4,
+      "total_cost": 54417.1575518601,
+      "cost_per_item": 149.49768558203326,
+      "recall": 0.9298245614035088,
+      "specificity": 0.9771986970684039
+    },
+    {
+      "threshold": 0.21,
+      "false_rejects": 7,
+      "missed_defects": 4,
+      "total_cost": 54417.1575518601,
+      "cost_per_item": 149.49768558203326,
+      "recall": 0.9298245614035088,
+      "specificity": 0.9771986970684039
+    },
+    {
+      "threshold": 0.215,
+      "false_rejects": 7,
+      "missed_defects": 4,
+      "total_cost": 54417.1575518601,
+      "cost_per_item": 149.49768558203326,
+      "recall": 0.9298245614035088,
+      "specificity": 0.9771986970684039
+    },
+    {
+      "threshold": 0.22,
+      "false_rejects": 6,
+      "missed_defects": 4,
+      "total_cost": 52116.96211212069,
+      "cost_per_item": 143.1784673409909,
+      "recall": 0.9298245614035088,
+      "specificity": 0.9804560260586319
+    },
+    {
+      "threshold": 0.225,
+      "false_rejects": 6,
+      "missed_defects": 4,
+      "total_cost": 52116.96211212069,
+      "cost_per_item": 143.1784673409909,
+      "recall": 0.9298245614035088,
+      "specificity": 0.9804560260586319
+    },
+    {
+      "threshold": 0.23,
+      "false_rejects": 6,
+      "missed_defects": 4,
+      "total_cost": 52116.96211212069,
+      "cost_per_item": 143.1784673409909,
+      "recall": 0.9298245614035088,
+      "specificity": 0.9804560260586319
+    },
+    {
+      "threshold": 0.23500000000000001,
+      "false_rejects": 6,
+      "missed_defects": 5,
+      "total_cost": 61695.90948054174,
+      "cost_per_item": 169.4942568146751,
+      "recall": 0.9122807017543859,
+      "specificity": 0.9804560260586319
+    },
+    {
+      "threshold": 0.24,
+      "false_rejects": 5,
+      "missed_defects": 5,
+      "total_cost": 59395.714040802326,
+      "cost_per_item": 163.17503857363278,
+      "recall": 0.9122807017543859,
+      "specificity": 0.9837133550488599
+    },
+    {
+      "threshold": 0.245,
+      "false_rejects": 5,
+      "missed_defects": 5,
+      "total_cost": 59395.714040802326,
+      "cost_per_item": 163.17503857363278,
+      "recall": 0.9122807017543859,
+      "specificity": 0.9837133550488599
+    },
+    {
+      "threshold": 0.25,
+      "false_rejects": 5,
+      "missed_defects": 6,
+      "total_cost": 68974.66140922338,
+      "cost_per_item": 189.49082804731697,
+      "recall": 0.8947368421052632,
+      "specificity": 0.9837133550488599
+    },
+    {
+      "threshold": 0.255,
+      "false_rejects": 5,
+      "missed_defects": 6,
+      "total_cost": 68974.66140922338,
+      "cost_per_item": 189.49082804731697,
+      "recall": 0.8947368421052632,
+      "specificity": 0.9837133550488599
+    },
+    {
+      "threshold": 0.26,
+      "false_rejects": 5,
+      "missed_defects": 6,
+      "total_cost": 68974.66140922338,
+      "cost_per_item": 189.49082804731697,
+      "recall": 0.8947368421052632,
+      "specificity": 0.9837133550488599
+    },
+    {
+      "threshold": 0.265,
+      "false_rejects": 5,
+      "missed_defects": 6,
+      "total_cost": 68974.66140922338,
+      "cost_per_item": 189.49082804731697,
+      "recall": 0.8947368421052632,
+      "specificity": 0.9837133550488599
+    },
+    {
+      "threshold": 0.27,
+      "false_rejects": 5,
+      "missed_defects": 6,
+      "total_cost": 68974.66140922338,
+      "cost_per_item": 189.49082804731697,
+      "recall": 0.8947368421052632,
+      "specificity": 0.9837133550488599
+    },
+    {
+      "threshold": 0.275,
+      "false_rejects": 4,
+      "missed_defects": 7,
+      "total_cost": 76253.41333790502,
+      "cost_per_item": 209.48739927995885,
+      "recall": 0.8771929824561403,
+      "specificity": 0.9869706840390879
+    },
+    {
+      "threshold": 0.28,
+      "false_rejects": 4,
+      "missed_defects": 7,
+      "total_cost": 76253.41333790502,
+      "cost_per_item": 209.48739927995885,
+      "recall": 0.8771929824561403,
+      "specificity": 0.9869706840390879
+    },
+    {
+      "threshold": 0.28500000000000003,
+      "false_rejects": 4,
+      "missed_defects": 7,
+      "total_cost": 76253.41333790502,
+      "cost_per_item": 209.48739927995885,
+      "recall": 0.8771929824561403,
+      "specificity": 0.9869706840390879
+    },
+    {
+      "threshold": 0.29,
+      "false_rejects": 4,
+      "missed_defects": 7,
+      "total_cost": 76253.41333790502,
+      "cost_per_item": 209.48739927995885,
+      "recall": 0.8771929824561403,
+      "specificity": 0.9869706840390879
+    },
+    {
+      "threshold": 0.295,
+      "false_rejects": 4,
+      "missed_defects": 7,
+      "total_cost": 76253.41333790502,
+      "cost_per_item": 209.48739927995885,
+      "recall": 0.8771929824561403,
+      "specificity": 0.9869706840390879
+    },
+    {
+      "threshold": 0.3,
+      "false_rejects": 3,
+      "missed_defects": 7,
+      "total_cost": 73953.2178981656,
+      "cost_per_item": 203.1681810389165,
+      "recall": 0.8771929824561403,
+      "specificity": 0.990228013029316
+    },
+    {
+      "threshold": 0.305,
+      "false_rejects": 2,
+      "missed_defects": 7,
+      "total_cost": 71653.02245842619,
+      "cost_per_item": 196.84896279787415,
+      "recall": 0.8771929824561403,
+      "specificity": 0.993485342019544
+    },
+    {
+      "threshold": 0.31,
+      "false_rejects": 2,
+      "missed_defects": 7,
+      "total_cost": 71653.02245842619,
+      "cost_per_item": 196.84896279787415,
+      "recall": 0.8771929824561403,
+      "specificity": 0.993485342019544
+    },
+    {
+      "threshold": 0.315,
+      "false_rejects": 2,
+      "missed_defects": 7,
+      "total_cost": 71653.02245842619,
+      "cost_per_item": 196.84896279787415,
+      "recall": 0.8771929824561403,
+      "specificity": 0.993485342019544
+    },
+    {
+      "threshold": 0.32,
+      "false_rejects": 2,
+      "missed_defects": 7,
+      "total_cost": 71653.02245842619,
+      "cost_per_item": 196.84896279787415,
+      "recall": 0.8771929824561403,
+      "specificity": 0.993485342019544
+    },
+    {
+      "threshold": 0.325,
+      "false_rejects": 2,
+      "missed_defects": 7,
+      "total_cost": 71653.02245842619,
+      "cost_per_item": 196.84896279787415,
+      "recall": 0.8771929824561403,
+      "specificity": 0.993485342019544
+    },
+    {
+      "threshold": 0.33,
+      "false_rejects": 2,
+      "missed_defects": 7,
+      "total_cost": 71653.02245842619,
+      "cost_per_item": 196.84896279787415,
+      "recall": 0.8771929824561403,
+      "specificity": 0.993485342019544
+    },
+    {
+      "threshold": 0.335,
+      "false_rejects": 2,
+      "missed_defects": 7,
+      "total_cost": 71653.02245842619,
+      "cost_per_item": 196.84896279787415,
+      "recall": 0.8771929824561403,
+      "specificity": 0.993485342019544
+    },
+    {
+      "threshold": 0.34,
+      "false_rejects": 2,
+      "missed_defects": 7,
+      "total_cost": 71653.02245842619,
+      "cost_per_item": 196.84896279787415,
+      "recall": 0.8771929824561403,
+      "specificity": 0.993485342019544
+    },
+    {
+      "threshold": 0.34500000000000003,
+      "false_rejects": 2,
+      "missed_defects": 7,
+      "total_cost": 71653.02245842619,
+      "cost_per_item": 196.84896279787415,
+      "recall": 0.8771929824561403,
+      "specificity": 0.993485342019544
+    },
+    {
+      "threshold": 0.35000000000000003,
+      "false_rejects": 2,
+      "missed_defects": 7,
+      "total_cost": 71653.02245842619,
+      "cost_per_item": 196.84896279787415,
+      "recall": 0.8771929824561403,
+      "specificity": 0.993485342019544
+    },
+    {
+      "threshold": 0.355,
+      "false_rejects": 2,
+      "missed_defects": 7,
+      "total_cost": 71653.02245842619,
+      "cost_per_item": 196.84896279787415,
+      "recall": 0.8771929824561403,
+      "specificity": 0.993485342019544
+    },
+    {
+      "threshold": 0.36,
+      "false_rejects": 2,
+      "missed_defects": 7,
+      "total_cost": 71653.02245842619,
+      "cost_per_item": 196.84896279787415,
+      "recall": 0.8771929824561403,
+      "specificity": 0.993485342019544
+    },
+    {
+      "threshold": 0.365,
+      "false_rejects": 1,
+      "missed_defects": 9,
+      "total_cost": 88510.72175552888,
+      "cost_per_item": 243.16132350420023,
+      "recall": 0.8421052631578947,
+      "specificity": 0.996742671009772
+    },
+    {
+      "threshold": 0.37,
+      "false_rejects": 1,
+      "missed_defects": 9,
+      "total_cost": 88510.72175552888,
+      "cost_per_item": 243.16132350420023,
+      "recall": 0.8421052631578947,
+      "specificity": 0.996742671009772
+    },
+    {
+      "threshold": 0.375,
+      "false_rejects": 1,
+      "missed_defects": 9,
+      "total_cost": 88510.72175552888,
+      "cost_per_item": 243.16132350420023,
+      "recall": 0.8421052631578947,
+      "specificity": 0.996742671009772
+    },
+    {
+      "threshold": 0.38,
+      "false_rejects": 1,
+      "missed_defects": 9,
+      "total_cost": 88510.72175552888,
+      "cost_per_item": 243.16132350420023,
+      "recall": 0.8421052631578947,
+      "specificity": 0.996742671009772
+    },
+    {
+      "threshold": 0.385,
+      "false_rejects": 1,
+      "missed_defects": 9,
+      "total_cost": 88510.72175552888,
+      "cost_per_item": 243.16132350420023,
+      "recall": 0.8421052631578947,
+      "specificity": 0.996742671009772
+    },
+    {
+      "threshold": 0.39,
+      "false_rejects": 1,
+      "missed_defects": 10,
+      "total_cost": 98089.66912394993,
+      "cost_per_item": 269.4771129778844,
+      "recall": 0.8245614035087719,
+      "specificity": 0.996742671009772
+    },
+    {
+      "threshold": 0.395,
+      "false_rejects": 1,
+      "missed_defects": 10,
+      "total_cost": 98089.66912394993,
+      "cost_per_item": 269.4771129778844,
+      "recall": 0.8245614035087719,
+      "specificity": 0.996742671009772
+    },
+    {
+      "threshold": 0.4,
+      "false_rejects": 1,
+      "missed_defects": 10,
+      "total_cost": 98089.66912394993,
+      "cost_per_item": 269.4771129778844,
+      "recall": 0.8245614035087719,
+      "specificity": 0.996742671009772
+    },
+    {
+      "threshold": 0.405,
+      "false_rejects": 1,
+      "missed_defects": 10,
+      "total_cost": 98089.66912394993,
+      "cost_per_item": 269.4771129778844,
+      "recall": 0.8245614035087719,
+      "specificity": 0.996742671009772
+    },
+    {
+      "threshold": 0.41000000000000003,
+      "false_rejects": 1,
+      "missed_defects": 10,
+      "total_cost": 98089.66912394993,
+      "cost_per_item": 269.4771129778844,
+      "recall": 0.8245614035087719,
+      "specificity": 0.996742671009772
+    },
+    {
+      "threshold": 0.41500000000000004,
+      "false_rejects": 1,
+      "missed_defects": 10,
+      "total_cost": 98089.66912394993,
+      "cost_per_item": 269.4771129778844,
+      "recall": 0.8245614035087719,
+      "specificity": 0.996742671009772
+    },
+    {
+      "threshold": 0.42,
+      "false_rejects": 1,
+      "missed_defects": 10,
+      "total_cost": 98089.66912394993,
+      "cost_per_item": 269.4771129778844,
+      "recall": 0.8245614035087719,
+      "specificity": 0.996742671009772
+    },
+    {
+      "threshold": 0.425,
+      "false_rejects": 1,
+      "missed_defects": 10,
+      "total_cost": 98089.66912394993,
+      "cost_per_item": 269.4771129778844,
+      "recall": 0.8245614035087719,
+      "specificity": 0.996742671009772
+    },
+    {
+      "threshold": 0.43,
+      "false_rejects": 1,
+      "missed_defects": 10,
+      "total_cost": 98089.66912394993,
+      "cost_per_item": 269.4771129778844,
+      "recall": 0.8245614035087719,
+      "specificity": 0.996742671009772
+    },
+    {
+      "threshold": 0.435,
+      "false_rejects": 1,
+      "missed_defects": 10,
+      "total_cost": 98089.66912394993,
+      "cost_per_item": 269.4771129778844,
+      "recall": 0.8245614035087719,
+      "specificity": 0.996742671009772
+    },
+    {
+      "threshold": 0.44,
+      "false_rejects": 1,
+      "missed_defects": 10,
+      "total_cost": 98089.66912394993,
+      "cost_per_item": 269.4771129778844,
+      "recall": 0.8245614035087719,
+      "specificity": 0.996742671009772
+    },
+    {
+      "threshold": 0.445,
+      "false_rejects": 1,
+      "missed_defects": 10,
+      "total_cost": 98089.66912394993,
+      "cost_per_item": 269.4771129778844,
+      "recall": 0.8245614035087719,
+      "specificity": 0.996742671009772
+    },
+    {
+      "threshold": 0.45,
+      "false_rejects": 1,
+      "missed_defects": 11,
+      "total_cost": 107668.61649237099,
+      "cost_per_item": 295.79290245156864,
+      "recall": 0.8070175438596491,
+      "specificity": 0.996742671009772
+    },
+    {
+      "threshold": 0.455,
+      "false_rejects": 1,
+      "missed_defects": 11,
+      "total_cost": 107668.61649237099,
+      "cost_per_item": 295.79290245156864,
+      "recall": 0.8070175438596491,
+      "specificity": 0.996742671009772
+    },
+    {
+      "threshold": 0.46,
+      "false_rejects": 0,
+      "missed_defects": 11,
+      "total_cost": 105368.42105263157,
+      "cost_per_item": 289.4736842105263,
+      "recall": 0.8070175438596491,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.465,
+      "false_rejects": 0,
+      "missed_defects": 11,
+      "total_cost": 105368.42105263157,
+      "cost_per_item": 289.4736842105263,
+      "recall": 0.8070175438596491,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.47000000000000003,
+      "false_rejects": 0,
+      "missed_defects": 11,
+      "total_cost": 105368.42105263157,
+      "cost_per_item": 289.4736842105263,
+      "recall": 0.8070175438596491,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.47500000000000003,
+      "false_rejects": 0,
+      "missed_defects": 11,
+      "total_cost": 105368.42105263157,
+      "cost_per_item": 289.4736842105263,
+      "recall": 0.8070175438596491,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.48,
+      "false_rejects": 0,
+      "missed_defects": 13,
+      "total_cost": 124526.31578947368,
+      "cost_per_item": 342.10526315789474,
+      "recall": 0.7719298245614035,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.485,
+      "false_rejects": 0,
+      "missed_defects": 13,
+      "total_cost": 124526.31578947368,
+      "cost_per_item": 342.10526315789474,
+      "recall": 0.7719298245614035,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.49,
+      "false_rejects": 0,
+      "missed_defects": 13,
+      "total_cost": 124526.31578947368,
+      "cost_per_item": 342.10526315789474,
+      "recall": 0.7719298245614035,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.495,
+      "false_rejects": 0,
+      "missed_defects": 13,
+      "total_cost": 124526.31578947368,
+      "cost_per_item": 342.10526315789474,
+      "recall": 0.7719298245614035,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.5,
+      "false_rejects": 0,
+      "missed_defects": 13,
+      "total_cost": 124526.31578947368,
+      "cost_per_item": 342.10526315789474,
+      "recall": 0.7719298245614035,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.505,
+      "false_rejects": 0,
+      "missed_defects": 14,
+      "total_cost": 134105.26315789472,
+      "cost_per_item": 368.4210526315789,
+      "recall": 0.7543859649122807,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.51,
+      "false_rejects": 0,
+      "missed_defects": 14,
+      "total_cost": 134105.26315789472,
+      "cost_per_item": 368.4210526315789,
+      "recall": 0.7543859649122807,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.515,
+      "false_rejects": 0,
+      "missed_defects": 14,
+      "total_cost": 134105.26315789472,
+      "cost_per_item": 368.4210526315789,
+      "recall": 0.7543859649122807,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.52,
+      "false_rejects": 0,
+      "missed_defects": 14,
+      "total_cost": 134105.26315789472,
+      "cost_per_item": 368.4210526315789,
+      "recall": 0.7543859649122807,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.525,
+      "false_rejects": 0,
+      "missed_defects": 14,
+      "total_cost": 134105.26315789472,
+      "cost_per_item": 368.4210526315789,
+      "recall": 0.7543859649122807,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.53,
+      "false_rejects": 0,
+      "missed_defects": 14,
+      "total_cost": 134105.26315789472,
+      "cost_per_item": 368.4210526315789,
+      "recall": 0.7543859649122807,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.535,
+      "false_rejects": 0,
+      "missed_defects": 15,
+      "total_cost": 143684.2105263158,
+      "cost_per_item": 394.7368421052631,
+      "recall": 0.7368421052631579,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.54,
+      "false_rejects": 0,
+      "missed_defects": 15,
+      "total_cost": 143684.2105263158,
+      "cost_per_item": 394.7368421052631,
+      "recall": 0.7368421052631579,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.545,
+      "false_rejects": 0,
+      "missed_defects": 15,
+      "total_cost": 143684.2105263158,
+      "cost_per_item": 394.7368421052631,
+      "recall": 0.7368421052631579,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.55,
+      "false_rejects": 0,
+      "missed_defects": 16,
+      "total_cost": 153263.15789473683,
+      "cost_per_item": 421.05263157894734,
+      "recall": 0.7192982456140351,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.555,
+      "false_rejects": 0,
+      "missed_defects": 16,
+      "total_cost": 153263.15789473683,
+      "cost_per_item": 421.05263157894734,
+      "recall": 0.7192982456140351,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.56,
+      "false_rejects": 0,
+      "missed_defects": 16,
+      "total_cost": 153263.15789473683,
+      "cost_per_item": 421.05263157894734,
+      "recall": 0.7192982456140351,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.5650000000000001,
+      "false_rejects": 0,
+      "missed_defects": 16,
+      "total_cost": 153263.15789473683,
+      "cost_per_item": 421.05263157894734,
+      "recall": 0.7192982456140351,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.5700000000000001,
+      "false_rejects": 0,
+      "missed_defects": 16,
+      "total_cost": 153263.15789473683,
+      "cost_per_item": 421.05263157894734,
+      "recall": 0.7192982456140351,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.5750000000000001,
+      "false_rejects": 0,
+      "missed_defects": 16,
+      "total_cost": 153263.15789473683,
+      "cost_per_item": 421.05263157894734,
+      "recall": 0.7192982456140351,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.58,
+      "false_rejects": 0,
+      "missed_defects": 17,
+      "total_cost": 162842.10526315786,
+      "cost_per_item": 447.3684210526315,
+      "recall": 0.7017543859649122,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.585,
+      "false_rejects": 0,
+      "missed_defects": 18,
+      "total_cost": 172421.05263157893,
+      "cost_per_item": 473.6842105263157,
+      "recall": 0.6842105263157895,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.59,
+      "false_rejects": 0,
+      "missed_defects": 18,
+      "total_cost": 172421.05263157893,
+      "cost_per_item": 473.6842105263157,
+      "recall": 0.6842105263157895,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.595,
+      "false_rejects": 0,
+      "missed_defects": 18,
+      "total_cost": 172421.05263157893,
+      "cost_per_item": 473.6842105263157,
+      "recall": 0.6842105263157895,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.6,
+      "false_rejects": 0,
+      "missed_defects": 18,
+      "total_cost": 172421.05263157893,
+      "cost_per_item": 473.6842105263157,
+      "recall": 0.6842105263157895,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.605,
+      "false_rejects": 0,
+      "missed_defects": 18,
+      "total_cost": 172421.05263157893,
+      "cost_per_item": 473.6842105263157,
+      "recall": 0.6842105263157895,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.61,
+      "false_rejects": 0,
+      "missed_defects": 19,
+      "total_cost": 181999.99999999997,
+      "cost_per_item": 499.99999999999994,
+      "recall": 0.6666666666666666,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.615,
+      "false_rejects": 0,
+      "missed_defects": 19,
+      "total_cost": 181999.99999999997,
+      "cost_per_item": 499.99999999999994,
+      "recall": 0.6666666666666666,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.62,
+      "false_rejects": 0,
+      "missed_defects": 19,
+      "total_cost": 181999.99999999997,
+      "cost_per_item": 499.99999999999994,
+      "recall": 0.6666666666666666,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.625,
+      "false_rejects": 0,
+      "missed_defects": 20,
+      "total_cost": 191578.94736842104,
+      "cost_per_item": 526.3157894736842,
+      "recall": 0.6491228070175439,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.63,
+      "false_rejects": 0,
+      "missed_defects": 22,
+      "total_cost": 210736.84210526315,
+      "cost_per_item": 578.9473684210526,
+      "recall": 0.6140350877192983,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.635,
+      "false_rejects": 0,
+      "missed_defects": 22,
+      "total_cost": 210736.84210526315,
+      "cost_per_item": 578.9473684210526,
+      "recall": 0.6140350877192983,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.64,
+      "false_rejects": 0,
+      "missed_defects": 22,
+      "total_cost": 210736.84210526315,
+      "cost_per_item": 578.9473684210526,
+      "recall": 0.6140350877192983,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.645,
+      "false_rejects": 0,
+      "missed_defects": 22,
+      "total_cost": 210736.84210526315,
+      "cost_per_item": 578.9473684210526,
+      "recall": 0.6140350877192983,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.65,
+      "false_rejects": 0,
+      "missed_defects": 22,
+      "total_cost": 210736.84210526315,
+      "cost_per_item": 578.9473684210526,
+      "recall": 0.6140350877192983,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.655,
+      "false_rejects": 0,
+      "missed_defects": 22,
+      "total_cost": 210736.84210526315,
+      "cost_per_item": 578.9473684210526,
+      "recall": 0.6140350877192983,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.66,
+      "false_rejects": 0,
+      "missed_defects": 23,
+      "total_cost": 220315.78947368418,
+      "cost_per_item": 605.2631578947368,
+      "recall": 0.5964912280701754,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.665,
+      "false_rejects": 0,
+      "missed_defects": 23,
+      "total_cost": 220315.78947368418,
+      "cost_per_item": 605.2631578947368,
+      "recall": 0.5964912280701754,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.67,
+      "false_rejects": 0,
+      "missed_defects": 24,
+      "total_cost": 229894.73684210525,
+      "cost_per_item": 631.578947368421,
+      "recall": 0.5789473684210527,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.675,
+      "false_rejects": 0,
+      "missed_defects": 24,
+      "total_cost": 229894.73684210525,
+      "cost_per_item": 631.578947368421,
+      "recall": 0.5789473684210527,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.68,
+      "false_rejects": 0,
+      "missed_defects": 24,
+      "total_cost": 229894.73684210525,
+      "cost_per_item": 631.578947368421,
+      "recall": 0.5789473684210527,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.685,
+      "false_rejects": 0,
+      "missed_defects": 24,
+      "total_cost": 229894.73684210525,
+      "cost_per_item": 631.578947368421,
+      "recall": 0.5789473684210527,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.6900000000000001,
+      "false_rejects": 0,
+      "missed_defects": 24,
+      "total_cost": 229894.73684210525,
+      "cost_per_item": 631.578947368421,
+      "recall": 0.5789473684210527,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.6950000000000001,
+      "false_rejects": 0,
+      "missed_defects": 24,
+      "total_cost": 229894.73684210525,
+      "cost_per_item": 631.578947368421,
+      "recall": 0.5789473684210527,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.7000000000000001,
+      "false_rejects": 0,
+      "missed_defects": 26,
+      "total_cost": 249052.63157894736,
+      "cost_per_item": 684.2105263157895,
+      "recall": 0.543859649122807,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.705,
+      "false_rejects": 0,
+      "missed_defects": 27,
+      "total_cost": 258631.5789473684,
+      "cost_per_item": 710.5263157894736,
+      "recall": 0.5263157894736842,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.71,
+      "false_rejects": 0,
+      "missed_defects": 27,
+      "total_cost": 258631.5789473684,
+      "cost_per_item": 710.5263157894736,
+      "recall": 0.5263157894736842,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.715,
+      "false_rejects": 0,
+      "missed_defects": 27,
+      "total_cost": 258631.5789473684,
+      "cost_per_item": 710.5263157894736,
+      "recall": 0.5263157894736842,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.72,
+      "false_rejects": 0,
+      "missed_defects": 28,
+      "total_cost": 268210.52631578944,
+      "cost_per_item": 736.8421052631578,
+      "recall": 0.5087719298245614,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.725,
+      "false_rejects": 0,
+      "missed_defects": 30,
+      "total_cost": 287368.4210526316,
+      "cost_per_item": 789.4736842105262,
+      "recall": 0.47368421052631576,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.73,
+      "false_rejects": 0,
+      "missed_defects": 30,
+      "total_cost": 287368.4210526316,
+      "cost_per_item": 789.4736842105262,
+      "recall": 0.47368421052631576,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.735,
+      "false_rejects": 0,
+      "missed_defects": 31,
+      "total_cost": 296947.36842105264,
+      "cost_per_item": 815.7894736842105,
+      "recall": 0.45614035087719296,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.74,
+      "false_rejects": 0,
+      "missed_defects": 31,
+      "total_cost": 296947.36842105264,
+      "cost_per_item": 815.7894736842105,
+      "recall": 0.45614035087719296,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.745,
+      "false_rejects": 0,
+      "missed_defects": 33,
+      "total_cost": 316105.2631578947,
+      "cost_per_item": 868.4210526315788,
+      "recall": 0.42105263157894735,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.75,
+      "false_rejects": 0,
+      "missed_defects": 33,
+      "total_cost": 316105.2631578947,
+      "cost_per_item": 868.4210526315788,
+      "recall": 0.42105263157894735,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.755,
+      "false_rejects": 0,
+      "missed_defects": 33,
+      "total_cost": 316105.2631578947,
+      "cost_per_item": 868.4210526315788,
+      "recall": 0.42105263157894735,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.76,
+      "false_rejects": 0,
+      "missed_defects": 35,
+      "total_cost": 335263.15789473685,
+      "cost_per_item": 921.0526315789474,
+      "recall": 0.38596491228070173,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.765,
+      "false_rejects": 0,
+      "missed_defects": 35,
+      "total_cost": 335263.15789473685,
+      "cost_per_item": 921.0526315789474,
+      "recall": 0.38596491228070173,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.77,
+      "false_rejects": 0,
+      "missed_defects": 35,
+      "total_cost": 335263.15789473685,
+      "cost_per_item": 921.0526315789474,
+      "recall": 0.38596491228070173,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.775,
+      "false_rejects": 0,
+      "missed_defects": 35,
+      "total_cost": 335263.15789473685,
+      "cost_per_item": 921.0526315789474,
+      "recall": 0.38596491228070173,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.78,
+      "false_rejects": 0,
+      "missed_defects": 35,
+      "total_cost": 335263.15789473685,
+      "cost_per_item": 921.0526315789474,
+      "recall": 0.38596491228070173,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.785,
+      "false_rejects": 0,
+      "missed_defects": 36,
+      "total_cost": 344842.10526315786,
+      "cost_per_item": 947.3684210526314,
+      "recall": 0.3684210526315789,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.79,
+      "false_rejects": 0,
+      "missed_defects": 37,
+      "total_cost": 354421.05263157893,
+      "cost_per_item": 973.6842105263157,
+      "recall": 0.3508771929824561,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.795,
+      "false_rejects": 0,
+      "missed_defects": 40,
+      "total_cost": 383157.8947368421,
+      "cost_per_item": 1052.6315789473683,
+      "recall": 0.2982456140350877,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.8,
+      "false_rejects": 0,
+      "missed_defects": 41,
+      "total_cost": 392736.84210526315,
+      "cost_per_item": 1078.9473684210525,
+      "recall": 0.2807017543859649,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.805,
+      "false_rejects": 0,
+      "missed_defects": 41,
+      "total_cost": 392736.84210526315,
+      "cost_per_item": 1078.9473684210525,
+      "recall": 0.2807017543859649,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.81,
+      "false_rejects": 0,
+      "missed_defects": 41,
+      "total_cost": 392736.84210526315,
+      "cost_per_item": 1078.9473684210525,
+      "recall": 0.2807017543859649,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.8150000000000001,
+      "false_rejects": 0,
+      "missed_defects": 42,
+      "total_cost": 402315.7894736842,
+      "cost_per_item": 1105.2631578947369,
+      "recall": 0.2631578947368421,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.8200000000000001,
+      "false_rejects": 0,
+      "missed_defects": 44,
+      "total_cost": 421473.6842105263,
+      "cost_per_item": 1157.8947368421052,
+      "recall": 0.22807017543859648,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.8250000000000001,
+      "false_rejects": 0,
+      "missed_defects": 45,
+      "total_cost": 431052.6315789473,
+      "cost_per_item": 1184.2105263157894,
+      "recall": 0.21052631578947367,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.8300000000000001,
+      "false_rejects": 0,
+      "missed_defects": 45,
+      "total_cost": 431052.6315789473,
+      "cost_per_item": 1184.2105263157894,
+      "recall": 0.21052631578947367,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.835,
+      "false_rejects": 0,
+      "missed_defects": 45,
+      "total_cost": 431052.6315789473,
+      "cost_per_item": 1184.2105263157894,
+      "recall": 0.21052631578947367,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.84,
+      "false_rejects": 0,
+      "missed_defects": 45,
+      "total_cost": 431052.6315789473,
+      "cost_per_item": 1184.2105263157894,
+      "recall": 0.21052631578947367,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.845,
+      "false_rejects": 0,
+      "missed_defects": 46,
+      "total_cost": 440631.57894736837,
+      "cost_per_item": 1210.5263157894735,
+      "recall": 0.19298245614035087,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.85,
+      "false_rejects": 0,
+      "missed_defects": 46,
+      "total_cost": 440631.57894736837,
+      "cost_per_item": 1210.5263157894735,
+      "recall": 0.19298245614035087,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.855,
+      "false_rejects": 0,
+      "missed_defects": 46,
+      "total_cost": 440631.57894736837,
+      "cost_per_item": 1210.5263157894735,
+      "recall": 0.19298245614035087,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.86,
+      "false_rejects": 0,
+      "missed_defects": 47,
+      "total_cost": 450210.5263157895,
+      "cost_per_item": 1236.842105263158,
+      "recall": 0.17543859649122806,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.865,
+      "false_rejects": 0,
+      "missed_defects": 48,
+      "total_cost": 459789.4736842105,
+      "cost_per_item": 1263.157894736842,
+      "recall": 0.15789473684210525,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.87,
+      "false_rejects": 0,
+      "missed_defects": 48,
+      "total_cost": 459789.4736842105,
+      "cost_per_item": 1263.157894736842,
+      "recall": 0.15789473684210525,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.875,
+      "false_rejects": 0,
+      "missed_defects": 48,
+      "total_cost": 459789.4736842105,
+      "cost_per_item": 1263.157894736842,
+      "recall": 0.15789473684210525,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.88,
+      "false_rejects": 0,
+      "missed_defects": 50,
+      "total_cost": 478947.3684210526,
+      "cost_per_item": 1315.7894736842104,
+      "recall": 0.12280701754385964,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.885,
+      "false_rejects": 0,
+      "missed_defects": 50,
+      "total_cost": 478947.3684210526,
+      "cost_per_item": 1315.7894736842104,
+      "recall": 0.12280701754385964,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.89,
+      "false_rejects": 0,
+      "missed_defects": 50,
+      "total_cost": 478947.3684210526,
+      "cost_per_item": 1315.7894736842104,
+      "recall": 0.12280701754385964,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.895,
+      "false_rejects": 0,
+      "missed_defects": 50,
+      "total_cost": 478947.3684210526,
+      "cost_per_item": 1315.7894736842104,
+      "recall": 0.12280701754385964,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.9,
+      "false_rejects": 0,
+      "missed_defects": 50,
+      "total_cost": 478947.3684210526,
+      "cost_per_item": 1315.7894736842104,
+      "recall": 0.12280701754385964,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.905,
+      "false_rejects": 0,
+      "missed_defects": 51,
+      "total_cost": 488526.31578947365,
+      "cost_per_item": 1342.1052631578946,
+      "recall": 0.10526315789473684,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.91,
+      "false_rejects": 0,
+      "missed_defects": 52,
+      "total_cost": 498105.2631578947,
+      "cost_per_item": 1368.421052631579,
+      "recall": 0.08771929824561403,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.915,
+      "false_rejects": 0,
+      "missed_defects": 52,
+      "total_cost": 498105.2631578947,
+      "cost_per_item": 1368.421052631579,
+      "recall": 0.08771929824561403,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.92,
+      "false_rejects": 0,
+      "missed_defects": 53,
+      "total_cost": 507684.2105263157,
+      "cost_per_item": 1394.736842105263,
+      "recall": 0.07017543859649122,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.925,
+      "false_rejects": 0,
+      "missed_defects": 53,
+      "total_cost": 507684.2105263157,
+      "cost_per_item": 1394.736842105263,
+      "recall": 0.07017543859649122,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.93,
+      "false_rejects": 0,
+      "missed_defects": 53,
+      "total_cost": 507684.2105263157,
+      "cost_per_item": 1394.736842105263,
+      "recall": 0.07017543859649122,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.935,
+      "false_rejects": 0,
+      "missed_defects": 53,
+      "total_cost": 507684.2105263157,
+      "cost_per_item": 1394.736842105263,
+      "recall": 0.07017543859649122,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.9400000000000001,
+      "false_rejects": 0,
+      "missed_defects": 54,
+      "total_cost": 517263.1578947368,
+      "cost_per_item": 1421.0526315789473,
+      "recall": 0.05263157894736842,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.9450000000000001,
+      "false_rejects": 0,
+      "missed_defects": 54,
+      "total_cost": 517263.1578947368,
+      "cost_per_item": 1421.0526315789473,
+      "recall": 0.05263157894736842,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.9500000000000001,
+      "false_rejects": 0,
+      "missed_defects": 54,
+      "total_cost": 517263.1578947368,
+      "cost_per_item": 1421.0526315789473,
+      "recall": 0.05263157894736842,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.9550000000000001,
+      "false_rejects": 0,
+      "missed_defects": 56,
+      "total_cost": 536421.0526315789,
+      "cost_per_item": 1473.6842105263156,
+      "recall": 0.017543859649122806,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.96,
+      "false_rejects": 0,
+      "missed_defects": 56,
+      "total_cost": 536421.0526315789,
+      "cost_per_item": 1473.6842105263156,
+      "recall": 0.017543859649122806,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.965,
+      "false_rejects": 0,
+      "missed_defects": 56,
+      "total_cost": 536421.0526315789,
+      "cost_per_item": 1473.6842105263156,
+      "recall": 0.017543859649122806,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.97,
+      "false_rejects": 0,
+      "missed_defects": 56,
+      "total_cost": 536421.0526315789,
+      "cost_per_item": 1473.6842105263156,
+      "recall": 0.017543859649122806,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.975,
+      "false_rejects": 0,
+      "missed_defects": 56,
+      "total_cost": 536421.0526315789,
+      "cost_per_item": 1473.6842105263156,
+      "recall": 0.017543859649122806,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.98,
+      "false_rejects": 0,
+      "missed_defects": 56,
+      "total_cost": 536421.0526315789,
+      "cost_per_item": 1473.6842105263156,
+      "recall": 0.017543859649122806,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.985,
+      "false_rejects": 0,
+      "missed_defects": 56,
+      "total_cost": 536421.0526315789,
+      "cost_per_item": 1473.6842105263156,
+      "recall": 0.017543859649122806,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.99,
+      "false_rejects": 0,
+      "missed_defects": 57,
+      "total_cost": 546000.0,
+      "cost_per_item": 1500.0,
+      "recall": 0.0,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 0.995,
+      "false_rejects": 0,
+      "missed_defects": 57,
+      "total_cost": 546000.0,
+      "cost_per_item": 1500.0,
+      "recall": 0.0,
+      "specificity": 1.0
+    },
+    {
+      "threshold": 1.0,
+      "false_rejects": 0,
+      "missed_defects": 57,
+      "total_cost": 546000.0,
+      "cost_per_item": 1500.0,
+      "recall": 0.0,
+      "specificity": 1.0
+    }
+  ]
+}

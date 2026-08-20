@@ -62,6 +62,11 @@ class DecisionConfig:
     operating_threshold: float
     platt: PlattParameters
     conformal: ConformalQuantiles
+    #: "binary" tidak pernah mengembalikan REVIEW; "three_class" boleh menahan.
+    mode: str = "binary"
+    #: Ambang keyakinan pemisah PASS dan REJECT pada mode biner. Dipilih pada
+    #: set kalibrasi dengan meminimumkan biaya, bukan dari hasil set uji.
+    binary_threshold: float = 0.22
     severity_weights: dict[str, float] = field(default_factory=dict)
     #: Kelas yang langsung ditolak berapa pun luasnya, karena berdampak pada
     #: keamanan konsumsi dan bukan sekadar cacat penampilan.
@@ -79,6 +84,8 @@ class DecisionConfig:
             anomaly_threshold=float(decision["anomaly_threshold"]),
             min_confidence=float(decision["min_confidence"]),
             operating_threshold=float(decision["cost"]["operating_threshold"]),
+            mode=str(decision.get("mode", "binary")),
+            binary_threshold=float(decision.get("binary_threshold", 0.22)),
             platt=PlattParameters(
                 slope=float(calibration["platt_slope"]),
                 intercept=float(calibration["platt_intercept"]),
@@ -165,6 +172,11 @@ def decide(
             top_confidence=float(raw_confidence),
         )
 
+    if config.mode == "binary":
+        return _decide_binary(
+            defects, raw_confidence, defect_area_pct, anomaly_score, config, build
+        )
+
     if len(labels) != 1:
         reason = (
             "sistem tidak dapat memastikan kondisi produk pada tingkat jaminan "
@@ -208,6 +220,61 @@ def decide(
             f"tidak ada cacat yang dikenali, tetapi skor anomali "
             f"{anomaly_score:.2f} melampaui ambang {config.anomaly_threshold:.2f}; "
             "kemungkinan cacat jenis baru",
+        )
+
+    return build(PASS, "tidak ditemukan cacat maupun penyimpangan dari normal")
+
+
+def _decide_binary(
+    defects: Sequence[DetectedDefect],
+    raw_confidence: float,
+    defect_area_pct: float,
+    anomaly_score: float,
+    config: DecisionConfig,
+    build: Any,
+) -> Verdict:
+    """Putuskan PASS atau REJECT tanpa pernah menahan keputusan.
+
+    Ambang keyakinan di sini menggantikan peran ``min_confidence`` pada mode
+    tiga kelas. Pada mode tiga kelas, cacat yang terdeteksi lemah diserahkan ke
+    manusia; di sini cacat itu ditolak, karena pada produk pangan melewatkan
+    cacat jauh lebih mahal daripada menolak produk yang sebenarnya baik.
+    Perbandingan biayanya bukan pendapat: 50.000 berbanding 2.000 rupiah pada
+    model biaya di config.
+
+    Himpunan prediksi conformal tetap dihitung dan tetap dilaporkan supaya
+    keputusan dapat ditelusuri, tetapi tidak lagi dipakai menahan keputusan.
+    """
+    critical = next(
+        (d for d in defects if d.class_name in config.critical_classes), None
+    )
+    if critical is not None:
+        return build(
+            REJECT,
+            f"terdeteksi {critical.class_name}, yang ditolak berapa pun luasnya "
+            "karena berdampak pada keamanan konsumsi",
+        )
+
+    if defect_area_pct > config.area_pct_threshold:
+        return build(
+            REJECT,
+            f"luas cacat {defect_area_pct:.2f} persen melampaui batas "
+            f"{config.area_pct_threshold:.2f} persen",
+        )
+
+    if raw_confidence >= config.binary_threshold:
+        return build(
+            REJECT,
+            f"cacat terdeteksi dengan keyakinan {raw_confidence:.2f}, "
+            f"melampaui ambang keputusan {config.binary_threshold:.2f}",
+        )
+
+    if anomaly_score > config.anomaly_threshold:
+        return build(
+            REJECT,
+            f"tidak ada cacat yang dikenali, tetapi skor anomali "
+            f"{anomaly_score:.2f} melampaui ambang {config.anomaly_threshold:.2f}; "
+            "produk menyimpang dari contoh normal",
         )
 
     return build(PASS, "tidak ditemukan cacat maupun penyimpangan dari normal")

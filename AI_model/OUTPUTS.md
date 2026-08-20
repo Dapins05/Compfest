@@ -294,7 +294,7 @@ bersih kini menghasilkan PASS, bukan REVIEW.
 
 | Berkas | Tanggung jawab |
 |---|---|
-| `src/visionqc_ai/inference/decision.py` | mesin keputusan PASS, REJECT, REVIEW |
+| `src/visionqc_ai/inference/decision.py` | mesin keputusan; mode biner PASS/REJECT dan mode tiga kelas |
 | `src/visionqc_ai/export/onnx_export.py` | ekspor ONNX dan pengukuran latensi |
 | `scripts/export_onnx.py` | menjalankan ekspor dan tolok ukur |
 
@@ -438,7 +438,30 @@ apa adanya sebagai bagian dari audit.
 
 ---
 
-## 13. Menghasilkan Ulang Semuanya
+## 13. Keputusan Biner Tanpa REVIEW (20 Agu 2026)
+
+### Kode
+
+| Berkas | Tanggung jawab |
+|---|---|
+| `scripts/select_binary_threshold.py` | memilih ambang biner pada set kalibrasi |
+| `src/visionqc_ai/inference/decision.py` | jalur `_decide_binary` |
+
+### Bukti yang tersimpan
+
+| Berkas | Isi |
+|---|---|
+| `reports/metrics/binary_threshold.json` | ambang terpilih, kurva biaya, hasil kalibrasi dan uji |
+
+### Angka kunci
+
+Ambang 0,22, dipilih pada set kalibrasi dengan meminimumkan biaya. Pada uji
+diperluas 359 gambar: recall 0,9615, specificity 0,9642, akurasi 0,9638,
+**REVIEW nol**. Ambang lama 0,60 hanya mencapai recall 0,5769.
+
+---
+
+## 14. Menghasilkan Ulang Semuanya
 
 Dari repo bersih, dengan `data/raw/` sudah terisi dataset publik:
 
@@ -470,7 +493,7 @@ sifat nondeterministik operasi CUDA tertentu.
 
 ---
 
-## 14. Yang Belum Ada
+## 15. Yang Belum Ada
 
 Belum ada satu pun keluaran untuk Step 3 (generator cacat sintetik). Seluruh sel
 metrik yang berkaitan di `EXPERIMENTS.md` masih bertuliskan `belum diukur` dan

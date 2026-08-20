@@ -107,7 +107,7 @@ gambar masuk
                       EfficientAD           conformal + kalibrasi + ambang EVT
                       PaddleOCR
    |
-[ Decision engine ]   PASS / REJECT / REVIEW + alasan
+[ Decision engine ]   PASS / REJECT + alasan
    |
 InspectionResult --> Backend
 ```
