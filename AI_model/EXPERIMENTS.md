@@ -748,7 +748,90 @@ utuh terukur sekitar 140 ms per gambar setelah model dimuat, termasuk
 prapemrosesan, deteksi, segmentasi, perhitungan luas, keputusan, dan
 penggambaran anotasi.
 
-## 8. Riwayat Run
+## 8. Keputusan Biner Tanpa REVIEW
+
+Tanggal 20 Agustus 2026.
+
+### Mengapa diubah
+
+Pada mode tiga kelas, split uji 59 gambar menghasilkan 18 REVIEW. Pembedahan
+per kasus menunjukkan seluruhnya berasal dari **satu aturan**, yaitu
+`min_confidence: 0.60`. Himpunan prediksi conformal ternyata tunggal pada
+setiap gambar, sehingga aturan ketidakpastian conformal tidak pernah sekali pun
+memicu REVIEW.
+
+Yang lebih menentukan: **17 dari 18 kasus itu cacat sungguhan yang sudah
+terdeteksi model**, dengan keyakinan 0,30 sampai 0,57. Semuanya diserahkan ke
+manusia hanya karena kalah dari ambang 0,60 yang dipilih tangan. Satu sisanya
+gambar normal dengan deteksi palsu berkeyakinan 0,258.
+
+Jadi angka REVIEW yang tinggi bukan tanda model ragu, melainkan tanda ambangnya
+kelewat tinggi.
+
+### Bagaimana ambang barunya dipilih
+
+Ambang dipilih **pada set kalibrasi** dengan meminimumkan biaya yang
+diharapkan, memakai model biaya yang sudah ada: salah tolak Rp2.000, cacat
+lolos Rp50.000, prevalensi cacat diasumsikan 3 persen. Set uji tidak dilihat
+sama sekali selama pemilihan. Prosedurnya ada di
+`scripts/select_binary_threshold.py` dan dapat diulang.
+
+Hasil pada kalibrasi (n=364, 57 cacat): ambang **0,22**, recall 0,9298,
+specificity 0,9805, biaya Rp143,2 per unit.
+
+Satu jebakan yang sempat terlewat: ambang NMS deteksi masih 0,25, di atas
+ambang keputusan 0,22. Selama keduanya berbeda, ambang keputusan tidak pernah
+tercapai karena deteksi lemah sudah dibuang lebih dulu. Keduanya kini
+disamakan pada 0,22.
+
+### Hasil pada set uji
+
+Dilaporkan tanpa penyetelan lebih lanjut.
+
+| Ambang | Recall | Specificity | Biaya per unit |
+|---|---|---|---|
+| 0,60 (lama, pilihan tangan) | 0,5769 | 1,0000 | Rp634,6 |
+| **0,22 (terpilih pada kalibrasi)** | **0,9615** | 0,9837 | **Rp89,3** |
+
+Recall naik dari 0,58 menjadi 0,96, dengan biaya turun 86 persen.
+
+### Hasil ujung-ke-ujung pipeline
+
+Angka di atas berasal dari sapuan ambang atas keyakinan saja. Pipeline
+sungguhnya menjalankan lebih banyak aturan, sehingga hasilnya diukur ulang.
+
+Uji diperluas, 359 gambar (52 cacat, 307 normal):
+
+| kebenaran | PASS | REJECT | REVIEW |
+|---|---|---|---|
+| normal | 296 | 11 | **0** |
+| cacat | 2 | 50 | **0** |
+
+Recall 0,9615 · specificity 0,9642 · akurasi 0,9638 · REVIEW nol.
+
+Perhatikan selisihnya: sapuan memperkirakan 5 salah tolak, pipeline
+menghasilkan 11. Selisih 6 itu datang dari aturan lain yang tidak ikut dalam
+sapuan, yaitu jaring pengaman anomali (4 gambar) dan aturan kelas kritis
+(1 gambar). Inilah sebabnya angka yang dilaporkan diambil dari pipeline utuh,
+bukan dari sapuan.
+
+### Yang tetap salah
+
+Dua cacat masih lolos sebagai PASS, `visa_cashew_anomaly_084` dan `_088`.
+Keduanya tidak menghasilkan deteksi sama sekali pada ambang berapa pun, dan
+skor anomalinya 24,5 dan 19,4, berada di dalam rentang gambar normal. Tidak
+ada ambang yang dapat menangkap keduanya tanpa menolak banyak produk baik.
+Menambah data adalah satu-satunya jalan.
+
+### Mode tiga kelas tidak dihapus
+
+Kode conformal, Platt, dan jalur tiga kelas tetap ada dan tetap diuji. Yang
+berubah hanya `decision.mode` pada config. Tahap Final berencana memakai
+kembali penahanan keputusan ketika biaya operator ikut dimodelkan.
+
+---
+
+## 9. Riwayat Run
 
 | # | Tgl | Model | Perubahan | Hasil | Keputusan |
 |---|---|---|---|---|---|
@@ -766,7 +849,7 @@ penggambaran anotasi.
 
 ---
 
-## 9. Kegagalan & Pelajaran
+## 10. Kegagalan & Pelajaran
 
 *(Isi bagian ini dengan jujur - kegagalan yang tercatat justru memperkuat kredibilitas proposal
 dan menunjukkan proses kerja yang nyata.)*

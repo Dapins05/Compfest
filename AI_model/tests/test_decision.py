@@ -7,6 +7,7 @@ pada data nyata yang paling perlu dijaga perilakunya.
 
 from __future__ import annotations
 
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -30,6 +31,16 @@ def config() -> DecisionConfig:
         return DecisionConfig.from_yaml(yaml.safe_load(handle))
 
 
+@pytest.fixture(scope="module")
+def three_class(config: DecisionConfig) -> DecisionConfig:
+    """Konfigurasi mode tiga kelas, yang masih boleh menahan keputusan.
+
+    Mode ini tidak dipakai saat penyajian tetapi tetap dijaga perilakunya,
+    karena tahap Final berencana memakainya kembali.
+    """
+    return replace(config, mode="three_class")
+
+
 def run(config: DecisionConfig, defects, area=0.0, anomaly=0.0):
     return decide(defects, defect_area_pct=area, anomaly_score=anomaly, config=config)
 
@@ -47,18 +58,64 @@ def test_luas_melampaui_ambang_ditolak(config: DecisionConfig) -> None:
     assert "melampaui batas" in verdict.reason
 
 
-def test_keyakinan_rendah_diserahkan_ke_manusia(config: DecisionConfig) -> None:
-    """Model yang tidak yakin tidak boleh memutuskan sendiri."""
-    verdict = run(config, [DetectedDefect("noda", 0.30)], area=0.2)
+def test_mode_bawaan_adalah_biner(config: DecisionConfig) -> None:
+    """Config yang dikirim ke Backend tidak boleh menahan keputusan."""
+    assert config.mode == "binary"
+
+
+def test_keyakinan_rendah_diserahkan_ke_manusia(three_class: DecisionConfig) -> None:
+    """Pada mode tiga kelas, model yang tidak yakin tidak memutuskan sendiri."""
+    verdict = run(three_class, [DetectedDefect("noda", 0.30)], area=0.2)
     assert verdict.label == REVIEW
 
 
-def test_anomali_tinggi_tanpa_cacat_dikenali(config: DecisionConfig) -> None:
+def test_biner_menolak_cacat_yang_terdeteksi_lemah(config: DecisionConfig) -> None:
+    """Cacat lemah ditolak, bukan diserahkan ke manusia.
+
+    Pada produk pangan, melewatkan cacat jauh lebih mahal daripada menolak
+    produk yang sebenarnya baik.
+    """
+    verdict = run(config, [DetectedDefect("noda", 0.30)], area=0.2)
+    assert verdict.label == REJECT
+
+
+def test_biner_meloloskan_di_bawah_ambang_keputusan(config: DecisionConfig) -> None:
+    weak = config.binary_threshold - 0.05
+    verdict = run(config, [DetectedDefect("gores", weak)], area=0.1)
+    assert verdict.label == PASS
+
+
+def test_anomali_tinggi_tanpa_cacat_dikenali(three_class: DecisionConfig) -> None:
     """Jaring pengaman untuk cacat jenis baru yang belum pernah dilabeli."""
-    high = config.anomaly_threshold + 10.0
-    verdict = decide([], defect_area_pct=0.0, anomaly_score=high, config=config)
+    high = three_class.anomaly_threshold + 10.0
+    verdict = decide([], defect_area_pct=0.0, anomaly_score=high, config=three_class)
     assert verdict.label == REVIEW
     assert verdict.anomaly_score == pytest.approx(high)
+
+
+def test_biner_menolak_anomali_tinggi(config: DecisionConfig) -> None:
+    high = config.anomaly_threshold + 10.0
+    verdict = decide([], defect_area_pct=0.0, anomaly_score=high, config=config)
+    assert verdict.label == REJECT
+
+
+def test_mode_biner_tidak_pernah_menahan_keputusan(config: DecisionConfig) -> None:
+    """Tidak ada kombinasi masukan yang menghasilkan REVIEW pada mode biner."""
+    grid = [
+        run(config, defects, area=area, anomaly=anomaly)
+        for defects in (
+            [],
+            [DetectedDefect("gores", 0.05)],
+            [DetectedDefect("noda", 0.30)],
+            [DetectedDefect("kotor", 0.10)],
+            [DetectedDefect("pecah", 0.99)],
+            [DetectedDefect("deformasi", 0.21), DetectedDefect("gores", 0.23)],
+        )
+        for area in (0.0, 0.5, 2.0, 25.0)
+        for anomaly in (0.0, 39.0, 40.0, 500.0)
+    ]
+    assert grid
+    assert all(v.label in (PASS, REJECT) for v in grid)
 
 
 def test_ambang_bersifat_statis(config: DecisionConfig) -> None:

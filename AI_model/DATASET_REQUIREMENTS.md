@@ -102,7 +102,128 @@ bukan sekadar narasi.
 ---
 
 
-## 3. Tier 2 - Data Sintetik (WAJIB, dibuat di Step 3)
+## 3. Lisensi dan Atribusi
+
+Wajib dicantumkan karena repo bersifat publik dan kedua dataset menuntut
+atribusi. Salah satunya juga membatasi pemakaian komersial.
+
+| Dataset | Lisensi | Konsekuensi |
+|---|---|---|
+| MVTec AD | CC BY-NC-SA 4.0 | Atribusi wajib, **non-komersial**, turunan mengikuti lisensi yang sama |
+| VisA | CC BY 4.0 | Atribusi wajib, pemakaian komersial diizinkan |
+
+Yang perlu diperhatikan tim: `reports/figures/dataset_samples_train.png` dan
+`dataset_samples_test.png` memuat cuplikan gambar dari kedua dataset. Selama
+repo ini dipakai untuk lomba dan bukan untuk tujuan komersial, penyertaan itu
+masih di dalam ketentuan CC BY-NC-SA sepanjang atribusinya jelas. Bila proyek
+ini nanti dikomersialkan, kedua figur tersebut dan seluruh turunan MVTec harus
+dikeluarkan lebih dulu.
+
+Sitasi yang dipakai:
+
+- Bergmann, P., Fauser, M., Sattlegger, D., Steger, C. *MVTec AD - A
+  Comprehensive Real-World Dataset for Unsupervised Anomaly Detection.* CVPR
+  2019.
+- Zou, Y., Jeong, J., Pemula, L., Zhang, D., Dabeer, O. *SPot-the-Difference
+  Self-Supervised Pre-training for Anomaly Detection and Segmentation (VisA).*
+  ECCV 2022.
+
+---
+
+## 4. Sumber Tambahan untuk Memperbesar Data
+
+Diverifikasi 20 Agustus 2026. Diurutkan menurut manfaatnya bagi proyek ini,
+bukan menurut popularitasnya.
+
+### 4.1 PKU-GoodsAD - paling cocok
+
+Satu-satunya dataset publik yang isinya benar-benar barang belanjaan kemasan,
+bukan komponen industri. Kategorinya bertepatan langsung dengan domain proyek
+ini.
+
+| | |
+|---|---|
+| Sumber | https://github.com/jianzhang96/GoodsAD |
+| Makalah | PKU-GoodsAD, IEEE RA-L 2024 |
+| Lisensi | GPL-3.0 |
+| Isi | 6.124 gambar, 484 barang berbeda, 6 kategori |
+| Anotasi | tingkat gambar **dan** mask piksel |
+
+| Kategori | Latih normal | Uji normal | Uji cacat |
+|---|---|---|---|
+| `drink_bottle` | 733 | 356 | 425 |
+| `food_bottle` | 1.014 | 243 | 361 |
+| `food_package` | 540 | 253 | 230 |
+| `food_box` | 432 | 146 | 251 |
+| `drink_can` | 234 | 147 | 147 |
+| `cigarette_box` | 183 | 183 | 246 |
+
+Jenis cacatnya deformasi, kerusakan permukaan, dan kemasan terbuka. Dua yang
+pertama persis kelas yang paling kekurangan contoh pada dataset sekarang.
+
+Dua sifat yang membuatnya lebih menantang sekaligus lebih berguna: posisi objek
+**tidak disejajarkan**, dan satu kategori memuat banyak barang dengan tampilan
+berbeda. Keduanya lebih menyerupai gambar yang akan diunggah pengguna
+sungguhan daripada MVTec yang serba terpusat.
+
+Unduhan lewat OneDrive atau Baidu Disk, per kategori 1,1 sampai 3,0 GB.
+Ambil `drink_bottle`, `food_bottle`, dan `food_package` lebih dulu; ketiganya
+sudah menambah sekitar 1.000 gambar cacat bermask.
+
+**Catatan lisensi:** GPL-3.0 menular pada karya turunan. Perlu diputuskan tim
+sebelum dipakai.
+
+### 4.2 MVTec LOCO AD - kategori `juice_bottle`
+
+| | |
+|---|---|
+| Sumber | https://www.mvtec.com/company/research/datasets/mvtec-loco/downloads |
+| Lisensi | CC BY-NC-SA 4.0, non-komersial |
+| Ukuran | `juice_bottle` 625 MB, seluruhnya 5,71 GB |
+
+Nilainya bukan pada jumlah, melainkan pada jenis cacatnya: selain cacat
+struktural, ada **cacat logis** seperti label tertukar, isi keliru, atau
+komponen yang seharusnya ada tetapi tidak ada. Cacat semacam itu tidak ada
+sama sekali pada dataset sekarang, dan justru itu yang sering terjadi pada
+kemasan minuman sungguhan.
+
+### 4.3 Real-IAD - bila butuh skala
+
+| | |
+|---|---|
+| Makalah | CVPR 2024, https://arxiv.org/pdf/2403.12580 |
+| Isi | 150.000 gambar, 30 objek, lima sudut pandang per objek |
+
+Satu tingkat lebih besar daripada dataset yang ada. Berguna untuk pralatih
+model anomali, tetapi objeknya lebih banyak komponen industri daripada
+kemasan pangan. Perlu memeriksa syarat aksesnya lebih dulu; tidak semua
+bagian dapat diunduh bebas.
+
+### 4.4 Roboflow Universe - pelengkap kecil
+
+Beberapa kumpulan kecil yang sudah berlabel kotak, misalnya
+`spark-intelligence-scqhh/bottle-defect-detection` (262 gambar) dan
+`teamsawa/beverage-packaging` (152 gambar). Ukurannya terlalu kecil untuk
+mengubah hasil training, dan lisensinya berbeda-beda per kumpulan sehingga
+harus diperiksa satu per satu. Berguna sebagai gambar demo, bukan sebagai
+data latih utama.
+
+### Rekomendasi
+
+Ambil **PKU-GoodsAD** `drink_bottle`, `food_bottle`, dan `food_package`, dengan
+syarat tim menerima GPL-3.0. Itu menambah sekitar 1.000 gambar cacat bermask
+pada domain yang tepat, dan tiga kategori itu saja sudah lebih besar daripada
+seluruh data cacat yang dipakai sekarang.
+
+Sebelum menambah data, dua hal harus disiapkan: pemetaan jenis cacatnya ke
+taksonomi lima kelas di `src/visionqc_ai/data/taxonomy.py`, dan konverter
+tersendiri karena tata letak foldernya berbeda lagi. Menambah data juga
+berarti **melatih ulang dan mengukur ulang seluruhnya**; angka Step 4 sampai 7
+yang sekarang tidak berlaku lagi untuk model baru.
+
+---
+
+## 5. Tier 2 - Data Sintetik (WAJIB, dibuat di Step 3)
 
 Panitia **secara eksplisit mengizinkan data sintetik** . Ini bukan jalan pintas - ini menyelesaikan
 masalah nyata dan sekaligus menjadi diferensiator.
@@ -127,7 +248,7 @@ Kualitas tiap gambar sintetik divalidasi dengan **jarak Wasserstein** dan **uji 
 
 ---
 
-## 4. Tier 3 - Foto Produk Lokal (Opsional, nilai tinggi)
+## 6. Tier 3 - Foto Produk Lokal (Opsional, nilai tinggi)
 
 **Tidak untuk melatih model** - untuk **gambar contoh di aplikasi dan video demo** .
 
@@ -154,7 +275,7 @@ Simpan di `AI_model/data/raw/local_samples/`.
 
 ---
 
-## 5. Struktur Folder Sebagaimana Adanya
+## 7. Struktur Folder Sebagaimana Adanya
 
 Hasil ekstraksi **berbeda** dari yang semula diasumsikan dokumen ini: MVTec
 terekstrak dengan folder ganda, dan VisA memakai tata letak `Data/Images/...`.
@@ -187,7 +308,7 @@ AI_model/data/processed/
 |-- anomaly/<kategori>/{train/good, test/good, test/defect}/
 ```
 
-## 6. Verifikasi - SUDAH DILAKUKAN
+## 8. Verifikasi - SUDAH DILAKUKAN
 
 Dijalankan 18 Agustus 2026:
 
@@ -208,7 +329,7 @@ python scripts/prepare_dataset.py --dry-run    # tanpa menulis gambar
 python scripts/preview_dataset.py --split test # lembar kontak verifikasi anotasi
 ```
 
-## 7. Kalau Terkendala
+## 9. Kalau Terkendala
 
 | Kendala | Jalan keluar |
 |---|---|
