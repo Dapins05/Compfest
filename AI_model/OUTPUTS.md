@@ -401,7 +401,44 @@ Sebelas uji privasi lolos, seluruhnya memakai gambar sintetik.
 
 ---
 
-## 12. Menghasilkan Ulang Semuanya
+## 12. Audit Kesiapan Sambung ke Backend (20 Agu 2026)
+
+Pemeriksaan menyeluruh seluruh berkas modul menjelang penyerahan ke Backend.
+Tujuannya bukan menambah fitur, melainkan menguji apakah yang sudah ada
+benar-benar berjalan ketika dipakai sebuah layanan.
+
+### Yang ditemukan dan diperbaiki
+
+| Temuan | Akibat bila dibiarkan | Perbaikan |
+|---|---|---|
+| Pendeteksi wajah dipakai bersama tanpa kunci | Backend gugur begitu dua pengguna mengunggah bersamaan | Kunci pada `privacy/face_blur.py` dan pada `inspect()` |
+| `max_file_size_mb`, `allowed_formats`, `max_dimension` tertulis di config tetapi tidak pernah diperiksa | Berkas 18 MB, BMP, dan gambar 5000 piksel diterima | Modul `inference/validation.py` |
+| Galat masukan tidak dapat dibedakan dari galat sistem | Backend tidak dapat memilih antara 400 dan 500 | `InvalidImageError` |
+| `warmup_on_startup: true` tidak pernah dijalankan | Permintaan pertama memakan 4,8 detik | `InspectionPipeline.warmup()` |
+| Akar proyek dihitung dari kedalaman folder sumber | Salah menunjuk begitu paket dipasang ke tempat lain | `default_project_root()` dan `VISIONQC_ROOT` |
+| `Defect.area_pct` selalu kosong | Medan kontrak tidak pernah terisi | Irisan mask segmentasi dengan wilayah kotak |
+| `ephemeral_buffers: true` tidak pernah dipanggil pipeline | Klaim privasi tidak sesuai kode | Buffer ditimpa setelah keluaran terbentuk |
+
+Contoh pemakaian pada README semula menuliskan `run_inspection(image_bytes,
+config)`, tanda tangan yang tidak pernah ada. Sudah diperbaiki dan dijalankan
+apa adanya sebagai bagian dari audit.
+
+### Bukti
+
+| Pemeriksaan | Hasil |
+|---|---|
+| Uji otomatis | 35 lolos, 11 di antaranya baru pada `tests/test_integration.py` |
+| Uji regresi kunci pendeteksi wajah | gagal ketika kunci dilepas, lolos ketika dipasang |
+| Delapan permintaan bersamaan pada empat thread | hasil identik dengan pemanggilan berurutan, 8 dari 8 |
+| Ekspor split uji 59 gambar | tidak bergeser: normal 6/0/1, cacat 2/33/17 |
+| SHA-256 keempat model terhadap manifest | cocok seluruhnya |
+| Unduhan release tanpa kredensial | HTTP 200 untuk keempat berkas |
+| Impor dari direktori lain sebagai paket terpasang | berhasil |
+| Latensi setelah warmup | sekitar 230 milidetik per gambar |
+
+---
+
+## 13. Menghasilkan Ulang Semuanya
 
 Dari repo bersih, dengan `data/raw/` sudah terisi dataset publik:
 
@@ -433,7 +470,7 @@ sifat nondeterministik operasi CUDA tertentu.
 
 ---
 
-## 13. Yang Belum Ada
+## 14. Yang Belum Ada
 
 Belum ada satu pun keluaran untuk Step 3 (generator cacat sintetik). Seluruh sel
 metrik yang berkaitan di `EXPERIMENTS.md` masih bertuliskan `belum diukur` dan

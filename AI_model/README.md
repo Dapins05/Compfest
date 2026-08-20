@@ -4,10 +4,67 @@ Modul inspeksi kualitas berbasis computer vision untuk **makanan & minuman kemas
 Keluaran akhir modul ini adalah satu fungsi yang dipanggil Backend.
 
 ```python
-from visionqc_ai import run_inspection, InspectionResult
+from visionqc_ai import InspectionResult, run_inspection
 
-result: InspectionResult = run_inspection(image_bytes, config)
+result: InspectionResult = run_inspection(image_bytes)
 ```
+
+---
+
+## Titik Sambung ke Backend
+
+Backend cukup memakai empat nama. Tidak ada yang lain dari modul ini yang perlu
+diimpor.
+
+```python
+from visionqc_ai import (
+    InspectionResult,   # model Pydantic, langsung dapat dikembalikan FastAPI
+    InvalidImageError,  # kesalahan pada berkas kiriman pengguna
+    load_pipeline,      # dipanggil sekali saat startup
+    run_inspection,     # dipanggil per permintaan
+)
+```
+
+**Saat startup.** Panggil `load_pipeline()` satu kali. Bobot dimuat dan warmup
+dijalankan di sana, sehingga permintaan pertama tidak menanggung biaya
+pemuatan. Selisihnya nyata: tanpa warmup panggilan pertama memakan sekitar 4,8
+detik, dengan warmup sekitar 0,25 detik.
+
+```python
+pipeline = load_pipeline()
+if not pipeline.ready:
+    ...  # bobot belum diunduh; jalankan scripts/download_models.py
+```
+
+`pipeline.ready`, `pipeline.anomaly_available`, dan `pipeline.face_blur_available`
+dapat dipakai mengisi endpoint kesehatan. Ketiganya melaporkan keadaan apa
+adanya: bila sebuah model tidak ada, sistem tetap berjalan dengan kemampuan
+berkurang dan mengatakannya, alih-alih diam-diam melewatinya.
+
+**Per permintaan.**
+
+```python
+try:
+    result = run_inspection(image_bytes)
+except InvalidImageError as exc:      # berkas pengguna yang tidak memenuhi syarat
+    raise HTTPException(status_code=400, detail=str(exc)) from exc
+```
+
+`InvalidImageError` adalah turunan `ValueError` dan hanya dilempar untuk
+kesalahan pada masukan: berkas kosong, format di luar daftar izin, ukuran
+melebihi 10 MB, dimensi di luar rentang 224 sampai 4096 piksel, atau berkas
+yang tidak dapat diurai sebagai gambar. Galat jenis lain berarti kegagalan
+sistem dan pantas dijawab 500.
+
+**Yang perlu diketahui:**
+
+| Hal | Keterangan |
+|---|---|
+| Letak config dan model | Ditelusuri dari penanda `configs/inference.yaml`. Bila Backend menaruhnya di tempat lain, setel variabel lingkungan `VISIONQC_ROOT` |
+| Permintaan bersamaan | Aman. Inspeksi dijalankan satu per satu di dalam kunci, karena objek model menyimpan status di dalam dirinya |
+| Latensi | Sekitar 230 milidetik per gambar pada CPU setelah warmup |
+| Jaringan | Tidak ada panggilan keluar saat inferensi |
+| `pipeline.last_audit` | Catatan berbasis SHA-256 untuk permintaan terakhir. Karena satu pipeline dipakai bersama, pakailah nilai kembalian `inspect` bila catatan per permintaan dibutuhkan |
 
 ---
 
