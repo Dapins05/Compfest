@@ -19,13 +19,18 @@ import numpy as np
 from visionqc_ai.data.taxonomy import CLASS_LABELS_ID, DEFECT_CLASSES
 
 #: Warna per kelas dalam urutan BGR, mengikuti urutan DEFECT_CLASSES.
+#: Jumlahnya WAJIB sama dengan DEFECT_CLASSES; dijaga oleh tests/test_annotate.py.
 CLASS_COLORS_BGR: tuple[tuple[int, int, int], ...] = (
     (47, 50, 220),
     (210, 139, 38),
     (0, 137, 181),
     (130, 54, 211),
     (0, 153, 133),
+    (30, 200, 230),
 )
+
+#: Warna cadangan bila sebuah kelas belum punya warna sendiri.
+FALLBACK_COLOR_BGR: tuple[int, int, int] = (128, 128, 128)
 
 VERDICT_COLORS_BGR: dict[str, tuple[int, int, int]] = {
     "PASS": (60, 160, 60),
@@ -35,11 +40,17 @@ VERDICT_COLORS_BGR: dict[str, tuple[int, int, int]] = {
 
 
 def class_color(class_name: str) -> tuple[int, int, int]:
-    """Warna BGR untuk sebuah kelas cacat."""
+    """Warna BGR untuk sebuah kelas cacat.
+
+    IndexError ikut ditangkap, bukan hanya ValueError. Ketika kelas keenam
+    ditambahkan, daftar warnanya sempat tertinggal dan seluruh penggambaran
+    anotasi gagal dengan IndexError, padahal modelnya sendiri bekerja normal.
+    Kekurangan warna tidak boleh menjatuhkan hasil inspeksi.
+    """
     try:
         return CLASS_COLORS_BGR[DEFECT_CLASSES.index(class_name)]
-    except ValueError:
-        return (128, 128, 128)
+    except (ValueError, IndexError):
+        return FALLBACK_COLOR_BGR
 
 
 def draw_defects(

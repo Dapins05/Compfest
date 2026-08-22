@@ -29,7 +29,7 @@ sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
 
 import yaml  # noqa: E402
 
-from calibrate_decision import gather_extra_normals  # noqa: E402
+from calibrate_decision import detect_categories, gather_extra_normals  # noqa: E402
 from visionqc_ai.evaluation.detection_eval import image_level_scores  # noqa: E402
 from visionqc_ai.statistics.cost_sensitive import (  # noqa: E402
     CostModel,
@@ -45,7 +45,7 @@ def main() -> int:
     parser.add_argument(
         "--weights",
         type=Path,
-        default=PROJECT_ROOT / "models/finetuned/detect/weights/best.pt",
+        default=PROJECT_ROOT / "models/finetuned/detect_goodsad/weights/best.pt",
     )
     parser.add_argument(
         "--dataset", type=Path, default=PROJECT_ROOT / "data/processed/detect"
@@ -54,6 +54,11 @@ def main() -> int:
         "--inference-config",
         type=Path,
         default=PROJECT_ROOT / "configs/inference.yaml",
+    )
+    parser.add_argument(
+        "--dataset-config",
+        type=Path,
+        default=PROJECT_ROOT / "configs/dataset.yaml",
     )
     parser.add_argument("--extra-normals", type=int, default=300)
     parser.add_argument("--seed", type=int, default=1337)
@@ -78,7 +83,11 @@ def main() -> int:
     prevalence = float(cost_config["assumed_defect_prevalence"])
 
     extra_calibration, extra_test = gather_extra_normals(
-        PROJECT_ROOT, args.dataset, per_side=args.extra_normals, seed=args.seed
+        PROJECT_ROOT,
+        args.dataset,
+        per_side=args.extra_normals,
+        seed=args.seed,
+        categories=detect_categories(args.dataset_config),
     )
     common = {"dataset_root": args.dataset, "device": args.device}
     calibration = image_level_scores(

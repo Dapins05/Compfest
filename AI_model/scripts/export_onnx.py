@@ -28,9 +28,21 @@ from visionqc_ai.export.onnx_export import benchmark_onnx, export_to_onnx  # noq
 
 log = logging.getLogger("export_onnx")
 
+# Run yang diekspor. Diarahkan ke run 21 Agustus 2026 yang dilatih memakai
+# PKU-GoodsAD dan taksonomi enam kelas. Run lama models/finetuned/detect dan
+# .../seg sengaja tidak dihapus: keduanya menjadi rujukan keadaan sebelum
+# dataset diperbesar.
 MODELS = (
-    ("detect", "models/finetuned/detect/weights/best.pt", "yolo11n-defect.onnx"),
-    ("seg", "models/finetuned/seg/weights/best.pt", "yolo11n-seg-defect.onnx"),
+    (
+        "detect",
+        "models/finetuned/detect_goodsad/weights/best.pt",
+        "yolo11n-defect.onnx",
+    ),
+    (
+        "seg",
+        "models/finetuned/seg_goodsad/weights/best.pt",
+        "yolo11n-seg-defect.onnx",
+    ),
 )
 
 

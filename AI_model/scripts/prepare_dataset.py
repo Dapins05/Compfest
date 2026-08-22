@@ -23,9 +23,9 @@ import yaml
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT / "src"))
 
-from visionqc_ai.data import convert_mvtec, convert_visa  # noqa: E402
+from visionqc_ai.data import convert_goodsad, convert_mvtec, convert_visa  # noqa: E402
 from visionqc_ai.data.records import ConversionResult, SampleRecord  # noqa: E402
-from visionqc_ai.data.sources import MVTEC, get_category  # noqa: E402
+from visionqc_ai.data.sources import GOODSAD, MVTEC, get_category  # noqa: E402
 from visionqc_ai.data.split import (  # noqa: E402
     SPLIT_NAMES,
     SplitAssignment,
@@ -72,6 +72,8 @@ def convert_all(
         spec = get_category(name)
         if spec.source == MVTEC:
             result = convert_mvtec.convert_category(spec, raw_root, **kwargs)
+        elif spec.source == GOODSAD:
+            result = convert_goodsad.convert_category(spec, raw_root, **kwargs)
         else:
             result, code_map = convert_visa.convert_category(spec, raw_root, **kwargs)
             code_maps[name] = code_map

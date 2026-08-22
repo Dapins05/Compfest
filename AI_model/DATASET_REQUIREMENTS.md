@@ -13,17 +13,36 @@ Preprocessing wajib dikerjakan dan dijelaskan selama periode lomba
 
 ## 1. Status - SUDAH TERUNDUH
 
-Diperbarui 18 Agustus 2026, setelah Step 2 selesai.
+Diperbarui 21 Agustus 2026, setelah PKU-GoodsAD masuk.
 
 | Tier | Dataset | Status | Terpakai untuk |
 |---|---|---|---|
 | **1** | **MVTec AD** - `bottle` | terunduh (209 train/good, 83 test, 63 mask) | deteksi + segmentasi + anomali |
 | **1** | **MVTec AD** - `capsule`, `pill` | terunduh | tidak dipakai - farmasi, di luar domain pangan |
 | **1** | **VisA** - 12 kategori penuh (12.021 gambar) | terunduh | `chewinggum`, `cashew`, `pipe_fryum` dipakai; `fryum` anomali saja |
-| **2** | **Sintetik** (Step 3) | belum dibuat | menyeimbangkan `kotor` & `deformasi` |
+| **1** | **PKU-GoodsAD** - 5 kategori | terunduh (5.512 gambar, **1.413 cacat bermask**) | deteksi + segmentasi + anomali |
+| **1** | **MVTec LOCO** - 5 kategori | terunduh | **tidak dipakai** - alasan di bagian 4.2 |
+| **2** | **Sintetik** (Step 3) | belum dibuat | menyeimbangkan `kotor` |
 | **3** | **Foto produk lokal** | opsional | gambar contoh & video demo |
 
-**Ukuran di disk:** `data/raw` ≈ 2,6 GB · `data/processed` ≈ 302 MB.
+### Yang berubah setelah PKU-GoodsAD masuk
+
+Jumlah gambar cacat pada dataset deteksi naik dari 363 menjadi **1.776**,
+yaitu **4,9 kali lipat**. Seluruh gambar cacat GoodsAD punya mask piksel,
+jadi tambahan itu berlaku untuk deteksi maupun segmentasi sekaligus.
+
+GoodsAD juga memasok kelas keenam, `terbuka`. Empat nama folder aslinya
+(`cap_open`, `cap_half_open`, `opened`, `straw_missing`) sama-sama berarti
+kemasan tidak lagi tersegel. Memetakannya ke `deformasi` akan menaruh label
+yang tidak sesuai isi gambar, jadi dibuatkan kelas sendiri.
+
+| Kategori GoodsAD | train/good | test/good | test cacat | mask |
+|---|---|---|---|---|
+| `drink_bottle` | 733 | 356 | 425 | 425 |
+| `food_bottle` | 1.014 | 243 | 361 | 361 |
+| `food_package` | 540 | 253 | 230 | 230 |
+| `food_box` | 432 | 146 | 251 | 251 |
+| `drink_can` | 235 | 147 | 146 | 146 |
 
 
 ### Kategori final yang dipakai - dan dasarnya
@@ -111,6 +130,20 @@ atribusi. Salah satunya juga membatasi pemakaian komersial.
 |---|---|---|
 | MVTec AD | CC BY-NC-SA 4.0 | Atribusi wajib, **non-komersial**, turunan mengikuti lisensi yang sama |
 | VisA | CC BY 4.0 | Atribusi wajib, pemakaian komersial diizinkan |
+| PKU-GoodsAD | GPL-3.0 | Atribusi wajib. Catatan penting di bawah. |
+
+**Soal GPL-3.0 pada PKU-GoodsAD.** GPL-3.0 adalah lisensi *perangkat lunak*,
+dan repo GoodsAD memakainya untuk seluruh isi repo termasuk tautan datanya.
+Apakah bobot model yang dilatih memakai data berlisensi GPL ikut tertular
+kewajiban copyleft **belum pernah diuji di pengadilan** dan tidak ada jawaban
+yang pasti. Yang dapat dipastikan hanya ini:
+
+- Dataset mentahnya **tidak** ikut masuk repo (sudah diabaikan `.gitignore`),
+  jadi repo ini tidak mendistribusikan ulang karya berlisensi GPL.
+- Kode VisionQC ditulis sendiri, bukan turunan kode GoodsAD.
+- Untuk keperluan lomba yang non-komersial, risikonya kecil.
+- **Sebelum dikomersialkan**, status ini wajib ditinjau ulang, dan cara paling
+  aman adalah melatih ulang tanpa GoodsAD.
 
 Yang perlu diperhatikan tim: `reports/figures/dataset_samples_train.png` dan
 `dataset_samples_test.png` memuat cuplikan gambar dari kedua dataset. Selama
@@ -127,6 +160,9 @@ Sitasi yang dipakai:
 - Zou, Y., Jeong, J., Pemula, L., Zhang, D., Dabeer, O. *SPot-the-Difference
   Self-Supervised Pre-training for Anomaly Detection and Segmentation (VisA).*
   ECCV 2022.
+- Zhang, J., Ding, R., Ban, M., Yang, G. *PKU-GoodsAD: A Supermarket Goods
+  Dataset for Unsupervised Anomaly Detection and Segmentation.* IEEE Robotics
+  and Automation Letters, 2024.
 
 ---
 
@@ -187,6 +223,24 @@ komponen yang seharusnya ada tetapi tidak ada. Cacat semacam itu tidak ada
 sama sekali pada dataset sekarang, dan justru itu yang sering terjadi pada
 kemasan minuman sungguhan.
 
+**Status 21 Agustus 2026: sudah terunduh, tetapi TIDAK dipakai.** Tiga alasan,
+diurutkan dari yang paling menentukan:
+
+1. **Folder cacatnya campuran.** LOCO hanya memilah `logical_anomalies` dan
+   `structural_anomalies`. Keduanya berisi banyak jenis cacat yang berbeda
+   dalam satu wadah. Memetakan salah satunya ke satu kelas VisionQC akan
+   menaruh label yang tidak sesuai isi gambar - persis alasan yang dipakai
+   untuk menolak memetakan `opened` ke `deformasi`.
+2. **Tata letak mask-nya berbeda lagi.** Mask LOCO disimpan per gambar di
+   subfolder tersendiri, satu berkas untuk tiap instance. Ini bentuk ketiga
+   setelah MVTec dan GoodsAD, jadi butuh konverter tersendiri.
+3. **Cacat logis butuh rancangan model yang lain.** Makalah LOCO sendiri
+   menunjukkan metode berbasis patch embedding seperti PaDiM berkinerja buruk
+   pada cacat logis. Menambahkannya ke jalur anomali sekarang tidak akan
+   memperbaiki apa pun yang bisa diukur.
+
+Disimpan untuk tahap Final, ketika cacat logis ditangani model tersendiri.
+
 ### 4.3 Real-IAD - bila butuh skala
 
 | | |
@@ -208,18 +262,22 @@ mengubah hasil training, dan lisensinya berbeda-beda per kumpulan sehingga
 harus diperiksa satu per satu. Berguna sebagai gambar demo, bukan sebagai
 data latih utama.
 
-### Rekomendasi
+### Rekomendasi - SUDAH DIJALANKAN 21 Agustus 2026
 
-Ambil **PKU-GoodsAD** `drink_bottle`, `food_bottle`, dan `food_package`, dengan
-syarat tim menerima GPL-3.0. Itu menambah sekitar 1.000 gambar cacat bermask
-pada domain yang tepat, dan tiga kategori itu saja sudah lebih besar daripada
-seluruh data cacat yang dipakai sekarang.
+Rekomendasi awalnya hanya tiga kategori PKU-GoodsAD (`drink_bottle`,
+`food_bottle`, `food_package`). Yang benar-benar diambil **lima kategori**,
+karena `drink_can` dan `food_box` ternyata juga membawa mask lengkap dan
+memasok `deformasi` - kelas yang sebelumnya paling tipis setelah `kotor`.
 
-Sebelum menambah data, dua hal harus disiapkan: pemetaan jenis cacatnya ke
-taksonomi lima kelas di `src/visionqc_ai/data/taxonomy.py`, dan konverter
-tersendiri karena tata letak foldernya berbeda lagi. Menambah data juga
-berarti **melatih ulang dan mengukur ulang seluruhnya**; angka Step 4 sampai 7
-yang sekarang tidak berlaku lagi untuk model baru.
+Dua prasyarat yang disebut di sini sudah dikerjakan:
+
+- Pemetaan jenis cacat ke taksonomi di `src/visionqc_ai/data/taxonomy.py`,
+  termasuk kelas keenam `terbuka` untuk empat label yang tidak punya padanan.
+- Konverter tersendiri di `src/visionqc_ai/data/convert_goodsad.py`, karena
+  GoodsAD memakai JPEG dan nama mask tanpa akhiran `_mask`.
+
+Konsekuensinya juga sudah berlaku: seluruh angka Step 4 sampai 7 dari model
+lama **tidak lagi sah** untuk model baru dan diukur ulang dari nol.
 
 ---
 
@@ -228,23 +286,42 @@ yang sekarang tidak berlaku lagi untuk model baru.
 Panitia **secara eksplisit mengizinkan data sintetik** . Ini bukan jalan pintas - ini menyelesaikan
 masalah nyata dan sekaligus menjadi diferensiator.
 
-**Masalah yang diselesaikan:** MVTec `bottle` hanya punya 3 jenis cacat dengan total di bawah 100
-gambar cacat. Terlalu sedikit untuk melatih detektor yang andal, dan rasio ketimpangannya ekstrem.
+> **Ditulis ulang 21 Agustus 2026.** Rencana di bawah dibuat ketika data cacat
+> hanya 363 gambar. Setelah PKU-GoodsAD masuk, sebagian besar sasarannya
+> ternyata sudah tertutup **data nyata**, yang selalu lebih baik daripada
+> sintetik. Yang tersisa justru menyempit ke satu kelas saja.
 
-**Yang akan dihasilkan** (dari gambar normal Tier 1):
+**Sasaran lama versus keadaan sekarang:**
 
-| Cacat sintetik | Cara pembuatan | Relevansi domain |
+| Rencana sintetik semula | Ditutup data nyata? | Instance sekarang |
 |---|---|---|
-| `penyok` | Deformasi lokal + perubahan shading | Kaleng minuman penyok saat distribusi |
-| `gores` | Perlin noise berbentuk garis + blending | Botol/kaleng tergores di gudang |
-| `sobek` | Robekan tepi tidak beraturan | Kemasan pouch/sachet |
-| `segel_rusak` | Distorsi pada area segel | Segel tutup tidak sempurna |
-| `label_miring` | Rotasi + translasi area label | Label tertempel miring |
-| `kotor` | Bercak/noda acak | Kontaminasi permukaan |
+| `gores` | ya, `surface_damage` GoodsAD | 782 |
+| `segel_rusak` | ya, kelas `terbuka` GoodsAD | 475 |
+| `penyok` | ya, `deformation` GoodsAD | 257 |
+| `sobek` | sebagian, lewat `pecah` | 418 |
+| `label_miring` | tidak, tetapi ini cacat logis - lihat 4.2 | - |
+| **`kotor`** | **tidak** | **22** |
 
-Kualitas tiap gambar sintetik divalidasi dengan **jarak Wasserstein** dan **uji KS** (STATISTICS.md bagian 2.4) agar tidak terlalu menyimpang dari distribusi asli.
+**Masalah yang benar-benar tersisa: `kotor`.** Kelas ini tidak ikut naik sama
+sekali karena GoodsAD tidak memuat kontaminasi permukaan. Akibatnya rasio
+ketimpangan justru **memburuk dari sekitar 4:1 menjadi 35,6:1**, bukan karena
+`kotor` berkurang, melainkan karena lima kelas lain tumbuh berkali lipat.
 
-**Target:**~500-1.000 gambar sintetik hingga rasio ketimpangan turun di bawah 3:1.
+Ini penting melebihi angkanya: `kotor` adalah satu-satunya anggota
+`critical_classes` di decision engine, yaitu kelas yang memicu REJECT berapa
+pun luas cacatnya. Aturan sekeras itu kini bersandar pada kelas dengan sekitar
+15 instance latih.
+
+**Sasaran Step 3 yang diperbarui:** hanya `kotor`, dari sekitar 22 menjadi
+sekitar 250 instance. Dibuat dari gambar normal Tier 1 berupa bercak dan
+partikel kontaminasi, divalidasi dengan **jarak Wasserstein** dan **uji KS**
+(STATISTICS.md bagian 2.4) supaya distribusinya tidak menyimpang jauh dari
+kontaminasi asli.
+
+Yang **tidak** boleh dilakukan: menggabung penambahan sintetik ke dalam
+perubahan yang sama dengan penambahan data nyata. Keduanya harus diukur
+terpisah, kalau tidak, perbaikan yang muncul tidak dapat ditelusuri berasal
+dari mana.
 
 ---
 

@@ -40,9 +40,18 @@ detection:
   model: yolo11n.pt  # nano: paling ringan, cocok untuk 3050 & target perangkat pabrik
   imgsz: 640
   batch: 8  # naikkan ke 16 bila VRAM 6 GB
-  epochs: 300  # tinggi sengaja - early stopping yang menentukan berhentinya
-  patience: 50  # berhenti bila 50 epoch tanpa perbaikan pada val
+  epochs: 150  # lihat catatan ANGGARAN EPOCH di bawah
+  patience: 40  # berhenti bila 40 epoch tanpa perbaikan pada val
 
+  # ANGGARAN EPOCH - disetel ulang 21 Agustus 2026 saat PKU-GoodsAD masuk.
+  #
+  # Set latih naik dari 291 ke 1.428 gambar. Karena satu epoch kini berisi
+  # 4,9 kali lebih banyak langkah gradien, jumlah epoch yang sama berarti
+  # jauh lebih banyak optimasi, bukan sama banyak. Run sebelumnya mencapai
+  # titik terbaik pada epoch 137, setara 137 x 291 = 39.867 penyajian sampel;
+  # jumlah penyajian yang sama dicapai hanya dalam 28 epoch pada set baru.
+  # Batas 150 memberi ruang sekitar 5 kali lipat dari titik itu, dan
+  # early stopping yang memutuskan berhentinya.
   optimizer: AdamW
   lr0: 0.001  # lebih rendah dari default SGD karena ini fine-tuning, bukan latih dari nol
   lrf: 0.01  # lr akhir = lr0 * lrf
@@ -77,8 +86,8 @@ segmentation:
   model: yolo11n-seg.pt
   imgsz: 640
   batch: 4  # seg lebih berat dari detect; naikkan ke 8 bila VRAM 6 GB
-  epochs: 250
-  patience: 40
+  epochs: 130  # set latih 4,9x lebih besar; lihat ANGGARAN EPOCH di bagian detection
+  patience: 30
 
   optimizer: AdamW
   lr0: 0.001
@@ -125,14 +134,19 @@ anomaly:
 # Jalankan training malam hari sambil laptop ditinggal, dan kerjakan
 # Frontend di siang hari. Ini kunci agar 10 hari cukup.
 
-# CATATAN PEMILIHAN EPOCH
-# Kenapa epoch tinggi (250-300) padahal datanya kecil?
-#   - Dataset kecil  tiap epoch cepat, jadi epoch banyak tidak mahal
-#   - `patience` yang menentukan kapan berhenti, bukan `epochs`.
-# Menetapkan epochs tinggi + patience memadai memberi model kesempatan
-#     konvergen penuh tanpa menebak-nebak angka yang tepat.
-#   - Ultralytics otomatis menyimpan `best.pt` berdasarkan metrik validasi,
-#     jadi overfitting di epoch akhir tidak merusak model yang dipakai.
+# CATATAN PEMILIHAN EPOCH  (ditulis ulang 21 Agustus 2026)
 #
-# Kalau ternyata terlalu lama: turunkan `epochs` ke 150 dan `patience` ke 30.
-# Yang TIDAK boleh dilakukan: menyetel epoch berdasarkan hasil TEST set.
+# Sampai 20 Agustus, angka epoch sengaja dipasang tinggi (250-300) karena
+# datanya kecil: tiap epoch murah, jadi epoch banyak tidak mahal, dan
+# `patience` yang menentukan kapan berhenti.
+#
+# Alasan itu gugur begitu PKU-GoodsAD masuk. Set latih naik 4,9 kali, jadi
+# tiap epoch kini jauh lebih mahal SEKALIGUS berisi jauh lebih banyak langkah
+# gradien. Mempertahankan 300 epoch bukan berarti "lebih aman", melainkan
+# membakar berjam-jam GPU untuk optimasi yang sudah lewat titik jenuh.
+#
+# Yang tidak berubah:
+#   - `patience` tetap yang memutuskan berhenti, bukan `epochs`.
+#   - Ultralytics menyimpan `best.pt` menurut metrik validasi, jadi
+#     overfitting di epoch akhir tidak merusak model yang dipakai.
+#   - Yang TIDAK boleh dilakukan: menyetel epoch berdasarkan hasil TEST set.

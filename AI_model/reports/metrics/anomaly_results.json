@@ -1,11 +1,11 @@
 {
   "model": "padim",
   "variant": "small",
-  "max_epochs": 1,
+  "max_epochs": 100,
   "max_train_images": 200,
   "target_false_alarm_rate": 0.01,
   "seed": 42,
-  "generated_on": "2026-08-19",
+  "generated_on": "2026-08-23",
   "per_category": {
     "cashew": {
       "model": "padim",
@@ -37,33 +37,33 @@
       "statement_id": "Ambang 56,5499 diperoleh dengan memodelkan ekor sebaran skor anomali sampel normal memakai GPD (xi = 0,4541; sigma = 5,7371; u = 25,5894; N_u/n = 13/85), menargetkan laju alarm palsu 1,0% dan mencapai 1,2% pada data yang sama,"
     },
     "bottle": {
-      "model": "padim",
+      "model": "efficient_ad",
       "counts": {
         "kalibrasi_normal": 39,
         "uji_normal": 34,
         "uji_cacat": 9
       },
-      "image_auroc": 0.9967320261437909,
+      "image_auroc": 1.0,
       "defect_recall_at_evt": 1.0,
       "held_out_false_alarm_rate": 0.029411764705882353,
       "evt": {
-        "threshold": 45.86126993078575,
+        "threshold": 0.2035335192874061,
         "target_false_alarm_rate": 0.01,
         "empirical_false_alarm_rate": 0.02564102564102564,
         "gpd_fit": {
-          "initial_threshold": 21.389034271240234,
+          "initial_threshold": 0.10414489358663559,
           "used_quantile": 0.7435897435897436,
-          "shape_xi": 0.6669401912636199,
-          "scale_sigma": 2.1188153806030936,
+          "shape_xi": -1.2070251539242731,
+          "scale_sigma": 0.12240335251817885,
           "n_total": 39,
           "n_exceedances": 10,
-          "ks_statistic": 0.14439695259378138,
-          "ks_p_value": 0.966337758513003,
-          "tail_type": "ekor berat, nilai ekstrem masih mungkin jauh lebih besar"
+          "ks_statistic": 0.28120000128108824,
+          "ks_p_value": 0.3413003397381349,
+          "tail_type": "ekor terbatas, ada batas atas yang tak terlampaui"
         }
       },
-      "empirical_quantile_threshold": 44.43114734649651,
-      "statement_id": "Ambang 45,8613 diperoleh dengan memodelkan ekor sebaran skor anomali sampel normal memakai GPD (xi = 0,6669; sigma = 2,1188; u = 21,3890; N_u/n = 10/39), menargetkan laju alarm palsu 1,0% dan mencapai 2,6% pada data yang sama,"
+      "empirical_quantile_threshold": 0.19744916379451746,
+      "statement_id": "Ambang 0,2035 diperoleh dengan memodelkan ekor sebaran skor anomali sampel normal memakai GPD (xi = -1,2070; sigma = 0,1224; u = 0,1041; N_u/n = 10/39), menargetkan laju alarm palsu 1,0% dan mencapai 2,6% pada data yang sama,"
     },
     "pipe_fryum": {
       "model": "padim",
@@ -155,31 +155,31 @@
     "combined": {
       "model": "padim",
       "counts": {
-        "kalibrasi_normal": 294,
-        "uji_normal": 259,
-        "uji_cacat": 52
+        "kalibrasi_normal": 120,
+        "uji_normal": 948,
+        "uji_cacat": 276
       },
-      "image_auroc": 0.8903326403326404,
-      "defect_recall_at_evt": 0.40384615384615385,
-      "held_out_false_alarm_rate": 0.02702702702702703,
+      "image_auroc": 0.6018620436617135,
+      "defect_recall_at_evt": 0.03985507246376811,
+      "held_out_false_alarm_rate": 0.023206751054852322,
       "evt": {
-        "threshold": 39.79416731921359,
+        "threshold": 83.27139396590576,
         "target_false_alarm_rate": 0.01,
-        "empirical_false_alarm_rate": 0.01020408163265306,
+        "empirical_false_alarm_rate": 0.008333333333333333,
         "gpd_fit": {
-          "initial_threshold": 25.774212074279784,
-          "used_quantile": 0.8979591836734694,
-          "shape_xi": 0.24110710726139392,
-          "scale_sigma": 4.5026165716519895,
-          "n_total": 294,
-          "n_exceedances": 30,
-          "ks_statistic": 0.08480603528304653,
-          "ks_p_value": 0.969623194123966,
-          "tail_type": "ekor berat, nilai ekstrem masih mungkin jauh lebih besar"
+          "initial_threshold": 48.310568237304686,
+          "used_quantile": 0.9,
+          "shape_xi": -0.4584797936222268,
+          "scale_sigma": 24.582314929082337,
+          "n_total": 120,
+          "n_exceedances": 12,
+          "ks_statistic": 0.16634571132892997,
+          "ks_p_value": 0.841437585394212,
+          "tail_type": "ekor terbatas, ada batas atas yang tak terlampaui"
         }
       },
-      "empirical_quantile_threshold": 36.87455028533929,
-      "statement_id": "Ambang 39,7942 diperoleh dengan memodelkan ekor sebaran skor anomali sampel normal memakai GPD (xi = 0,2411; sigma = 4,5026; u = 25,7742; N_u/n = 30/294), menargetkan laju alarm palsu 1,0% dan mencapai 1,0% pada data yang sama,"
+      "empirical_quantile_threshold": 78.51491134643555,
+      "statement_id": "Ambang 83,2714 diperoleh dengan memodelkan ekor sebaran skor anomali sampel normal memakai GPD (xi = -0,4585; sigma = 24,5823; u = 48,3106; N_u/n = 12/120), menargetkan laju alarm palsu 1,0% dan mencapai 0,8% pada data yang sama,"
     }
   },
   "failures": {}

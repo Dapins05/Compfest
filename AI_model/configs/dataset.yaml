@@ -6,7 +6,7 @@
 # Seed dan rasio split dikunci di sini. Test set tidak pernah dilihat saat
 # tuning; mengubah seed setelah training berjalan membatalkan hasil.
 
-version: "0.2.0-step2"
+version: "0.3.0-goodsad"
 
 # LOKASI
 paths:
@@ -31,9 +31,37 @@ paths:
 # anomaly detection yang tidak memerlukan kotak pembatas. Ini sekaligus
 # memperkuat alasan kenapa sistem butuh dua pendekatan (lihat PROJECT.md bagian 4.2).
 
+# PKU-GoodsAD ditambahkan pada 21 Agustus 2026. Alasannya bukan sekadar jumlah:
+# objeknya tidak disejajarkan posisinya dan latarnya beragam, sehingga jauh
+# lebih menyerupai foto yang benar-benar diunggah pengguna. Seluruh 1.413
+# gambar cacatnya bermask piksel, jadi bisa dipakai deteksi sekaligus
+# segmentasi. Kategori ini juga yang memasok kelas keenam, terbuka.
 categories:
-  detect: [bottle, chewinggum, cashew, pipe_fryum]
-  anomaly: [bottle, chewinggum, cashew, pipe_fryum, fryum]
+  detect:
+    [
+      bottle,
+      chewinggum,
+      cashew,
+      pipe_fryum,
+      drink_bottle,
+      drink_can,
+      food_bottle,
+      food_box,
+      food_package,
+    ]
+  anomaly:
+    [
+      bottle,
+      chewinggum,
+      cashew,
+      pipe_fryum,
+      fryum,
+      drink_bottle,
+      drink_can,
+      food_bottle,
+      food_box,
+      food_package,
+    ]
   # Tidak diproses - cadangan bila ada waktu tersisa:
   #   macaroni1, macaroni2                  (pangan, cacat terlalu kecil)
   #   mvtec capsule/pill, visa capsules     (farmasi, di luar domain)

@@ -70,13 +70,31 @@ def test_keyakinan_rendah_diserahkan_ke_manusia(three_class: DecisionConfig) -> 
 
 
 def test_biner_menolak_cacat_yang_terdeteksi_lemah(config: DecisionConfig) -> None:
-    """Cacat lemah ditolak, bukan diserahkan ke manusia.
+    """Cacat yang baru saja melewati ambang tetap ditolak, bukan ditahan.
 
     Pada produk pangan, melewatkan cacat jauh lebih mahal daripada menolak
     produk yang sebenarnya baik.
+
+    Nilai keyakinan diturunkan dari config, bukan ditulis tetap. Versi lama
+    memakai 0,30 yang kebetulan berada di atas ambang 0,22; begitu ambangnya
+    dipilih ulang menjadi 0,35 tes itu gagal padahal perilakunya benar.
     """
-    verdict = run(config, [DetectedDefect("noda", 0.30)], area=0.2)
+    weak = config.binary_threshold + 0.01
+    verdict = run(config, [DetectedDefect("noda", weak)], area=0.2)
     assert verdict.label == REJECT
+
+
+def test_biner_tetap_memutuskan_saat_tiga_kelas_menahan(
+    config: DecisionConfig, three_class: DecisionConfig
+) -> None:
+    """Masukan yang ditahan mode tiga kelas tetap diputuskan mode biner.
+
+    Inilah maksud sesungguhnya dari mode biner, dan sifat ini tidak boleh
+    ikut berubah ketika ambangnya dipilih ulang.
+    """
+    defects = [DetectedDefect("noda", 0.30)]
+    assert run(three_class, defects, area=0.2).label == REVIEW
+    assert run(config, defects, area=0.2).label in {PASS, REJECT}
 
 
 def test_biner_meloloskan_di_bawah_ambang_keputusan(config: DecisionConfig) -> None:

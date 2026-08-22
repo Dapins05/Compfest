@@ -1,12 +1,13 @@
 {
-  "generated_on": "2026-08-18",
+  "generated_on": "2026-08-22",
   "split": "test",
   "iou_match": 0.5,
   "prediction_settings": {
+    "device": "cpu",
     "dataset_root": "C:\\compfest\\AI_model\\data\\processed\\seg",
     "split": "test",
     "imgsz": 640,
-    "conf": 0.25,
+    "conf": 0.22,
     "iou_nms": 0.45,
     "iou_match": 0.5,
     "max_detections": 30
@@ -15,31 +16,31 @@
     "tag": "baseline",
     "weights": "C:\\compfest\\AI_model\\yolo11n-seg.pt",
     "split": "test",
-    "image_count": 59,
+    "image_count": 301,
     "speed_ms": {
-      "preprocess": 9.607,
-      "inference": 47.666,
-      "postprocess": 10.838
+      "preprocess": 4.012,
+      "inference": 131.679,
+      "postprocess": 3.393
     },
     "instance": {
       "true_positives": 0,
-      "false_positives": 40,
-      "false_negatives": 75,
+      "false_positives": 297,
+      "false_negatives": 321,
       "precision": 0.0,
       "recall": 0.0,
       "f1": 0.0,
       "f2": 0.0
     },
     "image_level": {
-      "true_positives": 30,
-      "false_positives": 3,
-      "true_negatives": 4,
-      "false_negatives": 22,
-      "precision": 0.9090909090909091,
-      "recall": 0.5769230769230769,
-      "specificity": 0.5714285714285714,
-      "accuracy": 0.576271186440678,
-      "mcc": 0.09662720646445658
+      "true_positives": 195,
+      "false_positives": 30,
+      "true_negatives": 9,
+      "false_negatives": 67,
+      "precision": 0.8666666666666667,
+      "recall": 0.7442748091603053,
+      "specificity": 0.23076923076923078,
+      "accuracy": 0.6777408637873754,
+      "mcc": -0.019291197001547924
     },
     "confidence_intervals_bca": {
       "recall": {
@@ -48,7 +49,7 @@
         "upper": 0.0,
         "confidence": 0.95,
         "method": "bca",
-        "n": 59
+        "n": 301
       },
       "precision": {
         "estimate": 0.0,
@@ -56,7 +57,7 @@
         "upper": 0.0,
         "confidence": 0.95,
         "method": "bca",
-        "n": 59
+        "n": 301
       },
       "f2": {
         "estimate": 0.0,
@@ -64,7 +65,7 @@
         "upper": 0.0,
         "confidence": 0.95,
         "method": "bca",
-        "n": 59
+        "n": 301
       }
     },
     "mask_iou": {
@@ -73,29 +74,29 @@
       "matched_count": 0
     },
     "area_error_pct": {
-      "mean_absolute": 15.369765078917254,
-      "median_absolute": 10.694047095070424,
-      "p95_absolute": 56.349121093749986,
+      "mean_absolute": 20.476421497849394,
+      "median_absolute": 17.130615234375,
+      "p95_absolute": 63.15576171875,
       "bca_mean_absolute": {
-        "estimate": 15.369765078917254,
-        "lower": 11.10137216935555,
-        "upper": 21.24491447617358,
+        "estimate": 20.476421497849394,
+        "lower": 18.356068383793346,
+        "upper": 22.846048374178977,
         "confidence": 0.95,
         "method": "bca",
-        "n": 59
+        "n": 301
       }
     },
     "per_class": {
       "pecah": {
-        "support": 40,
+        "support": 53,
         "recall": 0.0
       },
       "gores": {
-        "support": 9,
+        "support": 112,
         "recall": 0.0
       },
       "noda": {
-        "support": 21,
+        "support": 42,
         "recall": 0.0
       },
       "kotor": {
@@ -103,121 +104,129 @@
         "recall": 0.0
       },
       "deformasi": {
-        "support": 2,
+        "support": 39,
+        "recall": 0.0
+      },
+      "terbuka": {
+        "support": 72,
         "recall": 0.0
       }
     }
   },
   "after": {
     "tag": "finetuned",
-    "weights": "C:\\compfest\\AI_model\\models\\finetuned\\seg\\weights\\best.pt",
+    "weights": "C:\\compfest\\AI_model\\models\\finetuned\\seg_goodsad\\weights\\best.pt",
     "split": "test",
-    "image_count": 59,
+    "image_count": 301,
     "speed_ms": {
-      "preprocess": 6.041,
-      "inference": 40.715,
-      "postprocess": 10.886
+      "preprocess": 3.585,
+      "inference": 101.783,
+      "postprocess": 2.466
     },
     "instance": {
-      "true_positives": 45,
-      "false_positives": 30,
-      "false_negatives": 30,
-      "precision": 0.6,
-      "recall": 0.6,
-      "f1": 0.6,
-      "f2": 0.6
+      "true_positives": 189,
+      "false_positives": 86,
+      "false_negatives": 132,
+      "precision": 0.6872727272727273,
+      "recall": 0.5887850467289719,
+      "f1": 0.6342281879194631,
+      "f2": 0.6061577934573444
     },
     "image_level": {
-      "true_positives": 51,
-      "false_positives": 1,
-      "true_negatives": 6,
-      "false_negatives": 1,
-      "precision": 0.9807692307692307,
-      "recall": 0.9807692307692307,
-      "specificity": 0.8571428571428571,
-      "accuracy": 0.9661016949152542,
-      "mcc": 0.8379120879120879
+      "true_positives": 214,
+      "false_positives": 7,
+      "true_negatives": 32,
+      "false_negatives": 48,
+      "precision": 0.9683257918552036,
+      "recall": 0.816793893129771,
+      "specificity": 0.8205128205128205,
+      "accuracy": 0.8172757475083057,
+      "mcc": 0.4844961299711743
     },
     "confidence_intervals_bca": {
       "recall": {
-        "estimate": 0.6,
-        "lower": 0.4681496787312983,
-        "upper": 0.7101449275362319,
+        "estimate": 0.5887850467289719,
+        "lower": 0.5259760041050302,
+        "upper": 0.6456953642384106,
         "confidence": 0.95,
         "method": "bca",
-        "n": 59
+        "n": 301
       },
       "precision": {
-        "estimate": 0.6,
-        "lower": 0.4730754636431659,
-        "upper": 0.7082658684335644,
+        "estimate": 0.6872727272727273,
+        "lower": 0.6278524279255756,
+        "upper": 0.738863684238804,
         "confidence": 0.95,
         "method": "bca",
-        "n": 59
+        "n": 301
       },
       "f2": {
-        "estimate": 0.6,
-        "lower": 0.47240091084315416,
-        "upper": 0.7049004767161418,
+        "estimate": 0.6061577934573444,
+        "lower": 0.548676007056726,
+        "upper": 0.6584368561035454,
         "confidence": 0.95,
         "method": "bca",
-        "n": 59
+        "n": 301
       }
     },
     "mask_iou": {
-      "mean": 0.7847190048510885,
-      "median": 0.8064516129032258,
-      "matched_count": 45
+      "mean": 0.8064450163435466,
+      "median": 0.8326180257510729,
+      "matched_count": 189
     },
     "area_error_pct": {
-      "mean_absolute": 0.3714104039260684,
-      "median_absolute": 0.03807106598984773,
-      "p95_absolute": 1.294262695312491,
+      "mean_absolute": 0.7498999680383731,
+      "median_absolute": 0.068115234375,
+      "p95_absolute": 3.40087890625,
       "bca_mean_absolute": {
-        "estimate": 0.3714104039260684,
-        "lower": 0.1661589773105581,
-        "upper": 0.9968074606118468,
+        "estimate": 0.7498999680383731,
+        "lower": 0.5447027096042707,
+        "upper": 1.0557782748388942,
         "confidence": 0.95,
         "method": "bca",
-        "n": 59
+        "n": 301
       }
     },
     "per_class": {
       "pecah": {
-        "support": 40,
-        "recall": 0.575
+        "support": 53,
+        "recall": 0.4716981132075472
       },
       "gores": {
-        "support": 9,
-        "recall": 0.3333333333333333
+        "support": 112,
+        "recall": 0.5625
       },
       "noda": {
-        "support": 21,
-        "recall": 0.7142857142857143
+        "support": 42,
+        "recall": 0.5714285714285714
       },
       "kotor": {
         "support": 3,
         "recall": 0.6666666666666666
       },
       "deformasi": {
-        "support": 2,
-        "recall": 1.0
+        "support": 39,
+        "recall": 0.6410256410256411
+      },
+      "terbuka": {
+        "support": 72,
+        "recall": 0.6944444444444444
       }
     }
   },
   "mcnemar": {
     "both_correct": 0,
     "only_first_correct": 0,
-    "only_second_correct": 45,
-    "both_wrong": 30,
-    "statistic": 43.022222222222226,
-    "p_value": 5.412161288732598e-11,
+    "only_second_correct": 189,
+    "both_wrong": 132,
+    "statistic": 187.005291005291,
+    "p_value": 1.4323132915389193e-42,
     "method": "khi-kuadrat dengan koreksi kontinuitas",
-    "n_pairs": 75,
+    "n_pairs": 321,
     "significant": true
   },
   "cohens_h": {
-    "value": 1.7721542475852274,
+    "value": 1.7493130794263139,
     "interpretation": "besar"
   },
   "figures": [
