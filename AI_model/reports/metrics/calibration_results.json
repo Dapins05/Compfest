@@ -1,187 +1,187 @@
 {
-  "generated_on": "2026-08-19",
-  "weights": "C:\\compfest\\AI_model\\models\\finetuned\\detect\\weights\\best.pt",
+  "generated_on": "2026-08-22",
+  "weights": "C:\\compfest\\AI_model\\models\\finetuned\\detect_goodsad\\weights\\best.pt",
   "extra_normals_per_side": 300,
   "counts": {
-    "calibration": 364,
-    "calibration_defects": 57,
-    "test": 359,
-    "test_defects": 52
+    "calibration": 610,
+    "calibration_defects": 271,
+    "test": 601,
+    "test_defects": 262
   },
-  "temperature": 1.3996901616620228,
+  "temperature": 3.200025813280018,
   "platt": {
-    "slope": 2.8253454610091016,
-    "intercept": 2.6899955966187945
+    "slope": 0.3718623530900286,
+    "intercept": 0.7564336965295255
   },
-  "chosen_method": "platt",
+  "chosen_method": "mentah",
   "calibration_on_calibration_set": {
     "mentah": {
-      "ece": 0.045462331357319925,
-      "mce": 0.5326459010442097,
-      "brier": 0.031582495393241365,
-      "n": 364,
+      "ece": 0.1211660924602876,
+      "mce": 0.4074793756008148,
+      "brier": 0.11819808949937355,
+      "n": 610,
       "n_bins": 10
     },
     "temperature": {
-      "ece": 0.07087262648270974,
-      "mce": 0.5584790531639432,
-      "brier": 0.03603482357642332,
-      "n": 364,
+      "ece": 0.16635317298669502,
+      "mce": 0.3577304423655432,
+      "brier": 0.14341357626254067,
+      "n": 610,
       "n_bins": 10
     },
     "platt": {
-      "ece": 0.019710886647810243,
-      "mce": 0.5863661153017414,
-      "brier": 0.01927918403716132,
-      "n": 364,
+      "ece": 0.1333576839066529,
+      "mce": 0.28165162761299334,
+      "brier": 0.12783989433376958,
+      "n": 610,
       "n_bins": 10
     }
   },
   "calibration_on_test_set": {
     "mentah": {
-      "ece": 0.04965999140700059,
-      "mce": 0.6488868196805317,
-      "brier": 0.029653163720650445,
-      "n": 359,
+      "ece": 0.12838779557240862,
+      "mce": 0.4008678902279247,
+      "brier": 0.13044402504334102,
+      "n": 601,
       "n_bins": 10
     },
     "temperature": {
-      "ece": 0.06410847660499083,
-      "mce": 0.448861210263746,
-      "brier": 0.03244274610588325,
-      "n": 359,
+      "ece": 0.17668303312146924,
+      "mce": 0.3544779087698705,
+      "brier": 0.15483293484059218,
+      "n": 601,
       "n_bins": 10
     },
     "platt": {
-      "ece": 0.014500312105254117,
-      "mce": 0.3659889930972836,
-      "brier": 0.014464956267016103,
-      "n": 359,
+      "ece": 0.15022669436264302,
+      "mce": 0.29060031869411557,
+      "brier": 0.14281816888034207,
+      "n": 601,
       "n_bins": 10
     }
   },
   "calibration_before": {
-    "ece": 0.04965999140700059,
-    "mce": 0.6488868196805317,
-    "brier": 0.029653163720650445,
-    "n": 359,
+    "ece": 0.12838779557240862,
+    "mce": 0.4008678902279247,
+    "brier": 0.13044402504334102,
+    "n": 601,
     "n_bins": 10
   },
   "calibration_after": {
-    "ece": 0.014500312105254117,
-    "mce": 0.3659889930972836,
-    "brier": 0.014464956267016103,
-    "n": 359,
+    "ece": 0.12838779557240862,
+    "mce": 0.4008678902279247,
+    "brier": 0.13044402504334102,
+    "n": 601,
     "n_bins": 10
   },
   "conformal": {
     "alpha": 0.1,
     "mode": "mondrian",
     "quantiles": {
-      "0": 0.021137562596169945,
-      "1": 0.9249749127862469
+      "0": 0.3014568090438843,
+      "1": 0.8836598321795464
     },
     "calibration_counts": {
-      "0": 307,
-      "1": 57
+      "0": 339,
+      "1": 271
     },
     "coverage": {
       "alpha": 0.1,
-      "empirical_coverage": 0.9415041782729805,
+      "empirical_coverage": 0.891846921797005,
       "target_coverage": 0.9,
-      "average_set_size": 0.9721448467966574,
-      "singleton_rate": 0.9721448467966574,
-      "review_rate": 0.027855153203342618,
-      "empty_rate": 0.027855153203342618,
+      "average_set_size": 1.1331114808652247,
+      "singleton_rate": 0.8668885191347754,
+      "review_rate": 0.13311148086522462,
+      "empty_rate": 0.0,
       "per_class_coverage": {
-        "0": 0.9381107491856677,
-        "1": 0.9615384615384616
+        "0": 0.9026548672566371,
+        "1": 0.8778625954198473
       },
-      "n": 359,
-      "guarantee_met": true
+      "n": 601,
+      "guarantee_met": false
     },
     "alpha_sweep_test": [
       {
         "alpha": 0.01,
-        "coverage": 0.9944289693593314,
-        "review_rate": 0.8635097493036211,
-        "normal_coverage": 0.993485342019544,
+        "coverage": 0.9933444259567388,
+        "review_rate": 0.7986688851913477,
+        "normal_coverage": 0.9882005899705014,
         "quantiles": {
-          "0": 0.704211113700473,
-          "1": 0.9999999999999064
+          "0": 0.7124477624893188,
+          "1": 1.0
         }
       },
       {
         "alpha": 0.05,
-        "coverage": 0.9721448467966574,
-        "review_rate": 0.8328690807799443,
-        "normal_coverage": 0.9674267100977199,
+        "coverage": 0.978369384359401,
+        "review_rate": 0.6755407653910149,
+        "normal_coverage": 0.9616519174041298,
         "quantiles": {
-          "0": 0.09023609332424387,
-          "1": 0.9999999999999064
+          "0": 0.4480929672718048,
+          "1": 1.0
         }
       },
       {
         "alpha": 0.1,
-        "coverage": 0.9415041782729805,
-        "review_rate": 0.027855153203342618,
-        "normal_coverage": 0.9381107491856677,
+        "coverage": 0.891846921797005,
+        "review_rate": 0.13311148086522462,
+        "normal_coverage": 0.9026548672566371,
         "quantiles": {
-          "0": 0.021137562596169945,
-          "1": 0.9249749127862469
+          "0": 0.3014568090438843,
+          "1": 0.8836598321795464
         }
       },
       {
         "alpha": 0.15,
-        "coverage": 0.8913649025069638,
-        "review_rate": 0.10027855153203342,
-        "normal_coverage": 0.8827361563517915,
+        "coverage": 0.8369384359400999,
+        "review_rate": 0.018302828618968387,
+        "normal_coverage": 0.8436578171091446,
         "quantiles": {
-          "0": 0.006285305365545613,
-          "1": 0.5149421849408451
+          "0": 0.21690472960472107,
+          "1": 0.7508965581655502
         }
       },
       {
         "alpha": 0.2,
-        "coverage": 0.8440111420612814,
-        "review_rate": 0.15041782729805014,
-        "normal_coverage": 0.8403908794788274,
+        "coverage": 0.7820299500831946,
+        "review_rate": 0.11148086522462562,
+        "normal_coverage": 0.7817109144542773,
         "quantiles": {
-          "0": 9.35918009759007e-14,
-          "1": 0.20103959972716423
+          "0": 0.1557379513978958,
+          "1": 0.6905227303504944
         }
       }
     ],
     "alpha_sweep_calibration": [
       {
         "alpha": 0.01,
-        "coverage": 0.9972527472527473,
-        "review_rate": 0.8598901098901099,
-        "normal_coverage": 0.996742671009772
+        "coverage": 0.9983606557377049,
+        "review_rate": 0.7819672131147541,
+        "normal_coverage": 0.9970501474926253
       },
       {
         "alpha": 0.05,
-        "coverage": 0.9642857142857143,
-        "review_rate": 0.8186813186813187,
-        "normal_coverage": 0.9576547231270358
+        "coverage": 0.9754098360655737,
+        "review_rate": 0.6508196721311476,
+        "normal_coverage": 0.9557522123893806
       },
       {
         "alpha": 0.1,
-        "coverage": 0.9148351648351648,
-        "review_rate": 0.027472527472527472,
-        "normal_coverage": 0.9087947882736156
+        "coverage": 0.9065573770491804,
+        "review_rate": 0.1360655737704918,
+        "normal_coverage": 0.9056047197640118
       },
       {
         "alpha": 0.15,
-        "coverage": 0.8626373626373627,
-        "review_rate": 0.12362637362637363,
-        "normal_coverage": 0.8566775244299675
+        "coverage": 0.8573770491803279,
+        "review_rate": 0.01639344262295082,
+        "normal_coverage": 0.855457227138643
       },
       {
         "alpha": 0.2,
-        "coverage": 0.8131868131868132,
-        "review_rate": 0.1813186813186813,
-        "normal_coverage": 0.8078175895765473
+        "coverage": 0.8065573770491803,
+        "review_rate": 0.09180327868852459,
+        "normal_coverage": 0.8053097345132744
       }
     ],
     "review_budget": 0.15,
@@ -194,24 +194,24 @@
     "bayes_threshold": 0.038461538461538464,
     "baseline": {
       "threshold": 0.5,
-      "false_rejects": 3,
-      "missed_defects": 3,
-      "total_cost": 37873.10573791029,
-      "cost_per_item": 105.49611626158855,
-      "recall": 0.9423076923076923,
-      "specificity": 0.990228013029316
+      "false_rejects": 9,
+      "missed_defects": 91,
+      "total_cost": 344070.5715057758,
+      "cost_per_item": 572.4967911909747,
+      "recall": 0.6526717557251909,
+      "specificity": 0.9734513274336283
     },
     "optimal": {
-      "threshold": 0.3,
-      "false_rejects": 4,
-      "missed_defects": 2,
-      "total_cost": 29785.935855675263,
-      "cost_per_item": 82.96918065647705,
-      "recall": 0.9615384615384616,
-      "specificity": 0.9869706840390879
+      "threshold": 0.35000000000000003,
+      "false_rejects": 24,
+      "missed_defects": 60,
+      "total_cost": 288994.8064581504,
+      "cost_per_item": 480.8565831250422,
+      "recall": 0.7709923664122137,
+      "specificity": 0.9292035398230089
     },
-    "cost_reduction": 8087.16988223503,
-    "cost_reduction_ratio": 0.2135333167076372,
+    "cost_reduction": 55075.765047625406,
+    "cost_reduction_ratio": 0.16007112961330627,
     "assumed_defect_prevalence": 0.03
   },
   "figures": [

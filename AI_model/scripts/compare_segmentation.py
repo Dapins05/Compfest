@@ -191,7 +191,7 @@ def main() -> int:
     parser.add_argument(
         "--finetuned",
         type=Path,
-        default=PROJECT_ROOT / "models/finetuned/seg/weights/best.pt",
+        default=PROJECT_ROOT / "models/finetuned/seg_goodsad/weights/best.pt",
     )
     parser.add_argument(
         "--dataset", type=Path, default=PROJECT_ROOT / "data/processed/seg"
@@ -205,6 +205,11 @@ def main() -> int:
     parser.add_argument("--iou-match", type=float, default=0.5)
     parser.add_argument("--resamples", type=int, default=2000)
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument(
+        "--device",
+        default=0,
+        help="0 untuk GPU pertama, cpu untuk memaksa CPU",
+    )
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.INFO, format="%(message)s", stream=sys.stdout)
@@ -218,6 +223,7 @@ def main() -> int:
     segmentation = config["segmentation"]
 
     common = {
+        "device": args.device,
         "dataset_root": args.dataset,
         "split": args.split,
         "imgsz": int(segmentation["imgsz"]),

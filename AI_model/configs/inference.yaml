@@ -7,16 +7,18 @@
 # Nilai bertanda TBD diisi dari hasil kalibrasi di Step 6 dan 7, berdasarkan
 # run sungguhan dan bukan tebakan.
 
-version: "0.2.0-step2"
+version: "0.3.0-goodsad"
 
 # MODEL
 models:
   detection:
     path: models/onnx/yolo11n-defect.onnx
     imgsz: 640
-    # Disamakan dengan decision.binary_threshold. Bila NMS menyaring di atas
-    # ambang keputusan, ambang keputusan tidak akan pernah tercapai dan
-    # nilainya menjadi hiasan belaka.
+    # WAJIB berada di bawah decision.binary_threshold. Bila NMS menyaring di
+    # atas ambang keputusan, ambang keputusan tidak akan pernah tercapai dan
+    # nilainya menjadi hiasan belaka. Ambang keputusan kini 0,35; NMS sengaja
+    # dibiarkan lebih rendah agar deteksi lemah tetap sampai ke decision
+    # engine dan dapat dipakai aturan luas maupun kelas kritis.
     conf_threshold: 0.22
     iou_threshold: 0.45
     max_detections: 30
@@ -27,9 +29,10 @@ models:
     mask_threshold: 0.5
 
   anomaly:
-    # PaDiM yang dilatih pada gabungan keempat kategori yang juga dilatih
-    # detektor. Model satu kategori tidak dapat dipakai di sini: bagi model
-    # yang hanya mengenal botol, kacang mete pun terbaca sebagai anomali.
+    # PaDiM yang dilatih pada gabungan SEPULUH kategori. Model satu kategori
+    # tidak dapat dipakai di sini: bagi model yang hanya mengenal botol,
+    # kacang mete pun terbaca sebagai anomali. Datasetnya dibangun
+    # scripts/build_combined_anomaly.py, 60 gambar per kategori agar seimbang.
     path: models/onnx/padim-combined.onnx
     imgsz: 256
 
@@ -46,17 +49,29 @@ decision:
   area_pct_threshold: 2.0
 
   # Ambang anomali dihitung dengan teori nilai ekstrem, bukan dipilih tangan.
-  # Diturunkan pada model gabungan empat kategori, yang sama dengan model yang
-  # benar-benar dipakai saat penyajian.
+  # Diturunkan pada model gabungan sepuluh kategori, yang sama dengan model
+  # yang benar-benar dipakai saat penyajian.
   # Ambang per kategori tunggal ada di reports/metrics/anomaly_results.json.
-  anomaly_threshold: 39.7942
+  # Diukur ulang 23 Agustus 2026 pada model gabungan 10 kategori.
+  anomaly_threshold: 83.2714
   anomaly_target_far: 0.01  # laju alarm palsu target 1%
   anomaly_evt_params:
-    xi: 0.2411  # parameter bentuk GPD; positif berarti ekor berat
-    sigma: 4.5026  # parameter skala GPD
-    u: 25.7742  # ambang POT awal, kuantil ke-90
-    ks_p_value: 0.970  # diagnostik kecocokan; GPD tidak ditolak
-    calibration_n: 294  # sampel normal yang tidak ikut dilatih
+    xi: -0.4585  # parameter bentuk GPD; negatif berarti ekor terbatas
+    sigma: 24.5823  # parameter skala GPD
+    u: 48.3106  # ambang POT awal, kuantil ke-90
+    ks_p_value: 0.8414  # diagnostik kecocokan; GPD tidak ditolak
+    calibration_n: 120  # sampel normal yang tidak ikut dilatih
+    # PERINGATAN, dibaca sebelum mengandalkan jalur anomali:
+    #   AUROC gambar hanya 0,6019, turun dari 0,890 pada model empat kategori.
+    #   Pada ambang di atas, jalur ini menangkap 3,99 persen cacat sementara
+    #   laju alarm palsunya pada data tertahan 2,32 persen, dua kali lipat
+    #   target. Sebabnya dapat diterangkan: PaDiM mencocokkan satu Gaussian
+    #   per posisi patch, sedangkan "normal" untuk sepuluh jenis produk yang
+    #   sangat berbeda bukan sebaran unimodal. Ini penjelasan yang masuk akal,
+    #   bukan hasil pengukuran tersendiri.
+    image_auroc: 0.6019
+    defect_recall_at_threshold: 0.0399
+    held_out_false_alarm_rate: 0.0232
 
   # Conformal prediction menentukan kapan sistem menahan keputusan.
   # Alpha dipilih pada SET KALIBRASI memakai aturan yang dinyatakan: ambil
@@ -69,23 +84,45 @@ decision:
     review_budget: 0.15
     alpha_selected_on: calibration
     quantiles:
-      normal: 0.0211
-      defect: 0.925
-    empirical_coverage: 0.9415
-    coverage_normal: 0.9381
-    coverage_defect: 0.9615
-    review_rate: 0.0279
+      normal: 0.3015
+      defect: 0.8837
+    empirical_coverage: 0.8918
+    coverage_normal: 0.9027
+    coverage_defect: 0.8779
+    review_rate: 0.1331
+    # Jaminan 0,90 TIDAK tercapai pada set uji: 0,8918. Jaminan conformal
+    # bersifat marginal dan berlaku dalam ekspektasi, jadi meleset tipis pada
+    # satu set uji memang mungkin terjadi. Dicatat apa adanya, bukan
+    # disembunyikan. Pada mode biner angka ini tidak menentukan apa pun karena
+    # sistem tidak pernah menahan keputusan.
+    guarantee_met: false
 
-  # Kalibrasi kepercayaan. Temperature scaling dicoba lebih dulu tetapi justru
-  # memperburuk ECE karena tidak punya intersep sehingga tidak dapat menggeser
-  # skor ke proporsi kelas yang sebenarnya. Platt scaling yang dipakai.
+  # Kalibrasi kepercayaan. Diukur ulang 22 Agustus 2026 pada model GoodsAD.
+  #
+  # Hasilnya berubah arah: pada model lama Platt scaling memperbaiki ECE dari
+  # 0,0497 ke 0,0145. Pada model baru KEDUA metode justru memperburuk, jadi
+  # skor mentah yang dipakai.
+  #
+  #   mentah       ECE kalibrasi 0,1212  ECE uji 0,1284   <- dipilih
+  #   temperature  ECE kalibrasi 0,1664  ECE uji 0,1767
+  #   platt        ECE kalibrasi 0,1334  ECE uji 0,1502
+  #
+  # slope 1,0 dan intersep 0,0 adalah pemetaan identitas, karena
+  # sigmoid(logit(p)) = p. Nilai inilah cara menyatakan "tanpa kalibrasi"
+  # tanpa perlu mengubah kode decision engine.
+  #
+  # ECE 0,1284 jauh lebih buruk daripada 0,0145 milik model lama. Sebabnya
+  # belum dipastikan; dugaan paling masuk akal, sebaran data kini jauh lebih
+  # beragam sehingga satu pemetaan global tidak lagi cukup. Perbaikannya
+  # kemungkinan kalibrasi per kategori, dan itu pekerjaan tahap Final.
   calibration:
-    method: platt
-    platt_slope: 2.8253
-    platt_intercept: 2.69
-    ece_before: 0.0497
-    ece_after: 0.0145
-    brier_after: 0.0145
+    method: mentah
+    platt_slope: 1.0
+    platt_intercept: 0.0
+    ece_before: 0.1284
+    ece_after: 0.1284
+    mce_after: 0.4009
+    brier_after: 0.1304
 
   # bagian Ambang sensitif biaya (STATISTICS.md bagian 8)
   # τ* = C_FP / (C_FP + C_FN)
@@ -101,10 +138,8 @@ decision:
     assumed_defect_prevalence: 0.03
     bayes_threshold: 0.0385  # C_FP / (C_FP + C_FN) = 2000 / 52000
     # Ambang yang benar-benar dipakai, hasil minimum biaya pada set kalibrasi.
-    # Setelah set kalibrasi diperluas dengan gambar normal, ambang ini
-    # menggeneralisasi: pada split uji biayanya 21,4 persen lebih murah
-    # daripada ambang 0,50.
-    operating_threshold: 0.3
+    # Pada split uji biayanya 16,0 persen lebih murah daripada ambang 0,50.
+    operating_threshold: 0.35
 
   # bagian Mode keputusan
   # Mode biner tidak pernah mengembalikan REVIEW: setiap gambar dinyatakan
@@ -115,25 +150,33 @@ decision:
   # diharapkan pada model biaya di bawah, bukan dipilih dari hasil set uji.
   # Memilihnya dari set uji akan membuat angka yang dilaporkan tidak sah.
   mode: binary
-  binary_threshold: 0.22
+  # Dipilih ulang 22 Agustus 2026 pada model yang dilatih memakai PKU-GoodsAD.
+  # Dipilih HANYA pada set kalibrasi; set uji tidak dilihat saat memilih.
+  binary_threshold: 0.35
   binary_threshold_selected_on: calibration
   binary_calibration:
-    recall: 0.9298
-    specificity: 0.9805
-    cost_per_item: 143.2
-    false_rejects: 6
-    missed_defects: 4
-    n: 364
+    recall: 0.7970
+    specificity: 0.9086
+    cost_per_item: 481.8
+    false_rejects: 31
+    missed_defects: 55
+    n: 610
+    defects: 271
 
   # Dipakai hanya pada mode three_class, ketika sistem masih boleh menahan
   # keputusan. Disimpan karena tahap Final berencana memakainya kembali.
   min_confidence: 0.60
 
 # KELAS CACAT
-# Taksonomi 5 kelas, hasil penyatuan 30+ label mentah MVTec AD dan VisA
-# (lihat src/visionqc_ai/data/taxonomy.py - pemetaan lengkapnya ditulis di
-# sana supaya bisa diaudit). Urutan id WAJIB sama dengan DEFECT_CLASSES;
-# id yang bergeser membuat bobot hasil training tidak lagi bermakna.
+# Taksonomi 6 kelas, hasil penyatuan 38 label mentah MVTec AD, VisA, dan
+# PKU-GoodsAD (lihat src/visionqc_ai/data/taxonomy.py - pemetaan lengkapnya
+# ditulis di sana supaya bisa diaudit). Urutan id WAJIB sama dengan
+# DEFECT_CLASSES; id yang bergeser membuat bobot hasil training tidak lagi
+# bermakna.
+#
+# terbuka ditambahkan 21 Agustus 2026 bersama PKU-GoodsAD. Kelas ini TIDAK
+# dimasukkan ke critical_classes; layak-tidaknya diputuskan dari data
+# kalibrasi setelah diukur, bukan ditebak di muka.
 classes:
   - id: 0
     name: pecah
@@ -155,6 +198,10 @@ classes:
     name: deformasi
     label_id: "Deformasi"
     severity_weight: 0.5
+  - id: 5
+    name: terbuka
+    label_id: "Segel Terbuka"
+    severity_weight: 0.9  # kemasan tak lagi tersegel: produk tidak boleh dikirim
 
 # PRIVASI  (PRIVACY.md) - semua wajib menyala
 privacy:

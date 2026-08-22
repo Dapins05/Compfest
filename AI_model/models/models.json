@@ -1,25 +1,25 @@
 {
-  "release_tag": "models-v1.0.0",
+  "release_tag": "models-v1.1.0",
   "repository": "Dapins05/Compfest",
-  "base_url": "https://github.com/Dapins05/Compfest/releases/download/models-v1.0.0",
-  "generated_on": "2026-08-18",
-  "note": "Bobot model tidak disimpan di git karena ukurannya. Berkas ini adalah daftar resmi beserta sidik jari SHA-256 supaya unduhan dapat diverifikasi keasliannya.",
+  "base_url": "https://github.com/Dapins05/Compfest/releases/download/models-v1.1.0",
+  "generated_on": "2026-08-23",
+  "note": "Bobot model tidak disimpan di git karena ukurannya. Berkas ini adalah daftar resmi beserta sidik jari SHA-256 supaya unduhan dapat diverifikasi keasliannya. Versi 1.1.0 adalah model taksonomi ENAM kelas yang dilatih memakai PKU-GoodsAD; versi 1.0.0 adalah model lima kelas dan tidak lagi cocok dengan configs/inference.yaml.",
   "models": [
     {
       "name": "yolo11n-defect.onnx",
       "target": "models/onnx/yolo11n-defect.onnx",
-      "size_bytes": 10607248,
-      "sha256": "83af2094e70601df0849e992e6a969b34f308fd872d7eafcceb3e295baea607a",
+      "size_bytes": 10608042,
+      "sha256": "894df850adbbd0e7db0ab485ca92f5762581a867811acd78243c20fbf0bdcdbd",
       "required": true,
-      "description": "Deteksi cacat, YOLO11n hasil fine-tuning, imgsz 640, opset 12"
+      "description": "Deteksi cacat, YOLO11n fine-tuned, 6 kelas, imgsz 640, opset 12"
     },
     {
       "name": "yolo11n-seg-defect.onnx",
       "target": "models/onnx/yolo11n-seg-defect.onnx",
-      "size_bytes": 11629556,
-      "sha256": "cc28e28fc9a39d1dc5cef61eab73e7eca70bf12981f93d458baad341a082919a",
+      "size_bytes": 11630371,
+      "sha256": "f2e4e5923618decfa1f53754bf0fd130d56d5ee89e02825e3106c33648d90594",
       "required": false,
-      "description": "Segmentasi cacat, YOLO11n-seg hasil fine-tuning, imgsz 640, opset 12"
+      "description": "Segmentasi cacat, YOLO11n-seg fine-tuned, 6 kelas, imgsz 640, opset 12"
     },
     {
       "name": "face_detection_yunet.onnx",
@@ -33,9 +33,9 @@
       "name": "padim-combined.onnx",
       "target": "models/onnx/padim-combined.onnx",
       "size_bytes": 176629540,
-      "sha256": "2acdeb97a7637d3255370c6fea6b3122f79dfae5fd8a88f78e7d94f25d2aba82",
+      "sha256": "c72e4c763aaccca605eb11305369b37999d781a3cbd44fed4110aa7f6c7c8a3c",
       "required": false,
-      "description": "Deteksi anomali PaDiM pada gabungan empat kategori; bila tidak ada, penilaian anomali dilaporkan tidak aktif"
+      "description": "Deteksi anomali PaDiM pada gabungan SEPULUH kategori; AUROC gambar 0,6019, lemah - lihat EXPERIMENTS.md bagian 5.3 sebelum mengandalkannya"
     }
   ]
 }

@@ -176,8 +176,14 @@ skor memakai teori nilai ekstrem, bukan dipilih tangan.
 python scripts/calibrate_decision.py
 ```
 
-Mengukur kalibrasi kepercayaan, menghitung kuantil conformal yang menjadi
-landasan kelas REVIEW, dan menilai ambang berdasarkan biaya kesalahan.
+Mengukur kalibrasi kepercayaan, menghitung kuantil conformal, dan menilai
+ambang berdasarkan biaya kesalahan.
+
+Kuantil conformal tetap dihitung dan dilaporkan sebagai keterlacakan, tetapi
+sejak mode keputusan menjadi biner (20 Agustus 2026) kuantil itu **tidak lagi
+menentukan apa pun**. Sistem hanya mengembalikan PASS atau REJECT; tidak ada
+kelas REVIEW. Mode tiga kelas masih ada di kode dan masih diuji, disiapkan
+untuk tahap Final.
 
 ## Ekspor ONNX dan Tolok Ukur Latensi (Step 9)
 

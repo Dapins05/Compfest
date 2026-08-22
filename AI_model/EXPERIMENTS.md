@@ -6,14 +6,20 @@ mewajibkan: *"Model wajib di fine tune sesuai dengan inovasi fitur per tim."*
 Angka yang belum diukur ditulis `belum diukur` dan tidak pernah dikarang.
 Panitia berhak meminta demo langsung dan klarifikasi saat penjurian.
 
-**Status:** Step 2, 4, 5, 6, 7, 9, dan 10 selesai. Modul AI sudah dapat dipanggil
-Backend lewat `run_inspection()`. Step 3 (sintetik) dan Step 8 (privasi) belum.
+**Status per 22 Agustus 2026:** Step 2, 4, 5, 6, 7, 8, 9, dan 10 selesai. Modul
+AI sudah dapat dipanggil Backend lewat `run_inspection()`. **Step 3 (cacat
+sintetik) belum**, dan sasarannya kini menyempit ke satu kelas saja, `kotor`.
+
+Seluruh angka pada dokumen ini **diukur ulang pada 21-22 Agustus 2026** setelah
+PKU-GoodsAD masuk dan taksonomi berubah dari lima menjadi enam kelas. Angka run
+18 Agustus tidak lagi berlaku; bila muncul di dokumen ini, statusnya hanya
+sebagai pembanding historis dan selalu diberi tanggal.
 
 ---
 
 ## 1. Lingkungan
 
-Diukur langsung pada mesin yang dipakai, 18 Agustus 2026.
+Diukur langsung pada mesin yang dipakai; diperiksa ulang 22 Agustus 2026.
 
 | | |
 |---|---|
@@ -21,7 +27,7 @@ Diukur langsung pada mesin yang dipakai, 18 Agustus 2026.
 | Driver / CUDA | 592.00 / CUDA 13.1 (runtime torch: cu121) |
 | Python | 3.11.1 |
 | torch | 2.5.1+cu121 - `torch.cuda.is_available() = True` |
-| opencv-python | 4.13.0 |
+| opencv-python | 5.0.0 |
 | numpy / scipy / scikit-learn | 2.4.6 / 1.17.1 / 1.5.0 |
 | ultralytics | 8.4.121 |
 | Seed | 42 (dikunci di `configs/dataset.yaml`) |
@@ -45,11 +51,27 @@ langsung dari mask. Objek di bawah ~12 px praktis tak dapat dipelajari detektor.
 | `fryum` | VisA | CC BY 4.0 | 100 | 500 | 254 | 29,8 % | **anomali saja** - cacat terlalu kecil untuk bbox |
 | `macaroni1` | VisA | CC BY 4.0 | - | - | - | 37,8 % | tidak diproses (cadangan) |
 | `macaroni2` | VisA | CC BY 4.0 | - | - | - | 31,8 % | tidak diproses (cadangan) |
-| Sintetik (Step 3) | dibuat sendiri | - | belum dibuat | - | - | - | penyeimbang kelas |
+| `drink_bottle` | PKU-GoodsAD | GPL-3.0 | 425 | 1.089 | 498 | belum diukur | deteksi + segmentasi + anomali |
+| `food_bottle` | PKU-GoodsAD | GPL-3.0 | 361 | 1.257 | 370 | belum diukur | deteksi + segmentasi + anomali |
+| `food_box` | PKU-GoodsAD | GPL-3.0 | 251 | 578 | 299 | belum diukur | deteksi + segmentasi + anomali |
+| `food_package` | PKU-GoodsAD | GPL-3.0 | 230 | 793 | 237 | belum diukur | deteksi + segmentasi + anomali |
+| `drink_can` | PKU-GoodsAD | GPL-3.0 | 146 | 382 | 192 | belum diukur | deteksi + segmentasi + anomali |
+| Sintetik (Step 3) | dibuat sendiri | - | belum dibuat | - | - | - | penyeimbang `kotor` |
 
 Kategori berdefek sangat kecil **tidak dibuang**, melainkan dialihkan ke jalur
 anomaly detection yang tidak memerlukan kotak pembatas. Ini sekaligus menjadi
 bukti empiris kenapa sistem memerlukan dua pendekatan sekaligus.
+
+**Kenapa kolom "Objek >=12px @640" kosong untuk PKU-GoodsAD.** Metrik itu
+diukur pada mask mentah sebelum penyaringan, dan pengukuran tersebut belum
+dijalankan untuk GoodsAD (R7.2 - tidak ditulis kalau belum diukur). Menyalin
+angka dari statistik "dibuang karena kecil" hasil konversi akan menyesatkan,
+karena itu diukur setelah penyaringan sehingga selalu terlihat lebih baik.
+
+Pemilihan kategori GoodsAD memang **tidak** memakai metrik itu sebagai dasar.
+Dasarnya dua hal lain: kecocokan domain (barang belanjaan kemasan, bukan
+komponen industri) dan ketersediaan mask piksel pada seluruh 1.413 gambar
+cacatnya.
 
 ### 2.2 Rekonstruksi label VisA
 
@@ -73,16 +95,18 @@ Pada `pipe_fryum`, dua kode tidak terpisahkan karena *middle breakage* dan
 
 ### 2.3 Taksonomi kelas
 
-30+ label mentah dua dataset disatukan menjadi 5 kelas. Pemetaan lengkap dan
-dapat diaudit ada di `src/visionqc_ai/data/taxonomy.py`.
+38 label mentah tiga dataset disatukan menjadi 6 kelas. Pemetaan lengkap dan
+dapat diaudit ada di `src/visionqc_ai/data/taxonomy.py`. Kelas `terbuka`
+ditambahkan 21 Agustus 2026 bersama PKU-GoodsAD.
 
 | id | Kelas | Contoh label mentah yang dipetakan |
 |---|---|---|
-| 0 | `pecah` | `broken_large`, `broken_small`, `chunk of gum missing`, `corner missing`, `middle breakage`, `small holes`, `small cracks` |
-| 1 | `gores` | `scratches`, `small scratches` |
-| 2 | `noda` | `similar colour spot`, `different color spot`, `same colour spot`, `burnt` |
+| 0 | `pecah` | `broken_large`, `broken_small`, `chunk of gum missing`, `corner missing`, `middle breakage`, `small holes`, `small cracks`, `broken` |
+| 1 | `gores` | `scratches`, `small scratches`, `surface_damage` |
+| 2 | `noda` | `similar colour spot`, `different color spot`, `same colour spot`, `burnt`, `surface_anomaly` |
 | 3 | `kotor` | `contamination` |
-| 4 | `deformasi` | `stuck together`, `fryum stuck together` |
+| 4 | `deformasi` | `stuck together`, `fryum stuck together`, `bent`, `misshape`, `bubble`, `deformation` |
+| 5 | `terbuka` | `cap_open`, `cap_half_open`, `opened`, `straw_missing` |
 
 > `burnt` sengaja dilebur ke `noda`: keduanya penyimpangan warna permukaan,
 > dan memisahkannya hanya menyisakan sekitar 34 contoh yang terlalu tipis
@@ -90,37 +114,49 @@ dapat diaudit ada di `src/visionqc_ai/data/taxonomy.py`.
 
 ### 2.4 Pembagian split (seed 42, dikunci)
 
-| Split | Gambar | dari itu latar belakang | Instance | `pecah` | `gores` | `noda` | `kotor` | `deformasi` |
-|---|---|---|---|---|---|---|---|---|
-| train | 291 | 37 | 471 | 231 | 110 | 103 | 16 | 11 |
-| val | 64 | 7 | 97 | 54 | 20 | 17 | 3 | 3 |
-| test | 59 | 7 | 75 | 40 | 9 | 21 | 3 | 2 |
-| **total** | **414** | **51** | **643** | **325** | **139** | **141** | **22** | **16** |
+Diukur ulang 21 Agustus 2026 setelah PKU-GoodsAD masuk.
+
+| Split | Gambar | dari itu latar belakang | Instance | `pecah` | `gores` | `noda` | `kotor` | `deformasi` | `terbuka` |
+|---|---|---|---|---|---|---|---|---|---|
+| train | 1.428 | 185 | 1.573 | 295 | 548 | 204 | 16 | 179 | 331 |
+| val | 310 | 39 | 345 | 70 | 122 | 39 | 3 | 39 | 72 |
+| test | 301 | 39 | 321 | 53 | 112 | 42 | 3 | 39 | 72 |
+| **total** | **2.039** | **263** | **2.239** | **418** | **782** | **285** | **22** | **257** | **475** |
+
+Pembanding keadaan sebelumnya: 414 gambar dengan 643 instance. Gambar cacat
+naik dari 363 menjadi 1.776, yaitu **4,9 kali lipat**.
 
 ### 2.5 Validasi statistik (STATISTICS.md bagian 2)
 
-| Uji | Nilai | Kriteria | Lulus? |
-|---|---|---|---|
-| Khi-kuadrat keselarasan distribusi kelas antar split | 7,161 - df 8 - **p = 0,5194** | p > 0,05 | **lulus** |
-| Rasio ketimpangan (IR) | **20,31** | < 3,0 | belum lulus |
-| Entropi Shannon ternormalisasi | **0,7556** | > 0,85 | belum lulus |
-| Instance cacat di test | **75** (pada 52 gambar) | minimal 139 | belum lulus |
+| Uji | Sebelum (18 Agu) | Sesudah (21 Agu) | Kriteria | Lulus? |
+|---|---|---|---|---|
+| Khi-kuadrat keselarasan distribusi kelas antar split | 7,161 - df 8 - p = 0,5194 | **2,453 - df 10 - p = 0,9915** | p > 0,05 | **lulus** |
+| Rasio ketimpangan (IR) | 20,31 | **35,55** | < 3,0 | **belum lulus** |
+| Entropi Shannon ternormalisasi | 0,7556 | **0,8740** | > 0,85 | **lulus** |
+| Instance cacat di test | 75 (pada 52 gambar) | **321** (pada 262 gambar) | minimal 139 | **lulus** |
 
-**Tafsiran jujur atas tiga yang belum lulus:**
+Dua dari tiga uji yang sebelumnya gagal kini lulus. Yang tersisa satu, dan
+justru memburuk.
 
-1. **IR 20,31 dan entropi 0,7556** - akibat langsung kelangkaan `kotor` (22
-   instance) dan `deformasi` (16). Inilah tugas Step 3: generator cacat
-   sintetik kini punya **sasaran terukur**, bukan sekadar "tambah data".
-   Untuk menurunkan IR ke bawah 3,0 dibutuhkan sekitar 108 instance tambahan
-   pada kedua kelas langka tersebut.
-2. **Ukuran test set** - dengan 75 instance, recall dapat diestimasi pada galat
-   **6,8 % (95 % CI)**, bukan 5 % seperti yang ditargetkan. Angka 6,8 %
-   inilah yang wajib ditulis di proposal. Menambah data sintetik **tidak
-   boleh** dipakai memperbesar test set, karena test set harus tetap mewakili
-   data nyata.
-3. Catatan uji khi-kuadrat: frekuensi harapan minimum di bawah 5 pada sel
-   kelas langka,
-   sehingga nilai p bersifat indikatif. Akan dihitung ulang setelah Step 3.
+**Kenapa IR memburuk padahal datanya bertambah banyak.** Ini bukan
+kemunduran: tidak ada satu pun instance `kotor` yang hilang, jumlahnya tetap
+22. Yang terjadi adalah lima kelas lain tumbuh berkali lipat sementara `kotor`
+diam di tempat, karena PKU-GoodsAD memang tidak memuat kontaminasi permukaan.
+IR mengukur perbandingan kelas terbesar terhadap terkecil, jadi angkanya naik
+walaupun tidak ada yang berkurang.
+
+**Kenapa ini lebih serius daripada sekadar angka yang gagal.** `kotor` adalah
+satu-satunya anggota `critical_classes` pada decision engine, yaitu kelas yang
+memicu REJECT berapa pun luas cacatnya. Per 21 Agustus aturan sekeras itu
+bersandar pada **16 instance latih**. Konsekuensinya wajib diukur pada recall
+per kelas, bukan diperkirakan.
+
+**Ukuran test set.** Dengan 321 instance, recall dapat diestimasi pada galat
+**±3,3 % (95 % CI)**, membaik dari ±6,8 % sebelumnya dan kini melewati target
+±5 %. Angka ±3,3 % inilah yang dipakai di proposal.
+
+**Catatan uji khi-kuadrat.** Frekuensi harapan minimum masih di bawah 5 pada
+sel `kotor`, sehingga nilai p tetap bersifat indikatif meski angkanya membaik.
 
 ### 2.6 Instance yang dibuang saat konversi
 
@@ -150,15 +186,26 @@ Dihasilkan `scripts/compare_detection.py`; angka lengkap ada di
 
 ### 3.1 Ringkas run
 
+Diukur ulang 21-22 Agustus 2026 pada dataset yang diperbesar PKU-GoodsAD.
+Angka run 18 Agustus tidak lagi berlaku dan **tidak boleh dibandingkan
+langsung**, karena set uji maupun jumlah kelasnya berbeda.
+
 | | |
 |---|---|
-| Model dasar | YOLO11n pra-latih COCO (`yolo11n.pt`, 2.583.127 parameter) |
-| Dataset | 291 train / 64 val / 59 test, 5 kelas cacat |
-| Epoch diminta | 300 |
-| Epoch dijalankan | **161** (berhenti awal, `patience` 50) |
-| Epoch terbaik | **137** |
-| Waktu tempuh | sekitar 22 menit pada RTX 3050 Laptop 4 GB |
-| Metrik val terbaik | precision 0,7319 - recall 0,7543 - mAP50 **0,7967** - mAP50-95 0,4033 |
+| Model dasar | YOLO11n pra-latih COCO (`yolo11n.pt`) |
+| Dataset | 1.428 train / 310 val / 301 test, **6 kelas** cacat |
+| Epoch diminta | 150 |
+| Epoch dijalankan | **150** (tuntas, tidak berhenti awal) |
+| Epoch terbaik (mAP50 val) | **122** |
+| Metrik val terbaik | recall 0,6274 - mAP50 **0,6972** - precision 0,6862 |
+| Metrik val epoch akhir | recall 0,5988 - mAP50 0,6760 - precision 0,8062 - mAP50-95 0,3714 |
+
+**Catatan reprodusibilitas.** Run ini terputus pada epoch 117 ketika prosesnya
+ikut terhenti, lalu **dilanjutkan** dari `last.pt` memakai `resume=True`,
+bukan dimulai ulang. Sambungan itu tercatat pada `results.csv` sebagai
+kolom waktu yang kembali dari nol di epoch 118. Hasilnya tetap sah karena
+optimizer state ikut tersimpan, tetapi wajib disebut agar siapa pun yang
+mengulang tahu bahwa kurva waktunya tidak bersambung.
 
 ### 3.2 Perbandingan metrik pada test set
 
@@ -168,21 +215,26 @@ cacat di dalam satu gambar tidak saling bebas.
 
 | Metrik (tingkat instance) | Baseline pra-latih | Sesudah fine-tune | 95% BCa (sesudah) |
 |---|---|---|---|
-| Recall | 0,0000 | **0,6933** | [0,5793 ; 0,7989] |
-| Precision | 0,0000 | **0,7429** | [0,6195 ; 0,8382] |
-| F1 | 0,0000 | 0,7172 | [0,6166 ; 0,8030] |
-| **F2** (recall diutamakan) | 0,0000 | **0,7027** | [0,5968 ; 0,7977] |
-| True positive | 0 | 52 | dari 75 instance |
-| False negative | 75 | 23 | |
+| Recall | 0,0000 | **0,6137** | [0,5502 ; 0,6751] |
+| Precision | 0,0000 | **0,6545** | [0,6014 ; 0,7000] |
+| F1 | 0,0000 | 0,6334 | [0,5824 ; 0,6788] |
+| **F2** (recall diutamakan) | 0,0000 | **0,6215** | [0,5631 ; 0,6754] |
+| True positive | 0 | 197 | dari 321 instance |
+| False negative | 321 | 124 | |
 
-Selang Wilson untuk recall: 0,6933 [0,5817 ; 0,7861], konsisten dengan BCa.
+Selang Wilson untuk recall: 0,6137 [0,5594 ; 0,6653], konsisten dengan BCa.
 
 | Metrik (tingkat gambar) | Baseline | Sesudah fine-tune |
 |---|---|---|
-| TP / FP / TN / FN | 22 / 2 / 5 / 30 | 49 / 1 / 6 / 3 |
-| Recall | 0,423 | **0,942** |
-| Specificity | 0,714 | 0,857 |
-| **MCC** | **0,090** | **0,719** |
+| TP / FP / TN / FN | 185 / 27 / 12 / 77 | 219 / 10 / 29 / 43 |
+| Recall | 0,7061 | **0,8359** |
+| Specificity | 0,3077 | **0,7436** |
+| **MCC** | **0,0102** | **0,4562** |
+
+Baseline tampak punya recall tingkat gambar 0,7061 hanya karena ia menghasilkan
+kotak COCO di mana-mana; specificity-nya 0,3077 memperlihatkan bahwa itu
+tebakan menyeluruh, bukan pengenalan. MCC 0,0102 adalah angka yang jujur untuk
+keadaan itu, yaitu praktis setara menebak acak.
 
 ### 3.3 Uji signifikansi McNemar
 
@@ -192,25 +244,25 @@ per instance ground truth.
 | | Fine-tuned menangkap | Fine-tuned gagal |
 |---|---|---|
 | **Baseline menangkap** | a = 0 | b = 0 |
-| **Baseline gagal** | c = 52 | d = 23 |
+| **Baseline gagal** | c = 197 | d = 124 |
 
 | | Nilai |
 |---|---|
 | Metode | khi-kuadrat dengan koreksi kontinuitas |
-| Khi-kuadrat McNemar | **50,019** |
-| Nilai p | **1,52 x 10^-12** |
-| Pasangan (n) | 75 |
-| Cohen's h | **1,968** (besar) |
+| Khi-kuadrat McNemar | **195,005** |
+| Nilai p | **2,57 x 10^-44** |
+| Pasangan (n) | 321 |
+| Cohen's h | **1,800** (besar) |
 | Kesimpulan | perbedaan signifikan secara statistik |
 
 **Kalimat untuk proposal:**
 
-> Fine-tuning memperbaiki 52 instance cacat yang sebelumnya lolos dan tidak
+> Fine-tuning memperbaiki 197 instance cacat yang sebelumnya lolos dan tidak
 > merusak satu pun instance yang sebelumnya tertangkap. Uji McNemar
 > menunjukkan perbedaan yang signifikan secara statistik
-> (khi-kuadrat = 50,019; p = 1,52 x 10^-12; n = 75), dengan besar efek
-> Cohen's h = 1,968 yang tergolong besar. Recall kelas cacat naik dari 0,0000
-> menjadi 0,6933 [0,5793 ; 0,7989].
+> (khi-kuadrat = 195,005; p = 2,57 x 10^-44; n = 321), dengan besar efek
+> Cohen's h = 1,800 yang tergolong besar. Recall kelas cacat naik dari 0,0000
+> menjadi 0,6137 [0,5502 ; 0,6751].
 
 ### 3.4 Kenapa baseline bernilai nol, dan kenapa itu tetap bermakna
 
@@ -235,33 +287,48 @@ dipakai sebagai metrik utama pada data yang timpang.
 
 ### 3.5 Recall per kelas
 
-| Kelas | n (test) | Baseline | Sesudah fine-tune |
-|---|---|---|---|
-| `pecah` | 40 | 0,000 | 0,725 |
-| `noda` | 21 | 0,000 | 0,619 |
-| `gores` | 9 | 0,000 | 0,556 |
-| `kotor` | 3 | 0,000 | 1,000 |
-| `deformasi` | 2 | 0,000 | 1,000 |
+Diukur 21 Agustus 2026. Selang kepercayaan Wilson disertakan karena tanpa itu
+dua baris di tabel ini mudah disalahbaca.
 
-> **Peringatan penting.** Recall 1,000 pada `kotor` dan `deformasi` **tidak
-> boleh dibaca sebagai model sempurna**. Dukungannya hanya 3 dan 2 instance,
-> sehingga selang kepercayaan Wilson-nya masing-masing membentang dari sekitar
-> 0,44 dan 0,34 sampai 1,00. Angka itu tidak informatif dan hanya dicantumkan
-> demi kelengkapan. Kelangkaan kedua kelas inilah yang menjadi sasaran Step 3.
+| Kelas | n (test) | Baseline | Sesudah fine-tune | 95% CI Wilson |
+|---|---|---|---|---|
+| `terbuka` | 72 | 0,000 | **0,708** | [0,595 ; 0,801] |
+| `noda` | 42 | 0,000 | 0,667 | [0,516 ; 0,790] |
+| `pecah` | 53 | 0,000 | 0,585 | [0,451 ; 0,707] |
+| `deformasi` | 39 | 0,000 | 0,564 | [0,410 ; 0,707] |
+| `gores` | 112 | 0,000 | 0,554 | [0,461 ; 0,642] |
+| `kotor` | **3** | 0,000 | 1,000 | **[0,438 ; 1,000]** |
+
+> **`kotor` belum dapat dinilai.** Recall 1,000 di baris terakhir **bukan**
+> bukti model sempurna pada kelas kritis. Dukungannya hanya 3 instance dan
+> selang kepercayaannya membentang dari 0,438 sampai 1,000, yang praktis tidak
+> memberi informasi. Angka ini dicantumkan demi kelengkapan, dan **tidak boleh
+> dipakai di proposal sebagai capaian**. Yang benar untuk ditulis: recall
+> `kotor` belum dapat dinilai karena dukungan uji terlalu kecil.
+
+**Kelas `terbuka` justru yang terkuat.** Ini pembenaran empiris atas keputusan
+memisahkannya menjadi kelas keenam, bukan meleburkannya ke `deformasi`.
+Sebelum dilatih ulang, model lima kelas yang diuji pada satu gambar
+`cap_half_open` menebak `deformasi` 0,731 dan `pecah` 0,692 sekaligus, yaitu
+tepat kebingungan yang akan menjadi permanen bila kedua konsep itu dipaksa
+berbagi satu label.
 
 ### 3.6 Latensi
 
-Diukur pada RTX 3050 Laptop, rata-rata 59 gambar test, resolusi 640 px.
+Diukur pada 301 gambar test, resolusi 640 px.
 
-| Tahap | ms/gambar |
+| Tahap | ms/gambar (CPU) |
 |---|---|
-| Prapemrosesan | 2,3 |
-| Inferensi | 11,3 |
-| Pascapemrosesan | 1,4 |
-| **Total** | **15,0** |
+| Prapemrosesan | 4,0 |
+| Inferensi | 94,5 |
+| Pascapemrosesan | 1,3 |
+| **Total** | **99,8** |
 
-Angka ini untuk PyTorch di GPU. Latensi ONNX di CPU, yang menjadi target
-penyajian, diukur pada Step 9 dan belum tersedia.
+**Angka ini diukur di CPU, bukan GPU**, karena evaluasi sengaja dijalankan di
+CPU agar tidak berebut VRAM 4 GB dengan fine-tuning segmentasi yang berjalan
+bersamaan. Karena itu angka ini **tidak sebanding** dengan 15,0 ms milik run
+18 Agustus yang diukur pada GPU. Latensi ONNX di CPU, yang menjadi target
+penyajian sesungguhnya, diukur terpisah pada Step 9.
 
 ### 3.7 Hyperparameter
 
@@ -271,13 +338,17 @@ imgsz 640, mosaic dimatikan pada 15 epoch terakhir, seed 42.
 
 ### 3.8 Keterbatasan yang perlu dinyatakan
 
-1. Test set hanya memuat 75 instance cacat, sehingga selang kepercayaan lebar
-   (recall +-0,11). Menambah data sintetik tidak boleh dipakai memperbesar
-   test set karena test harus tetap mewakili data nyata.
-2. Recall `gores` 0,556 adalah yang terendah di antara kelas berdukungan
-   memadai. Objek gores memang paling kecil ukurannya.
-3. Ketimpangan kelas belum ditangani; run ini dilatih di atas data apa adanya
-   dengan rasio ketimpangan 20,31.
+1. **`kotor` tidak terukur.** Hanya 3 instance uji dan 16 instance latih.
+   Padahal kelas inilah satu-satunya yang memicu REJECT tanpa memandang luas
+   cacat. Ini keterbatasan paling serius pada run ini.
+2. **Ketimpangan kelas memburuk** menjadi 35,55, bukan membaik. Run ini
+   dilatih di atas data apa adanya, tanpa pembobotan kelas maupun oversampling.
+3. **Recall `gores` 0,554 terendah** di antara kelas berdukungan memadai,
+   meski dukungannya justru paling besar (112). Objek gores memang paling
+   kecil ukurannya, dan menambah contoh tidak menyelesaikan masalah ukuran.
+4. **Kalibrasi kepercayaan memburuk.** ECE 0,1284 pada model ini, dibanding
+   0,0145 pada model 18 Agustus. Baik Platt maupun temperature scaling justru
+   memperburuk, sehingga skor mentah yang dipakai (lihat bagian 7).
 
 **Gambar pendukung:** `reports/figures/detection_comparison.png`,
 `training_curves.png`, `detection_confusion_matrix.png`,
@@ -292,126 +363,142 @@ saja punya kotak yang nyaris sama.
 
 ### 4.1 Ringkas run
 
+Diukur ulang 22 Agustus 2026 pada dataset yang diperbesar PKU-GoodsAD.
+
 | | |
 |---|---|
 | Model dasar | YOLO11n-seg pra-latih COCO |
-| Dataset | `data/processed/seg`, split identik dengan deteksi |
-| Epoch diminta | 250 |
-| Epoch dijalankan | **250** (tidak berhenti awal) |
-| Epoch terbaik | **203** |
-| Waktu tempuh | **66,8 menit** pada RTX 3050 Laptop 4 GB |
-| Metrik val terbaik (mask) | precision 0,8817 - recall 0,7253 - mAP50 **0,7899** - mAP50-95 0,5218 |
-| Metrik val terbaik (kotak) | mAP50 0,8090 - mAP50-95 0,5895 |
+| Dataset | `data/processed/seg`, split identik dengan deteksi (1.428 / 310 / 301) |
+| Epoch diminta | 130 |
+| Epoch dijalankan | **130** (tidak berhenti awal) |
+| Epoch terbaik (mAP50 mask) | **129** |
+| Waktu tempuh | **175.4 menit** pada RTX 3050 Laptop 4 GB |
+| Metrik val terbaik (mask) | precision 0,8171 - recall 0,6738 - mAP50 **0,7268** - mAP50-95 0,3844 |
+| Metrik val terbaik (kotak) | mAP50 0,7492 - mAP50-95 0,4810 |
 
-Berbeda dengan deteksi yang berhenti awal di epoch 161, run ini berjalan penuh
-sampai batas 250. Bobot terbaik jatuh di epoch 203, artinya hanya 47 epoch
-terakhir yang tanpa perbaikan sementara `patience` bernilai 40. Model **mungkin
-masih bisa membaik** bila diberi epoch lebih banyak, dan hal itu dinyatakan apa
-adanya alih-alih diklaim sudah konvergen.
+**Model ini kemungkinan besar belum konvergen.** Epoch terbaik jatuh di 129
+dari 130, artinya kurva masih menanjak tepat ketika batas epoch tercapai.
+Berbeda dari deteksi yang jelas melandai sejak sekitar epoch 120, segmentasi
+di sini berhenti karena kehabisan anggaran epoch, bukan karena berhenti
+membaik. Menambah epoch kemungkinan masih memperbaiki hasilnya, dan itu
+dinyatakan apa adanya alih-alih diklaim sudah selesai.
 
 ### 4.2 Perbandingan metrik pada test set
 
 | Metrik (tingkat instance, IoU mask 0,5) | Baseline pra-latih | Sesudah fine-tune | 95% BCa |
 |---|---|---|---|
-| Recall | 0,0000 | **0,6000** | [0,4681 ; 0,7101] |
-| Precision | 0,0000 | **0,6000** | [0,4731 ; 0,7083] |
-| F2 | 0,0000 | 0,6000 | [0,4724 ; 0,7049] |
-| True positive | 0 | 45 | dari 75 instance |
-| False positive | 40 | 30 | |
-| False negative | 75 | 30 | |
+| Recall | 0,0000 | **0,5888** | [0,5260 ; 0,6457] |
+| Precision | 0,0000 | **0,6873** | [0,6279 ; 0,7389] |
+| F2 | 0,0000 | 0,6062 | [0,5487 ; 0,6584] |
+| True positive | 0 | 189 | dari 321 instance |
+| False positive | 297 | 86 | |
+| False negative | 321 | 132 | |
 
 | Kualitas mask pada pasangan yang cocok | Baseline | Sesudah fine-tune |
 |---|---|---|
-| IoU rerata | 0,0000 | **0,7847** |
-| IoU median | 0,0000 | 0,8065 |
-| Jumlah pasangan | 0 | 45 |
+| IoU rerata | 0,0000 | **0,8064** |
+| IoU median | 0,0000 | **0,8326** |
+| Jumlah pasangan | 0 | 189 |
+
+IoU mask 0,8064 **lebih tinggi** daripada 0,7847 milik run 18 Agustus, padahal
+diukur pada set uji yang jauh lebih beragam. Ketika model berhasil menemukan
+cacat, batas yang digambarnya justru makin akurat.
 
 | Metrik (tingkat gambar) | Baseline | Sesudah fine-tune |
 |---|---|---|
-| TP / FP / TN / FN | 30 / 3 / 4 / 22 | 51 / 1 / 6 / 1 |
-| Recall | 0,577 | **0,981** |
-| **MCC** | **0,097** | **0,838** |
+| TP / FP / TN / FN | 195 / 30 / 9 / 67 | 214 / 7 / 32 / 48 |
+| Recall | 0,7443 | **0,8168** |
+| Specificity | 0,2308 | **0,8205** |
+| **MCC** | **-0,0193** | **0,4845** |
 
-MCC tingkat gambar model segmentasi (0,838) justru **lebih tinggi** daripada
-model deteksi (0,719). Untuk keputusan lolos atau tolak, segmentasi terbukti
-lebih dapat diandalkan meskipun recall per instance-nya lebih rendah.
+MCC baseline bernilai **negatif** (-0,0193), yaitu sedikit lebih buruk daripada
+menebak acak. Itu masuk akal: model COCO menaburkan mask di mana-mana, terlihat
+dari specificity 0,2308.
 
 ### 4.3 Estimasi luas cacat
 
 Ini keluaran yang benar-benar dipakai decision engine, dan karena itu galatnya
 diukur tersendiri. Satuannya **poin persen** terhadap luas gambar.
 
-| Galat mutlak luas cacat | Baseline | Sesudah fine-tune |
-|---|---|---|
-| Rerata | 15,3698 | **0,3714** |
-| 95% BCa rerata | [11,1014 ; 21,2449] | **[0,1662 ; 0,9968]** |
-| Median | 10,6940 | **0,0381** |
-| Persentil ke-95 | 56,3491 | **1,2943** |
+| Galat mutlak luas | Baseline | Sesudah fine-tune | 95% BCa (sesudah) |
+|---|---|---|---|
+| Rerata | 20,4764 | **0,7499** | [0,5447 ; 1,0558] |
+| Median | 17,1306 | **0,0681** | |
+| Persentil 95 | 63,1558 | 3,4009 | |
 
-Baseline meleset rata-rata lebih dari 15 poin persen karena model COCO
-menyegmentasi **seluruh objeknya**, misalnya botol utuh, bukan area cacatnya.
-Sesudah fine-tuning, galat rerata turun menjadi 0,37 poin persen.
-
-**Kalimat untuk proposal:**
-
-> Sistem melaporkan luas cacat dengan galat mutlak rerata 0,37 poin persen
-> [0,17 ; 1,00] pada test set. Karena ambang keputusan luas ditetapkan pada
-> 2,0 persen, galat sebesar itu tidak mengubah keputusan pada mayoritas kasus.
-
-Sebaran titik dugaan terhadap luas sebenarnya dapat dilihat pada panel kanan
-`reports/figures/segmentation_comparison.png`; titik-titiknya menempel rapat
-pada garis identitas.
+Ambang luas pada decision engine bernilai 2,0 persen. Dengan galat median
+0,0681 poin persen dan rerata 0,7499, estimasi luas cukup teliti untuk dipakai
+aturan itu. Persentil 95 sebesar 3,4009 tetap perlu dicatat: pada satu dari
+dua puluh gambar, galatnya masih melampaui ambang keputusan itu sendiri.
 
 ### 4.4 Uji signifikansi McNemar
 
 | | Fine-tuned menangkap | Fine-tuned gagal |
 |---|---|---|
 | **Baseline menangkap** | a = 0 | b = 0 |
-| **Baseline gagal** | c = 45 | d = 30 |
+| **Baseline gagal** | c = 189 | d = 132 |
 
 | | Nilai |
 |---|---|
 | Metode | khi-kuadrat dengan koreksi kontinuitas |
-| Khi-kuadrat McNemar | **43,022** |
-| Nilai p | **5,41 x 10^-11** |
-| Pasangan (n) | 75 |
-| Cohen's h | **1,772** (besar) |
+| Khi-kuadrat McNemar | **187,005** |
+| Nilai p | **1,43 x 10^-42** |
+| Pasangan (n) | 321 |
+| Cohen's h | **1,749** (besar) |
 | Kesimpulan | perbedaan signifikan secara statistik |
 
 ### 4.5 Recall per kelas
 
 | Kelas | n (test) | Baseline | Sesudah fine-tune |
 |---|---|---|---|
-| `noda` | 21 | 0,000 | 0,714 |
-| `kotor` | 3 | 0,000 | 0,667 |
-| `pecah` | 40 | 0,000 | 0,575 |
-| `gores` | 9 | 0,000 | 0,333 |
-| `deformasi` | 2 | 0,000 | 1,000 |
+| `terbuka` | 72 | 0,000 | **0,694** |
+| `kotor` | **3** | 0,000 | 0,667 |
+| `deformasi` | 39 | 0,000 | 0,641 |
+| `noda` | 42 | 0,000 | 0,571 |
+| `gores` | 112 | 0,000 | 0,563 |
+| `pecah` | 53 | 0,000 | 0,472 |
 
-`gores` menjadi yang terlemah dengan recall 0,333. Penyebabnya masuk akal:
-goresan berbentuk garis tipis, dan IoU mask menghukum bentuk tipis jauh lebih
-keras daripada IoU kotak. Pada model deteksi, kelas yang sama mencapai 0,556.
+Seperti pada deteksi, `kotor` hanya berdukungan 3 instance sehingga angkanya
+**tidak dapat dinilai** dan tidak boleh dipakai sebagai capaian.
+
+`pecah` menjadi yang terlemah pada segmentasi (0,472) padahal pada deteksi
+mencapai 0,585. Ini pola yang wajar: kotak pembatas cukup melingkupi area
+pecah secara kasar, sedangkan mask harus mengikuti tepi retakan yang bentuknya
+tidak beraturan, dan IoU mask menghukum ketidaktepatan tepi jauh lebih keras.
+
+`gores` naik dari 0,333 pada run 18 Agustus menjadi 0,563. Dukungannya juga
+naik dari 9 menjadi 112 instance, jadi angka lama memang tidak dapat
+diandalkan sejak awal.
 
 ### 4.6 Latensi
 
-| Tahap | ms/gambar |
-|---|---|
-| Prapemrosesan | 6,0 |
-| Inferensi | 40,7 |
-| Pascapemrosesan | 10,9 |
-| **Total** | **57,6** |
+Diukur pada 301 gambar test.
 
-Segmentasi sekitar empat kali lebih lambat daripada deteksi yang 15,0 ms.
-Angka ini PyTorch di GPU; ONNX di CPU diukur pada Step 9.
+| Tahap | ms/gambar (CPU) |
+|---|---|
+| Prapemrosesan | 3.6 |
+| Inferensi | 101.8 |
+| Pascapemrosesan | 2.5 |
+| **Total** | **107.8** |
+
+Seperti pada deteksi, angka ini diukur di **CPU** karena GPU sedang dipakai
+training anomali. Tidak sebanding dengan 57,6 ms milik run 18 Agustus yang
+diukur di GPU. Latensi ONNX di CPU, yang menjadi target penyajian, diukur
+terpisah pada Step 9.
 
 ### 4.7 Keterbatasan
 
-1. Recall segmentasi (0,600) lebih rendah daripada deteksi (0,693) karena IoU
-   mask pada ambang 0,5 jauh lebih ketat daripada IoU kotak.
-2. Run berjalan sampai batas epoch, bukan berhenti karena konvergen. Menaikkan
-   `epochs` berpotensi memperbaiki hasil bila waktu memungkinkan.
-3. Dukungan `kotor` dan `deformasi` masih sangat tipis, sehingga recall-nya
-   tidak informatif.
+1. **Run berhenti karena kehabisan epoch, bukan karena konvergen.** Epoch
+   terbaik jatuh di 129 dari 130. Ini keterbatasan paling nyata pada model
+   segmentasi saat ini, dan yang paling mudah diperbaiki bila ada waktu GPU.
+2. Recall segmentasi (0,5888) lebih rendah daripada deteksi (0,6137) karena
+   IoU mask pada ambang 0,5 jauh lebih ketat daripada IoU kotak.
+3. `pecah` menjadi kelas terlemah (0,472) karena tepi retakan sulit diikuti
+   mask, bukan karena kekurangan contoh; dukungannya 53 instance.
+4. Dukungan `kotor` hanya 3 instance, sehingga recall-nya tidak dapat dinilai.
+5. Persentil 95 galat luas mencapai 3,4009 poin persen, melampaui ambang luas
+   2,0 persen yang dipakai decision engine. Pada sekitar satu dari dua puluh
+   gambar, estimasi luas belum cukup teliti untuk aturan itu.
 
 **Gambar pendukung:** `reports/figures/segmentation_comparison.png`,
 `segmentation_pr_curve.png`, `segmentation_confusion_matrix.png`.
@@ -429,18 +516,16 @@ dilabeli tetap dapat terjaring.
 |---|---|
 | Model | **PaDiM** (cadangan), bukan EfficientAD |
 | Backbone | ResNet18 pra-latih, 2,8 juta parameter |
-| Gambar latih | dibatasi 200 per kategori |
-| Kategori | 5, masing-masing satu model |
-| Waktu | sekitar 2 menit per kategori |
+| Gambar latih gabungan | 600, yaitu **60 per kategori** |
+| Kategori | 10, plus satu model gabungan yang dipakai saat penyajian |
 
 `configs/training.yaml` menetapkan EfficientAD sebagai pilihan utama dengan
 PaDiM sebagai cadangan, dan **cadangan itulah yang dipakai**. Alasannya waktu:
-EfficientAD memerlukan unduhan dataset ImageNette sekitar 1,5 GB dan pelatihan
-ribuan langkah per kategori, sementara sisa waktu lomba masih harus menampung
-kalibrasi, decision engine, dan integrasi. Hal ini dinyatakan terbuka, bukan
-disembunyikan, dan EfficientAD tetap terbuka untuk dicoba di tahap Final.
+EfficientAD memerlukan pelatihan ribuan langkah per kategori. Percobaan pada
+22 Agustus 2026 dihentikan setelah satu kategori saja memakan puluhan menit,
+sementara `scripts/export_anomaly.py` memang hanya mengekspor PaDiM.
 
-### 5.2 Pembagian data
+### 5.2 Pembagian data dan dua masalah yang ditemukan
 
 Ambang dikalibrasi pada data yang **tidak dipakai mengukurnya**. Tanpa
 pemisahan ini, laju alarm palsu yang dilaporkan menjadi melingkar.
@@ -451,15 +536,30 @@ pemisahan ini, laju alarm palsu yang dilaporkan menjadi melingkar.
 | kalibrasi | gambar normal, diambil dari latih, tidak ikut dilatih | dasar perhitungan ambang |
 | uji | gambar normal + cacat | dasar laju alarm palsu dan recall |
 
-| Kategori | Kalibrasi | Uji normal | Uji cacat |
-|---|---|---|---|
-| `bottle` | 39 | 34 | 9 |
-| `chewinggum` | 85 | 75 | 15 |
-| `cashew` | 85 | 75 | 14 |
-| `pipe_fryum` | 85 | 75 | 14 |
-| `fryum` | 85 | 75 | 14 |
+Dua masalah ditemukan pada 23 Agustus 2026 dan keduanya dicatat karena
+memengaruhi cara angka di bawah harus dibaca.
+
+**Masalah 1: dataset gabungan sempat basi dan tidak reprodusibel.** Model yang
+dipakai saat penyajian adalah model gabungan, tetapi foldernya ternyata dibuat
+manual di luar repo dan masih memuat empat kategori lama setelah PKU-GoodsAD
+masuk. Model semacam itu akan membaca setiap produk GoodsAD sebagai anomali.
+Sekarang dibangun `scripts/build_combined_anomaly.py` sehingga langkahnya
+tercatat.
+
+**Masalah 2: batas `max_train_images` tidak berfungsi.** Skrip melaporkan "200
+dipakai", tetapi pelatihan berjalan pada 4.307 gambar dan mati dengan CUDA out
+of memory pada GPU 4 GB. Penyebabnya `engine.fit()` menjalankan ulang
+`setup()` sehingga pembatasan yang dilakukan di memori terbuang. Batas
+sesungguhnya kini diterapkan pada jumlah berkas saat dataset gabungan dibangun,
+**60 per kategori**, yang sekaligus menyeimbangkan kategori: pengambilan acak
+dari kumpulan gabungan akan didominasi `food_bottle` yang menyumbang 1.069
+gambar dibanding `bottle` yang hanya 195.
 
 ### 5.3 Hasil
+
+**Model per kategori (dilatih 18 Agustus, TIDAK dilatih ulang).** Dataset per
+kategori untuk kelima kategori ini tidak berubah, jadi angkanya tetap berlaku.
+Ditandai tanggalnya supaya tidak tertukar dengan model gabungan.
 
 | Kategori | AUROC gambar | Ambang EVT | Kuantil empiris | Alarm palsu (uji) | Recall cacat |
 |---|---|---|---|---|---|
@@ -469,7 +569,31 @@ pemisahan ini, laju alarm palsu yang dilaporkan menjadi melingkar.
 | `pipe_fryum` | 0,8571 | 53,243 | 53,041 | 0,000 | 0,2143 |
 | `cashew` | 0,8476 | 56,550 | 46,076 | 0,013 | 0,2857 |
 
-Target laju alarm palsu 1 persen, seed 42.
+**Model gabungan (dilatih ulang 23 Agustus, INILAH yang dipakai menyajikan).**
+
+| | Model gabungan 4 kategori (19 Agu) | Model gabungan 10 kategori (23 Agu) |
+|---|---|---|
+| AUROC gambar | 0,8900 | **0,6019** |
+| Ambang EVT | 39,7942 | 83,2714 |
+| Kalibrasi normal | 294 | 120 |
+| Uji normal / cacat | - | 948 / 276 |
+| Alarm palsu pada data tertahan | - | **0,0232** (target 0,01) |
+| Recall cacat pada ambang | - | **0,0399** |
+
+**AUROC turun dari 0,890 menjadi 0,6019, dan ini hasil yang buruk.** Nilai
+0,50 setara menebak acak, jadi 0,6019 hanya sedikit di atas itu. Pada ambang
+EVT, jalur ini menangkap 3,99 persen cacat sementara alarm palsunya 2,32
+persen, yaitu lebih dari dua kali target 1 persen.
+
+**Penjelasan yang paling masuk akal** adalah bentuk modelnya sendiri: PaDiM
+mencocokkan satu Gaussian per posisi patch, sedangkan "normal" bagi sepuluh
+jenis produk yang sangat berbeda bukan sebaran unimodal. Botol kaca, kaleng,
+kotak makanan, dan kacang mete tidak berbagi satu pusat sebaran. Perlu
+ditegaskan bahwa ini **penalaran, bukan hasil pengukuran tersendiri**;
+membuktikannya memerlukan percobaan terpisah yang belum dijalankan.
+
+**Apakah jalur ini tetap dipakai?** Ya, dan keputusannya diambil pada set
+kalibrasi, bukan set uji. Rinciannya di bagian 6.
 
 ### 5.4 Pencocokan GPD pada ekor
 
@@ -823,6 +947,58 @@ skor anomalinya 24,5 dan 19,4, berada di dalam rentang gambar normal. Tidak
 ada ambang yang dapat menangkap keduanya tanpa menolak banyak produk baik.
 Menambah data adalah satu-satunya jalan.
 
+### Hasil ujung-ke-ujung setelah PKU-GoodsAD (23 Agustus 2026)
+
+Diukur `scripts/evaluate_pipeline.py` lewat **pipeline ONNX yang sesungguhnya
+dipakai Backend**, bukan bobot PyTorch, sehingga mencakup lapisan privasi,
+anomali, aturan luas, dan aturan kelas kritis sekaligus.
+
+Set uji: 301 gambar split uji ditambah 300 gambar normal yang tidak pernah
+dilihat model, seluruhnya 601 gambar dengan 262 cacat.
+
+| Kelompok | n | cacat | Recall | Specificity |
+|---|---|---|---|---|
+| **4 kategori lama (MVTec + VisA)** | 155 | 52 | **0,8654** | **1,0000** |
+| PKU-GoodsAD (baru, lebih sulit) | 446 | 210 | 0,7810 | 0,8051 |
+| **Gabungan** | 601 | 262 | **0,7977** | 0,8643 |
+
+Akurasi 0,8353. **REVIEW nol**: 255 REJECT dan 346 PASS, tidak ada satu pun
+gambar yang ditahan.
+
+**Angka ini tidak sebanding dengan recall 0,9615 pada 20 Agustus.** Set ujinya
+berbeda dan yang sekarang jauh lebih sulit. Perbandingan yang sah hanya pada
+baris "4 kategori lama", yaitu tugas yang persis sama: recall 0,8654 dengan
+specificity **1,0000**, artinya nol produk bagus yang salah ditolak. Model
+20 Agustus pada tugas yang sama mencapai recall lebih tinggi tetapi masih
+menolak sebagian produk bagus.
+
+**Keterbatasan yang paling perlu diperbaiki:** specificity 0,8051 pada
+PKU-GoodsAD berarti sekitar 19,5 persen produk bagus ikut ditolak. Untuk lini
+produksi sungguhan angka itu terlalu tinggi.
+
+### Apakah jalur anomali dipertahankan
+
+Pada set uji, pipeline penuh terlihat **lebih mahal** daripada deteksi saja
+(Rp566,7 berbanding Rp515,2 per unit), yang seolah menyarankan jalur anomali
+dibuang. Godaan itu tidak diikuti: menyetel susunan sistem berdasarkan hasil
+set uji persis sama dengan menyetel hyperparameter di sana.
+
+Pengukuran diulang pada **set kalibrasi**, dengan dan tanpa jalur anomali:
+
+| Set kalibrasi (610 gambar, 271 cacat) | Recall | Specificity | Biaya/unit |
+|---|---|---|---|
+| **dengan jalur anomali** | 0,8266 | 0,8850 | **Rp 483,2** |
+| tanpa jalur anomali | 0,8044 | 0,8997 | Rp 488,0 |
+
+Arahnya **berlawanan** dengan set uji: pada kalibrasi, mempertahankan jalur
+anomali justru sedikit lebih murah, selisih Rp4,8 per unit atau 1,0 persen.
+Selisih sekecil itu wajar dibaca sebagai seri.
+
+**Keputusan: jalur anomali dipertahankan.** Dasarnya set kalibrasi, dan
+kalibrasi tidak mendukung pembuangannya. Ini sekaligus catatan bahwa dua split
+dapat memberi arah berbeda, dan bahwa memilih split yang kebetulan mendukung
+kesimpulan yang diinginkan adalah cara paling mudah menipu diri sendiri.
+
 ### Mode tiga kelas tidak dihapus
 
 Kode conformal, Platt, dan jalur tiga kelas tetap ada dan tetap diuji. Yang
@@ -835,6 +1011,11 @@ kembali penahanan keputusan ketika biaya operator ikut dimodelkan.
 
 | # | Tgl | Model | Perubahan | Hasil | Keputusan |
 |---|---|---|---|---|---|
+| 12 | 2026-08-23 | Evaluasi ujung-ke-ujung | pipeline ONNX utuh pada 601 gambar; jalur anomali diuji dengan dan tanpa, PADA SET KALIBRASI | recall 0,7977 specificity 0,8643 REVIEW nol; pada kalibrasi jalur anomali lebih murah Rp4,8/unit | jalur anomali dipertahankan; keputusan diambil di kalibrasi, bukan di uji |
+| 11 | 2026-08-23 | PaDiM gabungan 10 kategori | dataset gabungan dibangun ulang lewat skrip, 60 gambar per kategori agar seimbang | AUROC 0,6019 turun dari 0,890; alarm palsu 0,0232 terhadap target 0,01 | diterima dengan peringatan tertulis; PaDiM unimodal tidak cocok untuk 10 jenis produk |
+| 10 | 2026-08-22 | Kalibrasi ulang | Platt, temperature, dan conformal dihitung ulang pada model baru | mentah ECE 0,1284 terbaik; Platt dan temperature justru memperburuk; cakupan conformal 0,8918 meleset dari 0,90 | kalibrasi dimatikan lewat pemetaan identitas; kegagalan dicatat apa adanya |
+| 9 | 2026-08-22 | YOLO11n-seg 6 kelas | fine-tune ulang pada data 4,9x lebih besar, epoch 250 menjadi 130 | 130 epoch penuh, terbaik epoch 129, mask mAP50 0,7268, IoU mask 0,8064 | diterima; epoch terbaik di 129 dari 130 berarti kemungkinan belum konvergen |
+| 8 | 2026-08-21 | YOLO11n detect 6 kelas | PKU-GoodsAD masuk, kelas `terbuka` ditambahkan, epoch 300 menjadi 150 | 150 epoch, terbaik epoch 122, mAP50 val 0,6972; `terbuka` jadi kelas terkuat recall 0,708 | diterima; kelas keenam terbukti perlu, bukan sekadar menambah label |
 | 1 | 2026-08-18 | YOLO11n detect | fine-tune pertama dari bobot COCO, config apa adanya | berhenti awal di epoch 161, terbaik epoch 137, mAP50 val 0,7967 | diterima sebagai model deteksi tahap penyisihan |
 | 7 | 2026-08-19 | Perluasan set kalibrasi | 307 gambar normal tambahan per sisi, alpha dipilih lewat aturan pada kalibrasi | cakupan kelas normal 0,7143 menjadi 0,9381; ditahan 83 persen menjadi 2,8 persen; ambang biaya menggeneralisasi | diterima; gambar bersih akhirnya dapat diloloskan |
 | 6 | 2026-08-18 | Integrasi | pipeline utuh di atas ONNX | inspeksi utuh sekitar 140 ms per gambar, 12 uji lolos | diterima; siap dipanggil Backend |

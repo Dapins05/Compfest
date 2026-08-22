@@ -52,8 +52,25 @@ from visionqc_ai.statistics.cost_sensitive import (  # noqa: E402
 log = logging.getLogger("calibrate_decision")
 
 
+def detect_categories(config_path: Path) -> tuple[str, ...]:
+    """Baca kategori yang dilatih detektor dari konfigurasi dataset.
+
+    Dibaca, bukan ditulis tetap, supaya penambahan kategori pada
+    configs/dataset.yaml tidak diam-diam meninggalkan kalibrasi memakai
+    daftar lama.
+    """
+    with config_path.open(encoding="utf-8") as handle:
+        config = yaml.safe_load(handle)
+    return tuple(config["categories"]["detect"])
+
+
 def gather_extra_normals(
-    project_root: Path, dataset_root: Path, *, per_side: int, seed: int
+    project_root: Path,
+    dataset_root: Path,
+    *,
+    per_side: int,
+    seed: int,
+    categories: tuple[str, ...],
 ) -> tuple[list[Path], list[Path]]:
     """Kumpulkan gambar normal tambahan untuk kalibrasi dan pengujian.
 
@@ -72,7 +89,6 @@ def gather_extra_normals(
         for split in ("train", "val", "test")
         for path in (dataset_root / "images" / split).glob("*.jpg")
     }
-    categories = ("bottle", "chewinggum", "cashew", "pipe_fryum")
 
     pool: list[Path] = []
     anomaly_root = project_root / "data" / "processed" / "anomaly"
@@ -198,7 +214,7 @@ def main() -> int:
     parser.add_argument(
         "--weights",
         type=Path,
-        default=PROJECT_ROOT / "models/finetuned/detect/weights/best.pt",
+        default=PROJECT_ROOT / "models/finetuned/detect_goodsad/weights/best.pt",
     )
     parser.add_argument(
         "--dataset", type=Path, default=PROJECT_ROOT / "data/processed/detect"
@@ -208,7 +224,17 @@ def main() -> int:
         type=Path,
         default=PROJECT_ROOT / "configs/inference.yaml",
     )
+    parser.add_argument(
+        "--dataset-config",
+        type=Path,
+        default=PROJECT_ROOT / "configs/dataset.yaml",
+    )
     parser.add_argument("--bins", type=int, default=10)
+    parser.add_argument(
+        "--device",
+        default=0,
+        help="0 untuk GPU pertama, cpu untuk memaksa CPU",
+    )
     parser.add_argument(
         "--review-budget",
         type=float,
@@ -253,6 +279,7 @@ def main() -> int:
     log.info("prevalensi cacat diasumsikan: %.1f persen", prevalence * 100)
 
     common = {
+        "device": args.device,
         "dataset_root": args.dataset,
         "imgsz": int(detection["imgsz"]),
         "iou_nms": float(detection["iou_threshold"]),
@@ -262,7 +289,11 @@ def main() -> int:
     log.info("[1/4] Skor tingkat gambar")
     extra_calib, extra_test = (
         gather_extra_normals(
-            PROJECT_ROOT, args.dataset, per_side=args.extra_normals, seed=42
+            PROJECT_ROOT,
+            args.dataset,
+            per_side=args.extra_normals,
+            seed=42,
+            categories=detect_categories(args.dataset_config),
         )
         if args.extra_normals
         else ([], [])

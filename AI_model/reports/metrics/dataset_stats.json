@@ -1,5 +1,5 @@
 {
-  "generated_on": "2026-08-18",
+  "generated_on": "2026-08-21",
   "step": "2 - akuisisi & preprocessing dataset",
   "environment": {
     "python": "3.11.1",
@@ -26,14 +26,24 @@
         "bottle",
         "chewinggum",
         "cashew",
-        "pipe_fryum"
+        "pipe_fryum",
+        "drink_bottle",
+        "drink_can",
+        "food_bottle",
+        "food_box",
+        "food_package"
       ],
       "anomaly": [
         "bottle",
         "chewinggum",
         "cashew",
         "pipe_fryum",
-        "fryum"
+        "fryum",
+        "drink_bottle",
+        "drink_can",
+        "food_bottle",
+        "food_box",
+        "food_package"
       ]
     }
   },
@@ -43,21 +53,24 @@
       "gores",
       "noda",
       "kotor",
-      "deformasi"
+      "deformasi",
+      "terbuka"
     ],
     "class_ids": {
       "pecah": 0,
       "gores": 1,
       "noda": 2,
       "kotor": 3,
-      "deformasi": 4
+      "deformasi": 4,
+      "terbuka": 5
     },
     "severity_weight": {
       "pecah": 0.9,
       "gores": 0.4,
       "noda": 0.6,
       "kotor": 1.0,
-      "deformasi": 0.5
+      "deformasi": 0.5,
+      "terbuka": 0.9
     }
   },
   "visa_code_reconstruction": {
@@ -201,6 +214,61 @@
       "missing_masks": 0,
       "learnable_at_640_pct": 96.3
     },
+    "drink_bottle": {
+      "defect_images": 425,
+      "normal_images": 1089,
+      "instances_kept": 498,
+      "dropped_small_area": 5,
+      "dropped_small_side": 1,
+      "dropped_unmapped": 0,
+      "dropped_no_polygon": 0,
+      "missing_masks": 0,
+      "learnable_at_640_pct": null
+    },
+    "drink_can": {
+      "defect_images": 146,
+      "normal_images": 382,
+      "instances_kept": 192,
+      "dropped_small_area": 3,
+      "dropped_small_side": 10,
+      "dropped_unmapped": 0,
+      "dropped_no_polygon": 0,
+      "missing_masks": 0,
+      "learnable_at_640_pct": null
+    },
+    "food_bottle": {
+      "defect_images": 361,
+      "normal_images": 1257,
+      "instances_kept": 370,
+      "dropped_small_area": 10,
+      "dropped_small_side": 0,
+      "dropped_unmapped": 0,
+      "dropped_no_polygon": 0,
+      "missing_masks": 0,
+      "learnable_at_640_pct": null
+    },
+    "food_box": {
+      "defect_images": 251,
+      "normal_images": 578,
+      "instances_kept": 299,
+      "dropped_small_area": 25,
+      "dropped_small_side": 0,
+      "dropped_unmapped": 0,
+      "dropped_no_polygon": 0,
+      "missing_masks": 0,
+      "learnable_at_640_pct": null
+    },
+    "food_package": {
+      "defect_images": 230,
+      "normal_images": 793,
+      "instances_kept": 237,
+      "dropped_small_area": 28,
+      "dropped_small_side": 0,
+      "dropped_unmapped": 0,
+      "dropped_no_polygon": 0,
+      "missing_masks": 0,
+      "learnable_at_640_pct": null
+    },
     "fryum": {
       "defect_images": 100,
       "normal_images": 500,
@@ -226,31 +294,32 @@
   },
   "validation": {
     "chi_square": {
-      "statistic": 7.160616234424079,
-      "p_value": 0.5194068407140653,
-      "degrees_of_freedom": 8,
+      "statistic": 2.4525542740359683,
+      "p_value": 0.9915492248427937,
+      "degrees_of_freedom": 10,
       "passed": true,
       "note": "frekuensi harapan minimum < 5; nilai p hanya indikatif"
     },
     "balance": {
       "counts": {
-        "pecah": 325,
-        "gores": 139,
-        "noda": 141,
+        "pecah": 418,
+        "gores": 782,
+        "noda": 285,
         "kotor": 22,
-        "deformasi": 16
+        "deformasi": 257,
+        "terbuka": 475
       },
-      "imbalance_ratio": 20.3125,
-      "normalized_entropy": 0.7556094710992206,
+      "imbalance_ratio": 35.54545454545455,
+      "normalized_entropy": 0.873961027944581,
       "ir_passed": false,
-      "entropy_passed": false
+      "entropy_passed": true
     },
     "sample_size": {
       "required_instances": 139,
-      "actual_instances": 75,
-      "actual_defect_images": 52,
-      "achieved_margin_of_error": 0.06789639165669997,
-      "passed": false,
+      "actual_instances": 321,
+      "actual_defect_images": 262,
+      "achieved_margin_of_error": 0.03281895964453371,
+      "passed": true,
       "formula": "n = z^2 * p(1-p) / E^2",
       "parameters": {
         "z": 1.96,
@@ -259,33 +328,97 @@
       }
     },
     "per_split_images": {
-      "train": 291,
-      "val": 64,
-      "test": 59
+      "train": 1428,
+      "val": 310,
+      "test": 301
     },
     "per_split_instances": {
       "train": {
         "kotor": 16,
-        "pecah": 231,
-        "gores": 110,
-        "noda": 103,
-        "deformasi": 11
+        "pecah": 295,
+        "gores": 548,
+        "noda": 204,
+        "deformasi": 179,
+        "terbuka": 331
       },
       "val": {
         "kotor": 3,
-        "pecah": 54,
-        "gores": 20,
-        "noda": 17,
-        "deformasi": 3
+        "pecah": 70,
+        "gores": 122,
+        "noda": 39,
+        "deformasi": 39,
+        "terbuka": 72
       },
       "test": {
         "kotor": 3,
-        "pecah": 40,
-        "gores": 9,
-        "noda": 21,
-        "deformasi": 2
+        "pecah": 53,
+        "gores": 112,
+        "noda": 42,
+        "deformasi": 39,
+        "terbuka": 72
       }
     }
   },
-  "written": {}
+  "written": {
+    "detect": {
+      "images": 2039,
+      "labels": 2039
+    },
+    "seg": {
+      "images": 2039,
+      "labels": 2039
+    },
+    "anomaly": {
+      "bottle": {
+        "train_good": 195,
+        "test_good": 34,
+        "test_defect": 9
+      },
+      "chewinggum": {
+        "train_good": 428,
+        "test_good": 75,
+        "test_defect": 15
+      },
+      "cashew": {
+        "train_good": 425,
+        "test_good": 75,
+        "test_defect": 14
+      },
+      "pipe_fryum": {
+        "train_good": 425,
+        "test_good": 75,
+        "test_defect": 14
+      },
+      "fryum": {
+        "train_good": 425,
+        "test_good": 75,
+        "test_defect": 14
+      },
+      "drink_bottle": {
+        "train_good": 926,
+        "test_good": 163,
+        "test_defect": 64
+      },
+      "drink_can": {
+        "train_good": 325,
+        "test_good": 57,
+        "test_defect": 21
+      },
+      "food_bottle": {
+        "train_good": 1069,
+        "test_good": 188,
+        "test_defect": 54
+      },
+      "food_box": {
+        "train_good": 491,
+        "test_good": 87,
+        "test_defect": 37
+      },
+      "food_package": {
+        "train_good": 674,
+        "test_good": 119,
+        "test_defect": 34
+      }
+    }
+  }
 }

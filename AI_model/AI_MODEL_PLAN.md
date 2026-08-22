@@ -94,7 +94,7 @@ Frontend, video, dan perbaikan.
 
 **Dibuat:** ```
 src/visionqc_ai/data/
-|-- taxonomy.py          # 5 kelas + pemetaan 30+ label mentah (dapat diaudit)
+|-- taxonomy.py          # 6 kelas + pemetaan 38 label mentah (dapat diaudit)
 |-- sources.py           # registri kategori + tata letak folder mentah yang sebenarnya
 |-- visa_codes.py        # rekonstruksi kode jenis cacat pada mask VisA
 |-- mask_utils.py        # mask  bbox + poligon YOLO

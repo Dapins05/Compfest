@@ -86,13 +86,14 @@ Menetapkan arah kerja. Belum ada kode yang dapat dijalankan.
 
 | Berkas | Tanggung jawab |
 |---|---|
-| `src/visionqc_ai/data/taxonomy.py` | pemetaan 30+ label mentah ke 5 kelas |
+| `src/visionqc_ai/data/taxonomy.py` | pemetaan 38 label mentah ke 6 kelas |
 | `src/visionqc_ai/data/sources.py` | registri kategori dan tata letak folder mentah |
 | `src/visionqc_ai/data/visa_codes.py` | rekonstruksi kode jenis cacat pada mask VisA |
 | `src/visionqc_ai/data/mask_utils.py` | mask piksel menjadi kotak pembatas dan poligon |
 | `src/visionqc_ai/data/records.py` | representasi antara |
 | `src/visionqc_ai/data/convert_mvtec.py` | konversi MVTec AD |
 | `src/visionqc_ai/data/convert_visa.py` | konversi VisA |
+| `src/visionqc_ai/data/convert_goodsad.py` | konversi PKU-GoodsAD (JPEG, mask tanpa akhiran `_mask`) |
 | `src/visionqc_ai/data/split.py` | split terstratifikasi, seed terkunci |
 | `src/visionqc_ai/data/validate.py` | validasi statistik dataset |
 | `src/visionqc_ai/data/writer.py` | penulisan tiga tata letak keluaran |
@@ -105,9 +106,9 @@ Menetapkan arah kerja. Belum ada kode yang dapat dijalankan.
 
 | Folder | Isi | Ukuran |
 |---|---|---|
-| `data/processed/detect/` | 414 gambar + label kotak pembatas + `data.yaml` | 50 MB |
-| `data/processed/seg/` | label poligon; gambarnya hard link ke `detect` | 1 MB |
-| `data/processed/anomaly/` | gambar normal dan cacat per kategori | 252 MB |
+| `data/processed/detect/` | 2.039 gambar + label kotak pembatas + `data.yaml` | ~230 MB |
+| `data/processed/seg/` | label poligon; gambarnya hard link ke `detect` | ~5 MB |
+| `data/processed/anomaly/` | gambar normal dan cacat per kategori, plus `combined/` | ~1,2 GB |
 
 Gambar pada `seg/` sengaja dibuat sebagai hard link ke `detect/` supaya tidak
 ada salinan kedua yang memakan disk.
@@ -122,9 +123,15 @@ ada salinan kedua yang memakan disk.
 
 ### Angka kunci
 
-414 gambar (291 train, 64 val, 59 test) dengan 643 instance cacat.
-Uji keselarasan distribusi antar split lolos dengan p = 0,5194.
-Rasio ketimpangan 20,31 dan entropi 0,7556 **belum** memenuhi target.
+Diperbarui 21 Agustus 2026 setelah PKU-GoodsAD masuk.
+
+2.039 gambar (1.428 train, 310 val, 301 test) dengan 2.239 instance cacat pada
+**6 kelas**. Gambar cacat naik dari 363 menjadi 1.776, yaitu 4,9 kali lipat.
+
+Uji keselarasan distribusi antar split lolos (p = 0,9915), entropi 0,8740
+**lulus**, ukuran test set 321 instance **lulus**. Yang belum lulus tinggal
+rasio ketimpangan, 35,55, dan itu seluruhnya disebabkan `kotor` yang tetap 22
+instance sementara lima kelas lain tumbuh berkali lipat.
 Rincian di [EXPERIMENTS.md bagian 2](./EXPERIMENTS.md).
 
 ---
@@ -227,6 +234,7 @@ memburuk, p = 5,41 x 10^-11.
 |---|---|
 | `src/visionqc_ai/statistics/evt.py` | pencocokan GPD pada ekor dan perhitungan ambang |
 | `src/visionqc_ai/training/train_anomaly.py` | pembungkus anomalib, pembatas gambar latih |
+| `scripts/build_combined_anomaly.py` | menggabungkan seluruh kategori menjadi `combined`, yaitu dataset yang melatih model anomali yang benar-benar dipakai saat penyajian |
 | `scripts/train_anomaly.py` | melatih tiap kategori dan menurunkan ambangnya |
 
 ### Bobot model (tidak masuk git)
@@ -344,8 +352,9 @@ PyTorch, karena berkas yang terbentuk belum tentu menghasilkan skor yang sama.
 | `src/visionqc_ai/schemas.py` | kontrak Pydantic dengan Backend |
 | `src/visionqc_ai/inference/annotate.py` | penggambaran kotak, mask, dan pita keputusan |
 | `src/visionqc_ai/inference/pipeline.py` | orkestrasi dari byte gambar sampai hasil |
+| `scripts/evaluate_pipeline.py` | evaluasi PASS/REJECT ujung-ke-ujung lewat ONNX yang benar-benar dipakai Backend, bukan bobot PyTorch |
 | `pyproject.toml` | agar Backend dapat memasang modul ini |
-| `tests/` | 12 uji untuk mesin keputusan dan kontrak data |
+| `tests/` | 46 uji: mesin keputusan, kontrak data, privasi, integrasi, dan warna anotasi |
 
 ### Cara Backend memakainya
 

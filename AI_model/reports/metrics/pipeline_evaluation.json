@@ -1,0 +1,52 @@
+{
+  "generated_on": "2026-08-23",
+  "extra_normals_per_side": 300,
+  "seed": 1337,
+  "overall": {
+    "n": 601,
+    "defects": 262,
+    "true_positives": 209,
+    "false_negatives": 53,
+    "false_positives": 46,
+    "true_negatives": 293,
+    "recall": 0.7977099236641222,
+    "specificity": 0.8643067846607669,
+    "accuracy": 0.8352745424292846,
+    "verdicts": {
+      "REJECT": 255,
+      "PASS": 346
+    }
+  },
+  "per_group": {
+    "lama (MVTec + VisA)": {
+      "n": 155,
+      "defects": 52,
+      "true_positives": 45,
+      "false_negatives": 7,
+      "false_positives": 0,
+      "true_negatives": 103,
+      "recall": 0.8653846153846154,
+      "specificity": 1.0,
+      "accuracy": 0.9548387096774194,
+      "verdicts": {
+        "REJECT": 45,
+        "PASS": 110
+      }
+    },
+    "baru (PKU-GoodsAD)": {
+      "n": 446,
+      "defects": 210,
+      "true_positives": 164,
+      "false_negatives": 46,
+      "false_positives": 46,
+      "true_negatives": 190,
+      "recall": 0.780952380952381,
+      "specificity": 0.8050847457627118,
+      "accuracy": 0.7937219730941704,
+      "verdicts": {
+        "REJECT": 210,
+        "PASS": 236
+      }
+    }
+  }
+}

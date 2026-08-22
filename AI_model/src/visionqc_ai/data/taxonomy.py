@@ -1,9 +1,9 @@
 """Taksonomi cacat dan pemetaan label dari dataset sumber.
 
-MVTec menamai cacat lewat nama folder, sedangkan VisA memakai frasa bebas di
-image_anno.csv dengan ejaan Britania dan Amerika yang bercampur. Seluruh
-pemetaan ke lima kelas VisionQC ditulis eksplisit di modul ini supaya bisa
-diperiksa ulang.
+MVTec AD dan PKU-GoodsAD menamai cacat lewat nama folder, sedangkan VisA
+memakai frasa bebas di image_anno.csv dengan ejaan Britania dan Amerika yang
+bercampur. Seluruh pemetaan ke enam kelas VisionQC ditulis eksplisit di modul
+ini supaya bisa diperiksa ulang.
 """
 
 from __future__ import annotations
@@ -16,6 +16,7 @@ DEFECT_CLASSES: tuple[str, ...] = (
     "noda",
     "kotor",
     "deformasi",
+    "terbuka",
 )
 
 CLASS_IDS: dict[str, int] = {name: i for i, name in enumerate(DEFECT_CLASSES)}
@@ -26,6 +27,7 @@ CLASS_LABELS_ID: dict[str, str] = {
     "noda": "Noda Warna",
     "kotor": "Kontaminasi",
     "deformasi": "Deformasi",
+    "terbuka": "Segel Terbuka",
 }
 
 CLASS_SEVERITY: dict[str, float] = {
@@ -34,6 +36,7 @@ CLASS_SEVERITY: dict[str, float] = {
     "noda": 0.6,
     "kotor": 1.0,
     "deformasi": 0.5,
+    "terbuka": 0.9,
 }
 
 
@@ -66,6 +69,19 @@ _RAW_TO_CLASS: dict[str, str] = {
     "bent": "deformasi",
     "misshape": "deformasi",
     "bubble": "deformasi",
+    # PKU-GoodsAD. Nama folder memakai garis bawah dan tidak beririsan dengan
+    # label MVTec maupun VisA, jadi tabelnya cukup disambung di sini.
+    "broken": "pecah",
+    "surface_damage": "gores",
+    "surface_anomaly": "noda",
+    "deformation": "deformasi",
+    # Empat label berikut sama-sama berarti kemasan sudah tidak tersegel.
+    # Dijadikan satu kelas karena akibatnya di lini produksi identik: produk
+    # tidak boleh dikirim, berapa pun luas bagian yang terbuka.
+    "cap_open": "terbuka",
+    "cap_half_open": "terbuka",
+    "opened": "terbuka",
+    "straw_missing": "terbuka",
 }
 
 IGNORED_RAW_LABELS: frozenset[str] = frozenset({"other", "normal", "good"})
