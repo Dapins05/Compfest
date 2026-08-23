@@ -481,8 +481,38 @@ GET  /healthz                 # kesiapan sistem (F-12)
 }
 ```
 
-Semua skema didefinisikan sebagai model Pydantic di `Backend/app/schemas.py`, lalu diekspor jadi
-tipe TypeScript ke `packages/contracts/api.d.ts`. Frontend **dilarang** menulis tipe API manual (R3.7).
+### 9.1 Sumber kebenaran kontrak
+
+> Diputuskan 23 Agustus 2026, menggantikan rencana `packages/contracts/` sebagai folder tersendiri.
+
+Sumber kebenaran tunggal adalah **`AI_model/src/visionqc_ai/schemas.py`**. Model Pydantic di sana
+sudah menjadi tipe kembalian `run_inspection()`, jadi ia satu-satunya definisi yang pasti ikut
+berubah ketika keluaran AI berubah.
+
+```
+visionqc_ai/schemas.py            <- SUMBER KEBENARAN (Pydantic)
+        |
+        +-- Backend  : impor langsung, pakai sebagai response_model FastAPI
+        |
+        +-- FastAPI  : /openapi.json dihasilkan otomatis
+                |
+                +-- Frontend : api.d.ts di-generate dari openapi.json
+```
+
+Alasan folder kontrak terpisah **tidak** dibuat: menyalin skema ke tempat ketiga menambah satu
+lagi berkas yang bisa tidak sinkron tanpa ada yang menyadarinya, dan salinan yang menyimpang
+justru merusak jaminan yang ingin diberikan kontrak itu. Backend mengimpornya langsung, sehingga
+ketidakcocokan muncul sebagai galat impor atau galat tipe, bukan sebagai bug diam-diam saat
+penyajian.
+
+Frontend tetap **dilarang** menulis tipe API manual (R3.7):
+
+```bash
+pnpm dlx openapi-typescript http://localhost:8000/openapi.json -o Frontend/src/types/api.d.ts
+```
+
+**Mengubah `schemas.py` tetap berarti mengubah kontrak antar-anggota** — wajib dikabari lebih
+dulu, sebagaimana R6.5 mengaturnya untuk `packages/contracts/`.
 
 ---
 

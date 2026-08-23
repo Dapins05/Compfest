@@ -36,10 +36,25 @@ if not pipeline.ready:
     ...  # bobot belum diunduh; jalankan scripts/download_models.py
 ```
 
-`pipeline.ready`, `pipeline.anomaly_available`, dan `pipeline.face_blur_available`
-dapat dipakai mengisi endpoint kesehatan. Ketiganya melaporkan keadaan apa
-adanya: bila sebuah model tidak ada, sistem tetap berjalan dengan kemampuan
-berkurang dan mengatakannya, alih-alih diam-diam melewatinya.
+`pipeline.ready`, `pipeline.anomaly_available`, `pipeline.face_blur_available`,
+dan `pipeline.ocr_available` dapat dipakai mengisi endpoint kesehatan. Keempatnya
+melaporkan keadaan apa adanya: bila sebuah model tidak ada, sistem tetap
+berjalan dengan kemampuan berkurang dan mengatakannya, alih-alih diam-diam
+melewatinya.
+
+### Yang perlu diketahui sebelum menulis kode Backend
+
+| Hal | Keadaan sekarang |
+|---|---|
+| `batch_code` | **selalu `null`.** Jalur OCR tersambung penuh tetapi `models.ocr.enabled` dimatikan; alasannya ditulis di `configs/inference.yaml`. Tipenya tetap `str \| None`, jadi kontraknya sudah final dan tidak akan berubah bila OCR dinyalakan nanti. |
+| `anomaly` | terisi, tetapi AUROC gambarnya hanya 0,6019. Jangan dijadikan andalan penilaian; lihat `EXPERIMENTS.md` bagian 5.3. |
+| `verdict` | hanya `PASS` atau `REJECT`. Mode biner tidak pernah mengembalikan `REVIEW`. |
+| Keserempakan | `inspect()` diserialkan oleh kunci internal, jadi aman dipanggil dari threadpool FastAPI. Satu gambar diproses pada satu waktu, sesuai batasan pemrosesan sinkron. |
+| Akar proyek | ditelusuri otomatis dari `configs/inference.yaml`. Bila Backend dijalankan dari folder lain, setel `VISIONQC_ROOT` atau berikan `project_root` secara eksplisit. |
+| Bobot model | tidak ada di git. Jalankan `python scripts/download_models.py` lebih dulu; berkasnya diambil dari rilis `models-v1.1.0` dan diverifikasi SHA-256. |
+
+Skema kembaliannya adalah sumber kebenaran kontrak. Impor langsung dari
+`visionqc_ai.schemas`, jangan menyalin definisinya (PROJECT.md bagian 9.1).
 
 **Per permintaan.**
 

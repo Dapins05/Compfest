@@ -34,6 +34,7 @@ from visionqc_ai.inference.annotate import (
 )
 from visionqc_ai.inference.anomaly import AnomalyScorer
 from visionqc_ai.inference.decision import DecisionConfig, DetectedDefect, decide
+from visionqc_ai.inference.ocr import BatchCodeReader
 from visionqc_ai.inference.validation import (
     InvalidImageError,
     validate_bytes,
@@ -55,7 +56,11 @@ from visionqc_ai.schemas import (
     InspectionResult,
 )
 
-MODEL_VERSION = "visionqc-detect-seg-v1"
+# Menandai bobot yang benar-benar dipakai, bukan sekadar nama pipeline.
+# Angkanya mengikuti release_tag di models/models.json; keduanya harus
+# bergerak bersama, karena taksonomi enam kelas membuat bobot v1.0.0 tidak
+# lagi sepadan dengan configs/inference.yaml.
+MODEL_VERSION = "visionqc-models-v1.1.0-6class"
 
 ROOT_ENV_VAR = "VISIONQC_ROOT"
 
@@ -126,6 +131,15 @@ class InspectionPipeline:
             threads=int(self.config.get("runtime", {}).get("intra_op_threads", 4)),
         )
         self.anomaly_available = self._anomaly.available
+        ocr_config = self.config["models"].get("ocr", {})
+        self.ocr_enabled = bool(ocr_config.get("enabled", False))
+        self.ocr_available = False
+        self._ocr = BatchCodeReader(
+            lang=str(ocr_config.get("lang", "en")),
+            use_gpu=bool(ocr_config.get("use_gpu", False)),
+            patterns=tuple(self.privacy.get("ocr_patterns", ())),
+            allowlist_only=bool(self.privacy.get("ocr_allowlist_only", True)),
+        )
         self.face_model_path = project_root / "models" / "onnx" / FACE_MODEL_FILENAME
         if self.config.get("runtime", {}).get("warmup_on_startup", False):
             self.warmup()
@@ -255,6 +269,12 @@ class InspectionPipeline:
             self._predict(self._segmenter, blank, imgsz)
         if self._anomaly.available:
             self._anomaly.score(blank)
+        if self.ocr_enabled:
+            # Mesin OCR mengambil bobotnya sendiri saat pemuatan pertama.
+            # Memanggilnya di sini memastikan hal itu terjadi saat startup,
+            # bukan di tengah permintaan pengguna; klaim tanpa panggilan
+            # jaringan pada privacy berlaku untuk waktu inferensi.
+            self.ocr_available = self._ocr.available
 
     def inspect(
         self, image_bytes: bytes, *, anomaly_score: float | None = None
@@ -324,6 +344,16 @@ class InspectionPipeline:
         else:
             self.anomaly_available = True
 
+        # Kode batch dibaca dari gambar yang SUDAH melewati lapisan privasi,
+        # sehingga wajah yang kebetulan terpotret tidak pernah sampai ke mesin
+        # OCR. Hasilnya masih disaring lagi dengan daftar-izin di dalam
+        # BatchCodeReader sebelum meninggalkan modul ini.
+        batch_code: str | None = None
+        if self.ocr_enabled:
+            reading = self._ocr.read(image)
+            self.ocr_available = reading.available
+            batch_code = reading.batch_code
+
         union = self._union_mask(segmented.polygons, width, height)
         area_pct = self._area_percentage(union, width, height)
         verdict = decide(
@@ -358,6 +388,7 @@ class InspectionPipeline:
             verdict=verdict.label,
             reason=verdict.reason,
             confidence=verdict.calibrated_probability,
+            batch_code=batch_code,
             defects=[
                 Defect(
                     type=name,

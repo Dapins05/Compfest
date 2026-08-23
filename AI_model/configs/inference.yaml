@@ -37,6 +37,24 @@ models:
     imgsz: 256
 
   ocr:
+    # Pembacaan kode batch. Mesinnya dipakai apa adanya tanpa pelatihan ulang;
+    # OCR di sini komponen pelengkap, bukan model inovasi inti, sehingga
+    # kewajiban fine-tuning tidak berlaku padanya.
+    #
+    # enabled DIMATIKAN, dan itu keadaan yang diukur, bukan pilihan gaya.
+    # paddleocr 2.7.3 yang terpasang tidak dapat diimpor bersama lingkungan
+    # ini karena dua sebab sekaligus:
+    #   1. paddlepaddle 2.6.2 menuntut protobuf <= 3.20, terpasang 7.35.1
+    #   2. paddleocr 2.7.3 memakai np.sctypes, dihapus pada NumPy 2.0
+    # Naik ke paddleocr 3.7 tidak menyelesaikannya: resolusinya menarik
+    # opencv-contrib-python 4.10 berdampingan dengan OpenCV 5 yang dipakai
+    # pipeline, dan tetap menuntut paddlepaddle 3.x.
+    #
+    # Karena itu jalur OCR tersambung penuh tetapi dimatikan. batch_code akan
+    # bernilai null, BUKAN membuat inspeksi gagal. Menyalakannya kembali cukup
+    # dengan mengubah enabled menjadi true setelah dependensinya beres; tidak
+    # ada kode yang perlu diubah.
+    enabled: false
     engine: paddleocr
     lang: en
     use_gpu: false  # OCR di CPU saja - sisakan VRAM untuk model utama
