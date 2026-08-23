@@ -29,9 +29,18 @@ from visionqc_ai.export.onnx_export import benchmark_onnx, export_to_onnx  # noq
 log = logging.getLogger("export_onnx")
 
 # Run yang diekspor. Diarahkan ke run 21 Agustus 2026 yang dilatih memakai
-# PKU-GoodsAD dan taksonomi enam kelas. Run lama models/finetuned/detect dan
-# .../seg sengaja tidak dihapus: keduanya menjadi rujukan keadaan sebelum
-# dataset diperbesar.
+# PKU-GoodsAD dan taksonomi enam kelas, yaitu run yang menghasilkan bobot
+# rilis models-v1.1.0 dan yang sekarang benar-benar dilayani.
+#
+# JANGAN diarahkan ke models/finetuned/detect_balanced tanpa memeriksa lebih
+# dulu. Run itu adalah percobaan set latih seimbang yang DIHENTIKAN di epoch
+# 124 dari 150, dan pada titik berhentinya recall-nya masih 0,4815 melawan
+# 0,6274 milik run ini. Pasangan segmentasinya, seg_balanced, belum pernah
+# dilatih sama sekali. Mengekspor dari sana akan menimpa bobot yang dilayani
+# dengan model yang lebih buruk, sementara sisi segmentasinya gagal.
+#
+# Run lama detect dan seg juga sengaja tidak dihapus: keduanya menjadi rujukan
+# keadaan sebelum dataset diperbesar.
 MODELS = (
     (
         "detect",

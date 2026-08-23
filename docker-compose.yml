@@ -1,0 +1,22 @@
+# Susunan layanan VisionQC.
+#
+#     docker compose up --build
+#
+# Hanya satu layanan pada tahap ini. Frontend akan menyusul sebagai layanan
+# kedua; tidak ada basis data, antrean, maupun pekerja latar, karena inspeksi
+# berjalan sinkron di dalam permintaan.
+
+services:
+  api:
+    build:
+      # Konteksnya akar repo, bukan ./Backend. Layanan mengimpor visionqc_ai
+      # dari AI_model/, jadi keduanya harus berada di dalam konteks build.
+      context: .
+      dockerfile: Backend/Dockerfile
+    image: visionqc-api:1.1.0
+    container_name: visionqc-api
+    ports:
+      - "8000:8000"
+    environment:
+      VISIONQC_ROOT: /app/AI_model
+    restart: unless-stopped

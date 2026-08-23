@@ -1,0 +1,21 @@
+# Dependensi layanan web saja.
+#
+# Dependensi AI TIDAK didaftarkan di sini. Modul AI dipasang dari
+# AI_model/pyproject.toml lewat `pip install -e ./AI_model`, sehingga versi
+# numpy, opencv, onnxruntime, dan ultralytics hanya ditulis di satu tempat.
+# Menyalinnya ke sini akan membuat dua daftar versi yang bisa berselisih tanpa
+# ada yang menyadarinya sampai model gagal dimuat.
+#
+# Berkas ini sebelumnya tersimpan dalam UTF-16, sehingga `pip install -r`
+# gagal membacanya dan build Docker berhenti sebelum satu paket pun terpasang.
+# Simpan sebagai UTF-8.
+
+fastapi==0.141.1
+uvicorn[standard]==0.52.3
+python-multipart==0.0.32
+pydantic==2.13.4
+pydantic-settings==2.15.0
+
+# Pengujian
+pytest==9.1.1
+httpx==0.28.1

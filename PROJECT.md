@@ -68,9 +68,9 @@ Dokumen teknis utama. Rules pengerjaan → [CLAUDE.md](./CLAUDE.md) · Progres �
 │  AI memeriksa (sinkron, dalam 1 request):                        │
 │     ① YOLO11-detect  → cacat jenis apa? di kotak mana?           │
 │     ② YOLO11-seg     → bentuk mask cacat → luas berapa persen?   │
-│     ③ EfficientAD    → skor anomali (menangkap cacat jenis baru) │
-│     ④ PaddleOCR      → kode batch produk                         │
-│     ⑤ Decision Engine → PASS / REJECT / REVIEW                    │
+│     ③ PaDiM          → skor anomali (menangkap cacat jenis baru) │
+│     ④ PaddleOCR      → kode batch produk (DIMATIKAN, lihat F-07) │
+│     ⑤ Decision Engine → PASS / REJECT (mode biner)                │
 │                        ↓                                          │
 │  Hasil ditampilkan: gambar beranotasi + verdict + alasan + skor  │
 └──────────────────────────────────────────────────────────────────┘
@@ -81,8 +81,8 @@ Dokumen teknis utama. Rules pengerjaan → [CLAUDE.md](./CLAUDE.md) · Progres �
 | # | Keunggulan | Kenapa penting |
 |---|---|---|
 | 1 | **Bukan sekadar bagus/cacat** | Menunjukkan *jenis*, *lokasi*, dan *luas* cacat — tim produksi tahu harus memperbaiki apa |
-| 2 | **Menangkap cacat yang belum pernah dilihat** | EfficientAD dilatih **hanya dari barang bagus**, jadi cacat jenis baru tetap terjaring |
-| 3 | **Jujur saat ragu** | Kelas `REVIEW` — AI mengakui ketidakpastian alih-alih menebak. Aman untuk produksi nyata |
+| 2 | **Menangkap cacat yang belum pernah dilihat** | PaDiM dilatih **hanya dari barang bagus**, jadi cacat jenis baru tetap terjaring |
+| 3 | **Ambang dari biaya, bukan tebakan** | Ambang keputusan diturunkan dengan meminimumkan biaya yang diharapkan pada set kalibrasi, bukan dipilih tangan. Sistem memutuskan sendiri tanpa menahan produk |
 | 4 | **Terlacak** | Kode batch dari OCR menghubungkan hasil inspeksi ke produk spesifik |
 | 5 | **Reprodusibel** | `docker compose up` — panitia bisa menjalankan sendiri dalam hitungan menit |
 
@@ -213,7 +213,7 @@ cacat (padahal cacat itu langka), tidak mendeteksi cacat jenis baru, dan tidak m
 |---|---|---|
 | **YOLO11-detect** | "Cacat jenis apa, di kotak mana?" | Ya |
 | **YOLO11-seg** | "Bentuk persis area cacat? Berapa persen luasnya?" | Ya |
-| **EfficientAD** | "Apakah menyimpang dari normal?" | **Tidak** — cukup gambar bagus |
+| **PaDiM** | "Apakah menyimpang dari normal?" | **Tidak** — cukup gambar bagus |
 | **PaddleOCR** | "Kode batch berapa?" | Tidak (pre-trained) |
 
 Ini juga menjadi jawaban untuk bab *"metode-metode lain yang mendukung alasan pengambilan keputusan"*
@@ -234,14 +234,14 @@ Prioritas: **P0** = wajib (tanpa ini tidak ada demo) · **P1** = penting untuk n
 |---|---|---|---|
 | **F-01** | Unggah gambar tunggal | P0 | Pengguna pilih/drag 1 gambar produk. Ini "input tunggal" yang dimaksud panitia |
 | **F-02** | Deteksi cacat (bbox) | P0 | YOLO11-detect **fine-tuned** → jenis cacat + lokasi + confidence |
-| **F-03** | Decision engine | P0 | Gabungkan output model → `PASS` / `REJECT` / `REVIEW` + alasan |
+| **F-03** | Decision engine | P0 | Gabungkan output model → `PASS` / `REJECT` + alasan yang terbaca manusia |
 | **F-04** | Tampilan hasil | P0 | Gambar beranotasi (bbox+mask) + verdict + alasan + skor tiap model |
 | **F-05** | Segmentasi cacat | P1 | YOLO11-seg → mask presisi → `luas_cacat / luas_objek` dalam persen |
-| **F-06** | Anomaly detection | P1 | EfficientAD → skor anomali + heatmap. Menangkap cacat jenis baru |
-| **F-07** | OCR kode batch | P1 | PaddleOCR baca kode/serial pada produk |
+| **F-06** | Anomaly detection | P1 | PaDiM → skor anomali. Menangkap cacat jenis baru |
+| **F-07** | OCR kode batch | P1 | **Tersambung tetapi DIMATIKAN.** paddleocr 2.7.3 tidak dapat diimpor bersama NumPy 2 dan protobuf yang terpasang; naik ke 3.7 menarik opencv-contrib yang bertabrakan dengan OpenCV 5. `batch_code` selalu `null`. Alasan lengkap di `AI_model/configs/inference.yaml` |
 | **F-08** | Contoh gambar siap pakai | P1 | Tombol "coba contoh" — penting agar panitia bisa menguji tanpa cari gambar sendiri |
 | **F-09** | Penjelasan hasil | P1 | Teks yang menerangkan **kenapa** verdict-nya begitu — bukan sekadar angka |
-| **F-10** | Heatmap anomali | P2 | Visualisasi area mencurigakan versi EfficientAD |
+| **F-10** | Heatmap anomali | P2 | Visualisasi area mencurigakan. **Belum dibangkitkan**; `anomaly.heatmap_base64` masih `null` |
 | **F-11** | Grading severity | P2 | Ringan / sedang / berat berdasarkan luas + jenis cacat |
 | **F-12** | Health check | P1 | `/healthz` — memastikan sistem siap saat panitia menjalankan |
 
@@ -290,7 +290,7 @@ membuat `docker compose up` jauh lebih andal untuk dinilai panitia.
 |---|---|---|---|
 | **Detection** | Ultralytics **YOLO11n** |  **WAJIB** | Cari cacat: jenis + bbox |
 | **Segmentation** | **YOLO11n-seg** |  **WAJIB** | Mask cacat → luas % |
-| **Anomaly** | **EfficientAD** |  dilatih dari data kita | Skor penyimpangan dari normal |
+| **Anomaly** | **PaDiM** |  dilatih dari data kita | Skor penyimpangan dari normal |
 | **OCR** | **PaddleOCR** |  pre-trained (pelengkap) | Baca kode batch |
 | **Runtime** | **ONNX Runtime** | — | Inferensi cepat di CPU |
 
@@ -298,7 +298,7 @@ membuat `docker compose up` jauh lebih andal untuk dinilai panitia.
 > tune sesuai dengan inovasi fitur per tim."* Bukti yang harus ada di repo: skrip training, file
 > config/hyperparameter, log training, dan tabel metrik **sebelum vs sesudah** fine-tuning.
 > PaddleOCR boleh tetap pre-trained karena ia komponen pelengkap, bukan model inovasi inti —
-> tapi YOLO dan EfficientAD **harus** dilatih dengan data kita.
+> tapi YOLO dan model anomali **harus** dilatih dengan data kita.
 
 ### 6.4 Dataset
 
@@ -338,10 +338,10 @@ periode lomba adalah preprocessing-nya**, dan itu harus dijelaskan di proposal (
 │   3. ┌──────────── PIPELINE INFERENSI ────────────┐             │
 │      │  YOLO11-detect  → bbox + kelas + conf      │             │
 │      │  YOLO11-seg     → mask → luas %            │             │
-│      │  EfficientAD    → anomaly_score + heatmap  │             │
+│      │  PaDiM          → anomaly_score            │             │
 │      │  PaddleOCR      → batch_code               │             │
 │      └────────────────────────────────────────────┘             │
-│   4. DECISION ENGINE  → PASS / REJECT / REVIEW                  │
+│   4. DECISION ENGINE  → PASS / REJECT (mode biner)              │
 │   5. render gambar beranotasi (bbox + mask)                     │
 │   6. balas JSON + gambar (base64)                               │
 └──────────────────────────┬──────────────────────────────────────┘
@@ -384,8 +384,8 @@ periode lomba adalah preprocessing-nya**, dan itu harus dijelaskan di proposal (
 | 4 | **Preprocess** | Resize ke 640×640, normalisasi, konversi tensor | ~15 ms |
 | 5 | **Detect** | YOLO11-detect fine-tuned → daftar bbox + kelas + confidence | ~40 ms |
 | 6 | **Segment** | YOLO11-seg → mask → `luas_cacat = area(mask)/area(objek) × 100%` | ~45 ms |
-| 7 | **Anomaly** | EfficientAD → `anomaly_score` (0–1) + heatmap | ~35 ms |
-| 8 | **OCR** | PaddleOCR pada region kode | ~60 ms |
+| 7 | **Anomaly** | PaDiM → `anomaly_score` (skala jarak Mahalanobis, **bukan** 0–1) | ~35 ms |
+| 8 | **OCR** | PaddleOCR pada region kode - **tidak aktif**, 0 ms | ~60 ms bila dinyalakan |
 | 9 | **Decide** | Decision engine (§8.2) | ~1 ms |
 | 10 | **Render** | Gambar hasil beranotasi bbox + mask, encode base64 | ~25 ms |
 | 11 | **Respons** | JSON lengkap dikembalikan | ~10 ms |
@@ -397,41 +397,55 @@ periode lomba adalah preprocessing-nya**, dan itu harus dijelaskan di proposal (
 
 Ini "otak" sistem dan bagian yang paling layak dijelaskan panjang di proposal.
 
+> **Diperbarui 23 Agustus 2026.** Bagian ini semula menjelaskan keputusan TIGA
+> kelas. Sejak 20 Agustus 2026 sistem berjalan pada **mode biner**: setiap
+> gambar dinyatakan PASS atau REJECT, dan `REVIEW` tidak pernah dikembalikan.
+> Dokumen ini tertinggal dari perubahan itu; teks di bawah adalah keadaan yang
+> sebenarnya berjalan. Implementasinya di
+> `AI_model/src/visionqc_ai/inference/decision.py`.
+
 ```python
-# Semua threshold dibaca dari config saat startup — STATIS (R7.4, batasan panitia)
+# Semua ambang dibaca dari configs/inference.yaml saat startup dan bersifat
+# STATIS selama sistem berjalan (R7.4, batasan panitia).
 
-def decide(detections, seg_result, anomaly_score, config) -> Verdict:
+def decide(defects, defect_area_pct, anomaly_score, config) -> Verdict:
 
-    if not detections and anomaly_score < config.T_ANOMALY:
-        return Verdict(PASS, alasan="tidak ditemukan cacat")
+    # 1) Kelas kritis ditolak berapa pun luasnya. Saat ini hanya `kotor`,
+    #    karena kontaminasi berdampak langsung pada keamanan konsumsi.
+    if any(d.class_name in config.critical_classes for d in defects):
+        return Verdict(REJECT, alasan="terdeteksi kotor, ditolak berapa pun luasnya")
 
-    # 1) Cacat terklasifikasi dengan luas melewati ambang → tolak
-    if seg_result.area_pct > config.T_AREA:              # mis. 2.0 %
-        return Verdict(REJECT,
-                       alasan="cacat terklasifikasi melebihi ambang luas",
-                       detail=detections.top_class)
+    # 2) Luas cacat melewati batas toleransi
+    if defect_area_pct > config.area_pct_threshold:          # 2.0 %
+        return Verdict(REJECT, alasan="luas cacat melampaui batas")
 
-    # 2) Menyimpang dari normal, tapi bukan cacat yang dikenali → serahkan ke manusia
-    if anomaly_score > config.T_ANOMALY:                 # mis. 0.75
-        return Verdict(REVIEW, alasan="anomali tidak dikenal — perlu pemeriksaan manusia")
+    # 3) Cacat terdeteksi cukup meyakinkan
+    if max(d.confidence for d in defects) >= config.binary_threshold:   # 0.35
+        return Verdict(REJECT, alasan="cacat terdeteksi melampaui ambang keputusan")
 
-    # 3) Model tidak cukup yakin → jangan menebak
-    if detections and detections.top_conf < config.T_CONF:   # mis. 0.60
-        return Verdict(REVIEW, alasan="keyakinan model rendah")
+    # 4) Menyimpang dari normal walau tidak ada cacat yang dikenali
+    if anomaly_score > config.anomaly_threshold:             # 83.2714
+        return Verdict(REJECT, alasan="skor anomali melampaui ambang")
 
-    return Verdict(PASS, alasan="dalam batas toleransi")
+    return Verdict(PASS, alasan="tidak ditemukan cacat maupun penyimpangan dari normal")
 ```
-**Kenapa 3 kelas, bukan 2:**
+
+**Kenapa biner, bukan tiga kelas:**
 
 | Alasan | Penjelasan |
 |---|---|
-| **Jujur soal ketidakpastian** | Memaksa AI memilih PASS/REJECT saat ragu = menyembunyikan kesalahan |
-| **Aman untuk produksi** | Lebih baik beberapa barang dicek manusia daripada satu cacat lolos ke pelanggan |
-| **Nilai plus di penjurian** | Menunjukkan sistem dirancang untuk dunia nyata, bukan sekadar mengejar angka akurasi |
+| **Sistem harus memutuskan** | Lini produksi yang menyerahkan sebagian produk ke manusia tidak menyelesaikan persoalan yang ingin diotomatiskan |
+| **Biayanya bukan pendapat** | Model biaya menetapkan cacat lolos Rp50.000 melawan salah-tolak Rp2.000, jadi cacat yang terdeteksi lemah lebih murah ditolak daripada ditahan |
+| **Ambangnya diturunkan, bukan ditebak** | `binary_threshold` 0.35 dipilih dengan meminimumkan biaya yang diharapkan pada SET KALIBRASI; set uji tidak dilihat saat memilih |
 
-> **Penting soal kepatuhan:** kelas `REVIEW` hanya **ditampilkan sebagai hasil**. Tidak ada
-> antrean review, tidak ada penyimpanan, tidak ada loop retraining otomatis — itu semua dilarang
-> di tahap penyisihan (R9.1) dan diparkir ke Final (§15).
+Himpunan prediksi conformal tetap dihitung dan tetap dilaporkan lewat medan
+`decision` supaya keputusan dapat ditelusuri, tetapi tidak lagi dipakai untuk
+menahan keputusan.
+
+> **Kepatuhan.** Tidak ada antrean review, penyimpanan, maupun loop retraining
+> otomatis — semuanya dilarang di tahap penyisihan (R9.1) dan diparkir ke Final
+> (§15). Mode tiga kelas masih ada di dalam kode di balik
+> `decision.mode: three_class` dan direncanakan dipakai kembali di tahap Final.
 
 ### 8.3 Metrik yang benar untuk QC
 
@@ -456,30 +470,57 @@ GET  /healthz                 # kesiapan sistem (F-12)
 ```
 **Respons `POST /api/v1/inspect`:**
 
+> **Diperbarui 23 Agustus 2026 dengan keluaran sungguhan.** Contoh sebelumnya
+> ditulis sebagai rancangan sebelum sistemnya ada, dan beberapa nilainya sudah
+> tidak berlaku: `threshold` anomali tertulis 0.75 padahal skalanya bukan 0..1
+> dan nilainya 83.2714, sedangkan medan `label`, `defect_area_pct`, `decision`,
+> dan `anomaly.exceeded` belum tercantum sama sekali. Contoh di bawah disalin
+> apa adanya dari `POST /api/v1/inspect` atas `Backend/samples/bottle_broken_01.png`.
+
 ```json
 {
   "verdict": "REJECT",
-  "reason": "cacat terklasifikasi melebihi ambang luas",
-  "confidence": 0.93,
-  "batch_code": "B240815-021",
+  "reason": "luas cacat 11.11 persen melampaui batas 2.00 persen",
+  "confidence": 0.9358512163162231,
+  "batch_code": null,
   "defects": [
     {
-      "type": "gores",
-      "bbox": { "x": 120, "y": 88, "w": 64, "h": 40 },
-      "confidence": 0.93,
-      "area_pct": 3.42
+      "type": "pecah",
+      "label": "Pecah / Retak",
+      "bbox": { "x": 305, "y": 274, "w": 497, "h": 575 },
+      "confidence": 0.9358512163162231,
+      "area_pct": 11.1115
     }
   ],
+  "defect_area_pct": 11.1115,
   "anomaly": {
-    "score": 0.81,
-    "threshold": 0.75,
-    "heatmap_base64": "data:image/png;base64,..."
+    "score": 54.39267349243164,
+    "threshold": 83.2714,
+    "exceeded": false,
+    "heatmap_base64": null
+  },
+  "decision": {
+    "calibrated_probability": 0.9358512163162231,
+    "prediction_set": ["cacat"],
+    "severity": 0.8422660946846009,
+    "conformal_alpha": 0.1
   },
   "annotated_image_base64": "data:image/jpeg;base64,...",
-  "model_version": "yolo11n-defect-ft-v2",
-  "latency_ms": 412
+  "model_version": "visionqc-models-v1.1.0-6class",
+  "latency_ms": 272
 }
 ```
+
+Catatan atas medan yang mudah disalahpahami:
+
+| Medan | Keadaan sekarang |
+|---|---|
+| `verdict` | hanya `PASS` atau `REJECT`. `REVIEW` tidak pernah dikembalikan pada mode biner |
+| `batch_code` | selalu `null`. Jalur OCR tersambung tetapi dimatikan; alasannya di `configs/inference.yaml` |
+| `label` | nama kelas berbahasa Indonesia untuk ditampilkan, mis. `Pecah / Retak` |
+| `anomaly.score` | skala jarak Mahalanobis PaDiM, **bukan** 0..1 |
+| `anomaly.heatmap_base64` | selalu `null`; peta panas belum dibangkitkan |
+| `decision` | dilaporkan untuk penelusuran, tidak dipakai menahan keputusan |
 
 ### 9.1 Sumber kebenaran kontrak
 
@@ -522,26 +563,34 @@ dulu, sebagaimana R6.5 mengaturnya untuk `packages/contracts/`.
 > monorepo (`apps/api`, `apps/web`, `ml`) yang tidak pernah terwujud. Yang
 > berlaku adalah struktur nyata di bawah.
 
+> **Diperbarui 23 Agustus 2026** mengikuti keadaan setelah Backend tersambung
+> ke modul AI. Beberapa baris pada versi sebelumnya menyebut berkas yang tidak
+> pernah ada: `Backend/app/main.py` (yang ada `Backend/main.py`),
+> `Backend/models/` (bobot ada di `AI_model/models/`), dan `.env.example`
+> (belum ada karena layanan tidak memerlukan satu pun secret).
+
 ```
 compfest/
-|-- README.md                      # setup guide + docker compose
+|-- README.md                      # setup guide + docker compose  [WAJIB R9.3]
 |-- PROJECT.md                     # dokumen teknis
-|-- docker-compose.yml             # 2 service saja
-|-- .env.example
+|-- docker-compose.yml             # service api; web menyusul
+|-- .dockerignore                  # mempersempit konteks build
 |-- .gitignore
 |
 |-- Frontend/                      # Next.js                     [Anggota 1]
 | |-- app/page.tsx               #   halaman inti: unggah, hasil
 | |-- components/                #   UploadZone, ResultCard, DefectOverlay
-| |-- lib/api.ts                 #   client, tipe dari contracts
+| |-- lib/api.ts                 #   client, tipe di-generate dari /openapi.json
 |
 |-- Backend/                       # FastAPI sinkron             [Anggota 2]
+| |-- main.py                    #   entrypoint, lifespan, penangan galat
+| |-- Dockerfile                 #   konteks build = AKAR REPO, bukan Backend/
+| |-- requirements.txt           #   dependensi web saja; AI dari AI_model
 | |-- app/
-| |   |-- main.py                #   entrypoint + lifespan
-| |   |-- routers/inspect.py     #   endpoint
-| |   |-- schemas.py             #   Pydantic, sumber kebenaran kontrak
-| |   |-- config.py              #   threshold statis
-| |-- models/                    #   bobot .onnx (tidak masuk git)
+| |   |-- routers/inspect.py     #   endpoint inspeksi
+| |   |-- routers/meta.py        #   samples + model-info
+| |   |-- schemas.py             #   ekspor ulang kontrak dari modul AI (9.1)
+| |   |-- config.py              #   batas unggahan, dibaca dari config AI
 | |-- samples/                   #   gambar contoh (F-08)
 | |-- tests/
 |
@@ -559,14 +608,18 @@ compfest/
 | |-- reports/                   #   metrik & gambar evaluasi, ikut di-commit
 | |-- EXPERIMENTS.md             #   tabel metrik sebelum vs sesudah
 |
-|-- packages/contracts/            # openapi.json + api.d.ts     [BERSAMA]
 |-- docs/                          #                             [Anggota 3]
     |-- proposal/  video/  assets/
 ```
 
-> `AI_model/` wajib ada di repo meskipun tidak dipakai saat runtime. Inilah
-> bukti bahwa model benar-benar di-fine-tune dan bahwa preprocessing dikerjakan
-> selama periode lomba.
+> `AI_model/` **dipakai saat runtime**, bukan sekadar arsip bukti. Backend
+> mengimpor `visionqc_ai` dari sana, dan image Docker memasangnya lewat
+> `pip install /app/AI_model`. Karena itu konteks build Docker adalah akar
+> repo; konteks `./Backend` akan menghasilkan container yang gagal pada impor
+> pertama.
+>
+> Selain dipakai, folder ini sekaligus menjadi bukti bahwa model benar-benar
+> di-fine-tune dan bahwa preprocessing dikerjakan selama periode lomba.
 >
 > Isi `AI_model/reports/` sengaja ikut di-commit karena merupakan bukti
 > evaluasi. Bobot model dan dataset tetap dikecualikan karena ukurannya.
@@ -594,9 +647,9 @@ Sisa waktu 10 hari. Pembagian ini dirancang agar **tidak ada yang menunggu**.
 | A3 | Baseline (sebelum fine-tune) | Ukur YOLO11n pre-trained apa adanya → catat metrik. Ini pembanding wajib | H-9 |
 | A4 | **Fine-tune YOLO11-detect**  | Model terlatih + log + metrik sesudah. **INI WAJIB (R7.3)** | H-9 |
 | A5 | **Fine-tune YOLO11-seg**  | Model mask + perhitungan luas % | H-8 |
-| A6 | **Latih EfficientAD**  | Dilatih dari gambar normal saja + tentukan threshold | H-8 |
-| A7 | Integrasi PaddleOCR | Fungsi baca kode batch | H-7 |
-| A8 | **Decision engine** | `decision.py` — gabungkan semua jadi PASS/REJECT/REVIEW | H-7 |
+| A6 | **Latih model anomali**  | PaDiM, dilatih dari gambar normal saja + tentukan ambang dengan teori nilai ekstrem | H-8 |
+| A7 | Integrasi PaddleOCR | Modul `inference/ocr.py` beserta penyaring daftar-izin; mesinnya dimatikan karena bentrok dependensi | H-7 |
+| A8 | **Decision engine** | `decision.py` — gabungkan semua jadi PASS/REJECT | H-7 |
 | A9 | Ekspor ONNX + ukur latensi | `.onnx` + tabel perbandingan latensi | H-6 |
 | A10 | Modul anotasi gambar | `annotate.py` — gambar bbox + mask di atas gambar asli | H-6 |
 | A11 | **Isi `AI_model/EXPERIMENTS.md`** | Tabel metrik **sebelum vs sesudah** fine-tuning (R7.1, R7.3) | terus-menerus |
@@ -607,7 +660,7 @@ Sisa waktu 10 hari. Pembagian ini dirancang agar **tidak ada yang menunggu**.
 |---|---|---|---|
 | B1 | Setup Next.js + Tailwind + shadcn | Shell aplikasi + layout | H-10 |
 | B2 | Komponen unggah gambar | Drag & drop + preview + validasi (F-01) | H-9 |
-| B3 | API client | `lib/api.ts` pakai tipe dari `packages/contracts/` | H-9 |
+| B3 | API client | `lib/api.ts` pakai tipe hasil generate dari `/openapi.json` (lihat 9.1) | H-9 |
 | B4 | Tampilan hasil | Verdict besar + alasan + skor tiap model (F-04, F-09) | H-6 |
 | B5 | Overlay cacat | Gambar beranotasi + toggle bbox/mask/heatmap (F-05, F-10) | H-5 |
 | B6 | Tombol gambar contoh | "Coba contoh" (F-08) — **penting agar panitia mudah menguji** | H-5 |
@@ -620,7 +673,7 @@ jadi, geser penuh ke frontend.
 ---
 
 ### ANGGOTA 2 — Backend Engineer
-**Folder milik:** `Backend/` · `docker-compose.yml` · `README.md` · `packages/contracts/`
+**Folder milik:** `Backend/` · `docker-compose.yml` · `README.md`
 
 | # | Tugas | Deliverable | Hari |
 |---|---|---|---|
@@ -654,7 +707,7 @@ Ini **bukan peran pasif**. Tiga dari empat berkas wajib ada di tangan Anggota 3.
 | # | Tugas | Hari |
 |---|---|---|
 | D1 | Riset latar belakang + kumpulkan sumber yang bisa dikutip | H-10 |
-| D2 | Studi literatur: YOLO, EfficientAD, anomaly detection industri | H-9 |
+| D2 | Studi literatur: YOLO, PaDiM, anomaly detection industri | H-9 |
 | D3 | Draf bab Latar Belakang + Tujuan & Manfaat | H-8 |
 | D4 | Draf bab **Metodologi** (3 sub-bab wajib — §16.2) | H-7 sampai H-5 |
 | D5 | Bab "metode lain yang mendukung keputusan" | H-4 |
@@ -735,7 +788,7 @@ Contoh yang baik:
 ```bash
 feat: tambah endpoint inspeksi gambar tunggal
 feat: fine-tune YOLO11n pada dataset MVTec AD kategori bottle
-feat: implementasi decision engine tiga kelas PASS REJECT REVIEW
+feat: ganti keputusan tiga kelas dengan keputusan biner tanpa REVIEW
 fix: perbaiki perhitungan luas cacat saat mask kosong
 refactor: pisahkan pipeline inferensi jadi modul terpisah
 ```
@@ -811,13 +864,21 @@ bertemu di **satu titik**: **antarmuka fungsi pipeline inferensi**.
                   │  (Backend/app/schemas.py)   │
                   └──────────────────────────────┘
 ```
-**Kontrak yang dikunci di Hari 1 oleh Anggota 2:**
+**Kontrak yang berlaku:**
+
+> **Diperbarui 23 Agustus 2026.** Sumber kebenaran BUKAN lagi
+> `Backend/app/schemas.py`. Berkas itu kini hanya mengekspor ulang skema dari
+> `AI_model/src/visionqc_ai/schemas.py` — lihat bagian 9.1. Salinan yang
+> sebelumnya berdiri sendiri di Backend sudah sempat menyimpang: `Defect`
+> kehilangan `label`, `InspectionResult` kehilangan `defect_area_pct` dan
+> `decision`, dan `verdict` masih memuat `REVIEW`.
 
 ```python
-# Backend/app/schemas.py  — SUMBER KEBENARAN, jangan diubah sepihak
+# AI_model/src/visionqc_ai/schemas.py  — SUMBER KEBENARAN, jangan diubah sepihak
 
 class Defect(BaseModel):
     type: str
+    label: str                      # nama kelas untuk ditampilkan ke pengguna
     bbox: BBox
     confidence: float
     area_pct: float | None = None
@@ -825,10 +886,17 @@ class Defect(BaseModel):
 class AnomalyResult(BaseModel):
     score: float
     threshold: float
+    exceeded: bool
     heatmap_base64: str | None = None
 
+class DecisionDetail(BaseModel):
+    calibrated_probability: float
+    prediction_set: list[str]
+    severity: float
+    conformal_alpha: float
+
 class InspectionResult(BaseModel):
-    verdict: Literal["PASS", "REJECT", "REVIEW"]
+    verdict: VerdictLabel           # "PASS" atau "REJECT"; REVIEW tidak dipakai
     reason: str
     confidence: float | None
     batch_code: str | None
@@ -858,8 +926,7 @@ def run_inspection(image: bytes, config: Config) -> InspectionResult:
 2. Menambah field opsional (`| None = None`) = aman.
    Ganti nama / hapus / ubah tipe = BREAKING → bicarakan dulu.
 3. Setelah berubah, Anggota 2 regenerate tipe frontend:
-   uv run python scripts/export_openapi.py
-   pnpm dlx openapi-typescript packages/contracts/openapi.json -o packages/contracts/api.d.ts
+   pnpm dlx openapi-typescript http://localhost:8000/openapi.json        -o Frontend/src/types/api.d.ts
 4. Kabari di grup chat. Anggota lain: git pull --rebase origin main
 ```
 
@@ -969,7 +1036,7 @@ Ini **bukti kepatuhan R7.3** dan bahan langsung untuk proposal:
 | YOLO11n-detect | **sesudah** fine-tune | MVTec bottle test | 50 | ? | ? | ? | ? | |
 | YOLO11n-seg | sebelum | — | — | ? | ? | ? | ? | |
 | YOLO11n-seg | sesudah | — | 50 | ? | ? | ? | ? | |
-| EfficientAD | dilatih dari normal | MVTec bottle | — | AUROC ? | — | — | ? | |
+| PaDiM | dilatih dari normal | gabungan 10 kategori | — | AUROC 0.6019 | — | — | 23 Agu | lemah, lihat EXPERIMENTS.md 5.3 |
 
 > **Isi dengan angka hasil run yang sungguhan.** Jangan pernah mengarang (R7.2). Panitia berhak
 > meminta live demo dan klarifikasi saat penjurian — angka karangan akan ketahuan.
@@ -1035,7 +1102,7 @@ Potong berurutan dari atas:
 2. F-11 Grading severity
 3. F-10 Heatmap anomali
 4. F-07 OCR kode batch
-5. F-06 EfficientAD  ← kalau sangat terpaksa; kurangi nilai inovasi tapi sistem tetap jalan
+5. F-06 anomali PaDiM  ← kalau sangat terpaksa; kurangi nilai inovasi tapi sistem tetap jalan
 ```
 **Tidak boleh dipotong:** F-01, F-02, F-03, F-04, F-13, F-14, F-16.
 Terutama **F-16 (bukti fine-tuning)** — itu kewajiban panitia, bukan fitur.
@@ -1104,9 +1171,9 @@ Panitia meminta penjelasan **per fitur**. Jadi bagi per model:
 |---|---|
 | **Deteksi cacat (YOLO11-detect)** | Arsitektur, alasan memilih YOLO11n, hyperparameter, **metrik sebelum vs sesudah fine-tuning** |
 | **Segmentasi (YOLO11-seg)** | Kenapa butuh mask (untuk hitung luas %), proses training, hasil |
-| **Anomaly detection (EfficientAD)** | Kenapa perlu model tanpa label cacat, cara pelatihan dari data normal, penentuan threshold, AUROC |
+| **Anomaly detection (PaDiM)** | Kenapa perlu model tanpa label cacat, cara pelatihan dari data normal, penentuan ambang dengan teori nilai ekstrem, dan AUROC yang terukur apa adanya |
 | **OCR (PaddleOCR)** | Peran pelengkap, kenapa cukup pre-trained |
-| **Decision Engine** | Logika 3 kelas, alasan adanya kelas REVIEW, penetapan threshold |
+| **Decision Engine** | Logika biner, kenapa REVIEW ditinggalkan, penetapan ambang dari model biaya pada set kalibrasi |
 
 #### ③ Alur integrasi model ke environment kode (~2 hal)
 - Ekspor PyTorch → ONNX, alasan (latensi)
@@ -1122,8 +1189,8 @@ Di sinilah menjelaskan **kenapa memilih ini, bukan itu**:
 | Keputusan | Alasan yang bisa dituliskan |
 |---|---|
 | Tiga model, bukan satu klasifikator | Cacat langka & tidak seimbang; cacat jenis baru tidak akan tertangkap model berlabel |
-| EfficientAD berdampingan dengan YOLO | Saling melengkapi: YOLO butuh label, EfficientAD tidak |
-| Kelas REVIEW (3 kelas, bukan 2) | Keselamatan produksi; jujur soal ketidakpastian |
+| PaDiM berdampingan dengan YOLO | Saling melengkapi: YOLO butuh label, PaDiM tidak |
+| Keputusan biner, bukan 3 kelas | Sistem QC harus memutuskan sendiri; ambangnya diturunkan dari model biaya, bukan dipilih tangan |
 | Recall diutamakan, bukan akurasi | Data tidak seimbang; cacat lolos jauh lebih mahal |
 | ONNX Runtime | Latensi inferensi untuk penggunaan lini produksi |
 | Arsitektur sinkron | Sesuai batasan ruang lingkup MVP + reprodusibilitas lokal |
@@ -1151,7 +1218,7 @@ Tujuannya membuktikan **kalian benar-benar mengerjakannya**. Saran struktur:
 | 0:30–2:00 | Tur repo GitHub: struktur folder, riwayat commit, skrip training |
 | 2:00–3:30 | **Bukti fine-tuning**: skrip, log training, tabel metrik sebelum vs sesudah |
 | 3:30–5:00 | Menjalankan sistem dari nol: `docker compose up --build` sampai jalan |
-| 5:00–6:30 | Demo langsung: unggah gambar → hasil muncul (tunjukkan beberapa kasus: PASS, REJECT, REVIEW) |
+| 5:00–6:30 | Demo langsung: unggah gambar → hasil muncul (tunjukkan kasus PASS dan REJECT) |
 | 6:30–7:00 | Penutup: rencana tahap Final |
 
 ### 17.2 Video Karya Inovasi — maks 5 menit, **PUBLIC**

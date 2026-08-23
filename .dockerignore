@@ -1,0 +1,42 @@
+# Konteks build dipersempit ke yang benar-benar dibutuhkan image.
+#
+# Tanpa berkas ini, Docker mengirim seluruh isi repo ke daemon sebelum satu
+# perintah pun dijalankan, termasuk beberapa gigabyte dataset dan bobot model
+# yang justru diunduh ulang di dalam image. Build akan tampak menggantung lama
+# tanpa keterangan apa pun.
+
+# Dataset dan artefak training
+AI_model/data/
+AI_model/models/finetuned/
+AI_model/models/onnx/
+AI_model/runs/
+AI_model/reports/figures/
+**/runs/
+
+# Bobot model. models.json TETAP disertakan: berkas itu daftar resmi beserta
+# sidik jari SHA-256, dan diunduh di dalam image memakai daftar tersebut.
+**/*.pt
+**/*.pth
+**/*.onnx
+**/*.engine
+
+# Dokumen internal tim, tidak ikut dipublikasikan
+CLAUDE.md
+LOG.md
+
+# Lingkungan dan cache
+.git/
+.github/
+**/__pycache__/
+**/*.pyc
+**/.pytest_cache/
+**/.ruff_cache/
+**/.venv/
+**/venv/
+**/node_modules/
+**/.next/
+
+# Bahan lomba dan dokumen yang tidak dipakai saat menjalankan layanan
+Persyaratan/
+docs/
+AI_model/notebooks/

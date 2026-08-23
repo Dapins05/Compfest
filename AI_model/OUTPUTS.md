@@ -481,6 +481,13 @@ pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
 pip install -r requirements.txt
 
 python scripts/prepare_dataset.py       # Step 2, sekitar 4 menit
+
+# Penyeimbangan set latih. URUTANNYA MENGIKAT: keduanya menulis ke dalam
+# split latih yang baru saja dibangun, jadi menjalankan ulang
+# prepare_dataset.py sesudah ini akan menghapus hasilnya.
+python scripts/generate_synthetic_kotor.py   # cacat kotor sintetik
+python scripts/mine_hard_negatives.py        # gambar bagus yang salah dituduh
+
 python scripts/preview_dataset.py --split train
 python scripts/preview_dataset.py --split test
 

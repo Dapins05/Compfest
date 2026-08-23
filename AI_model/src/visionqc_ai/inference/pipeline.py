@@ -163,6 +163,16 @@ class InspectionPipeline:
         """Benar bila setidaknya model deteksi tersedia."""
         return self._detector is not None
 
+    @property
+    def segmentation_available(self) -> bool:
+        """Benar bila model segmentasi tersedia.
+
+        Tanpa segmentasi, luas cacat dihitung dari kotak pembatas dan aturan
+        luas menjadi lebih longgar. Backend melaporkannya lewat endpoint
+        keterangan supaya keadaan itu terlihat dari luar.
+        """
+        return self._segmenter is not None
+
     def _predict(self, model: Any, image: np.ndarray, imgsz: int) -> _Prediction:
         detection = self.config["models"]["detection"]
         result = model.predict(
