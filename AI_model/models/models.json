@@ -1,23 +1,23 @@
 {
-  "release_tag": "models-v1.1.0",
+  "release_tag": "models-v1.2.0",
   "repository": "Dapins05/Compfest",
-  "base_url": "https://github.com/Dapins05/Compfest/releases/download/models-v1.1.0",
-  "generated_on": "2026-08-23",
-  "note": "Bobot model tidak disimpan di git karena ukurannya. Berkas ini adalah daftar resmi beserta sidik jari SHA-256 supaya unduhan dapat diverifikasi keasliannya. Versi 1.1.0 adalah model taksonomi ENAM kelas yang dilatih memakai PKU-GoodsAD; versi 1.0.0 adalah model lima kelas dan tidak lagi cocok dengan configs/inference.yaml.",
+  "base_url": "https://github.com/Dapins05/Compfest/releases/download/models-v1.2.0",
+  "generated_on": "2026-08-24",
+  "note": "Bobot model tidak disimpan di git karena ukurannya. Berkas ini adalah daftar resmi beserta sidik jari SHA-256 supaya unduhan dapat diverifikasi keasliannya. Versi 1.2.0 mengganti model deteksi dengan run yang dilatih memakai tambahan cacat kotor sintetik dan negatif keras; ambang keputusannya ikut berubah menjadi 0,195 sehingga bobot 1.1.0 TIDAK lagi cocok dengan configs/inference.yaml.",
   "models": [
     {
       "name": "yolo11n-defect.onnx",
       "target": "models/onnx/yolo11n-defect.onnx",
       "size_bytes": 10608042,
-      "sha256": "894df850adbbd0e7db0ab485ca92f5762581a867811acd78243c20fbf0bdcdbd",
+      "sha256": "99c6f35a6dd28a64ee1a6d18a7fac5d8fc573efc80bb41abff225bb523aa4aca",
       "required": true,
-      "description": "Deteksi cacat, YOLO11n fine-tuned, 6 kelas, imgsz 640, opset 12"
+      "description": "Deteksi cacat, YOLO11n fine-tuned dengan tambahan data sintetik kelas kotor dan negatif keras, 6 kelas, imgsz 640, opset 12"
     },
     {
       "name": "yolo11n-seg-defect.onnx",
       "target": "models/onnx/yolo11n-seg-defect.onnx",
       "size_bytes": 11630371,
-      "sha256": "f2e4e5923618decfa1f53754bf0fd130d56d5ee89e02825e3106c33648d90594",
+      "sha256": "45544ece4fba0cddb75824f8dbb579bea3adf4a3959bae8068d7c113031a1c94",
       "required": false,
       "description": "Segmentasi cacat, YOLO11n-seg fine-tuned, 6 kelas, imgsz 640, opset 12"
     },

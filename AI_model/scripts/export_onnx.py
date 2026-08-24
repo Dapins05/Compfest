@@ -28,23 +28,28 @@ from visionqc_ai.export.onnx_export import benchmark_onnx, export_to_onnx  # noq
 
 log = logging.getLogger("export_onnx")
 
-# Run yang diekspor. Diarahkan ke run 21 Agustus 2026 yang dilatih memakai
-# PKU-GoodsAD dan taksonomi enam kelas, yaitu run yang menghasilkan bobot
-# rilis models-v1.1.0 dan yang sekarang benar-benar dilayani.
+# Run yang diekspor.
 #
-# JANGAN diarahkan ke models/finetuned/detect_balanced tanpa memeriksa lebih
-# dulu. Run itu adalah percobaan set latih seimbang yang DIHENTIKAN di epoch
-# 124 dari 150, dan pada titik berhentinya recall-nya masih 0,4815 melawan
-# 0,6274 milik run ini. Pasangan segmentasinya, seg_balanced, belum pernah
-# dilatih sama sekali. Mengekspor dari sana akan menimpa bobot yang dilayani
-# dengan model yang lebih buruk, sementara sisi segmentasinya gagal.
+# Deteksi diambil dari `detect_balanced` (24 Agustus 2026), yaitu run yang
+# dilatih dengan tambahan 110 gambar cacat `kotor` sintetik dan 300 gambar
+# latar sebagai negatif keras. Run itu sempat terhenti di epoch 124 dan
+# disambung sampai 150 lewat `scripts/resume_detection.py`.
 #
-# Run lama detect dan seg juga sengaja tidak dihapus: keduanya menjadi rujukan
+# Peringatan pada versi berkas ini sebelumnya menyuruh JANGAN mengarah ke sana,
+# dan pada saat itu peringatannya benar: run-nya belum tuntas. Setelah tuntas
+# dan diukur, gambarannya berubah - pada set kalibrasi biaya harapannya 9,1
+# persen lebih rendah, dan pada set eval `kotor` yang ditahan recall-nya 0,4171
+# melawan 0,0160 milik run sebelumnya. Rinciannya di EXPERIMENTS.md bagian 3.
+#
+# Segmentasi tetap dari `seg_goodsad`; pasangan `seg_balanced` tidak pernah
+# dilatih, dan jalur segmentasi tidak terpengaruh penambahan data deteksi.
+#
+# Run lama detect dan seg sengaja tidak dihapus: keduanya menjadi rujukan
 # keadaan sebelum dataset diperbesar.
 MODELS = (
     (
         "detect",
-        "models/finetuned/detect_goodsad/weights/best.pt",
+        "models/finetuned/detect_balanced/weights/best.pt",
         "yolo11n-defect.onnx",
     ),
     (

@@ -16,10 +16,11 @@ models:
     imgsz: 640
     # WAJIB berada di bawah decision.binary_threshold. Bila NMS menyaring di
     # atas ambang keputusan, ambang keputusan tidak akan pernah tercapai dan
-    # nilainya menjadi hiasan belaka. Ambang keputusan kini 0,35; NMS sengaja
+    # nilainya menjadi hiasan belaka. Ambang keputusan kini 0,195; NMS sengaja
     # dibiarkan lebih rendah agar deteksi lemah tetap sampai ke decision
-    # engine dan dapat dipakai aturan luas maupun kelas kritis.
-    conf_threshold: 0.22
+    # engine dan dapat dipakai aturan luas maupun kelas kritis. Rasionya
+    # dipertahankan seperti pasangan sebelumnya (0,22 terhadap 0,35).
+    conf_threshold: 0.12
     iou_threshold: 0.45
     max_detections: 30
 
@@ -170,7 +171,7 @@ decision:
   mode: binary
   # Dipilih ulang 22 Agustus 2026 pada model yang dilatih memakai PKU-GoodsAD.
   # Dipilih HANYA pada set kalibrasi; set uji tidak dilihat saat memilih.
-  binary_threshold: 0.35
+  binary_threshold: 0.195
   binary_threshold_selected_on: calibration
   binary_calibration:
     recall: 0.7970

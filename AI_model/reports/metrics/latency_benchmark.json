@@ -1,5 +1,5 @@
 {
-  "generated_on": "2026-08-23",
+  "generated_on": "2026-08-24",
   "imgsz": 640,
   "opset": 12,
   "runs": 100,
@@ -9,8 +9,8 @@
   "platform": "Windows-10-10.0.26200-SP0",
   "exports": [
     {
-      "name": "detect_goodsad",
-      "source": "C:\\compfest\\AI_model\\models\\finetuned\\detect_goodsad\\weights\\best.pt",
+      "name": "detect_balanced",
+      "source": "C:\\compfest\\AI_model\\models\\finetuned\\detect_balanced\\weights\\best.pt",
       "onnx_path": "C:\\compfest\\AI_model\\models\\onnx\\yolo11n-defect.onnx",
       "size_mb": 10.12,
       "imgsz": 640,
@@ -30,21 +30,21 @@
       "name": "detect",
       "device": "cpu",
       "runs": 100,
-      "median_ms": 43.977,
-      "p95_ms": 54.729,
-      "mean_ms": 44.94,
-      "min_ms": 31.19,
-      "max_ms": 84.276
+      "median_ms": 28.556,
+      "p95_ms": 35.589,
+      "mean_ms": 29.739,
+      "min_ms": 25.078,
+      "max_ms": 40.338
     },
     {
       "name": "seg",
       "device": "cpu",
       "runs": 100,
-      "median_ms": 62.719,
-      "p95_ms": 78.642,
-      "mean_ms": 63.608,
-      "min_ms": 45.002,
-      "max_ms": 99.83
+      "median_ms": 42.888,
+      "p95_ms": 48.161,
+      "mean_ms": 43.422,
+      "min_ms": 39.36,
+      "max_ms": 59.707
     }
   ]
 }

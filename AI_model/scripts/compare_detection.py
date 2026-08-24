@@ -242,7 +242,7 @@ def main() -> int:
     parser.add_argument(
         "--finetuned",
         type=Path,
-        default=PROJECT_ROOT / "models/finetuned/detect_goodsad/weights/best.pt",
+        default=PROJECT_ROOT / "models/finetuned/detect_balanced/weights/best.pt",
     )
     parser.add_argument(
         "--dataset", type=Path, default=PROJECT_ROOT / "data/processed/detect"

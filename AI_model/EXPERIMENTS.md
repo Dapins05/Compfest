@@ -186,26 +186,33 @@ Dihasilkan `scripts/compare_detection.py`; angka lengkap ada di
 
 ### 3.1 Ringkas run
 
-Diukur ulang 21-22 Agustus 2026 pada dataset yang diperbesar PKU-GoodsAD.
-Angka run 18 Agustus tidak lagi berlaku dan **tidak boleh dibandingkan
-langsung**, karena set uji maupun jumlah kelasnya berbeda.
+Diukur 24 Agustus 2026 pada run `detect_balanced`, yaitu run yang bobotnya
+benar-benar dilayani sejak rilis `models-v1.2.0`. Angka run 18 dan 21 Agustus
+tidak lagi berlaku dan **tidak boleh dibandingkan langsung**, karena set latih
+maupun ambang keputusannya berbeda.
 
 | | |
 |---|---|
 | Model dasar | YOLO11n pra-latih COCO (`yolo11n.pt`) |
-| Dataset | 1.428 train / 310 val / 301 test, **6 kelas** cacat |
+| Dataset | 1.838 train (termasuk 485 latar) / 310 val / 301 test, **6 kelas** cacat |
+| Tambahan atas run sebelumnya | 110 citra cacat `kotor` sintetik + 300 citra latar sebagai negatif keras |
 | Epoch diminta | 150 |
-| Epoch dijalankan | **150** (tuntas, tidak berhenti awal) |
-| Epoch terbaik (mAP50 val) | **122** |
-| Metrik val terbaik | recall 0,6274 - mAP50 **0,6972** - precision 0,6862 |
-| Metrik val epoch akhir | recall 0,5988 - mAP50 0,6760 - precision 0,8062 - mAP50-95 0,3714 |
+| Epoch dijalankan | **150** (tuntas) |
+| Epoch terbaik (mAP50-95 val) | **150** |
+| Metrik val terbaik | recall 0,5329 - mAP50 0,6162 - precision 0,6322 - mAP50-95 **0,3345** |
 
-**Catatan reprodusibilitas.** Run ini terputus pada epoch 117 ketika prosesnya
-ikut terhenti, lalu **dilanjutkan** dari `last.pt` memakai `resume=True`,
-bukan dimulai ulang. Sambungan itu tercatat pada `results.csv` sebagai
-kolom waktu yang kembali dari nol di epoch 118. Hasilnya tetap sah karena
-optimizer state ikut tersimpan, tetapi wajib disebut agar siapa pun yang
-mengulang tahu bahwa kurva waktunya tidak bersambung.
+**Catatan reprodusibilitas.** Run ini terhenti pada epoch 124 ketika mesin
+dimatikan, lalu **disambung** dari `last.pt` memakai
+`scripts/resume_detection.py`, bukan dimulai ulang. Ultralytics membaca kembali
+`args.yaml` run itu sehingga dataset, hyperparameter, dan keadaan optimizer
+melanjutkan yang sebelumnya. Sambungannya tercatat pada `results.csv` sebagai
+kolom waktu yang kembali dari nol di epoch 125.
+
+**Metrik val-nya lebih rendah daripada run sebelumnya** (mAP50-95 0,3345 lawan
+0,3770), dan itu bukan salah baca. Set val ikut memuat 39 citra latar, dan
+penambahan negatif keras memang menekan recall demi menurunkan alarm palsu.
+Dasar pengambilan keputusan bukan angka val ini, melainkan biaya harapan pada
+set kalibrasi di bagian 3.9.
 
 ### 3.2 Perbandingan metrik pada test set
 
@@ -215,21 +222,21 @@ cacat di dalam satu gambar tidak saling bebas.
 
 | Metrik (tingkat instance) | Baseline pra-latih | Sesudah fine-tune | 95% BCa (sesudah) |
 |---|---|---|---|
-| Recall | 0,0000 | **0,6137** | [0,5502 ; 0,6751] |
-| Precision | 0,0000 | **0,6545** | [0,6014 ; 0,7000] |
-| F1 | 0,0000 | 0,6334 | [0,5824 ; 0,6788] |
-| **F2** (recall diutamakan) | 0,0000 | **0,6215** | [0,5631 ; 0,6754] |
-| True positive | 0 | 197 | dari 321 instance |
-| False negative | 321 | 124 | |
+| Recall | 0,0000 | **0,6573** | [0,5958 ; 0,7182] |
+| Precision | 0,0000 | **0,6170** | [0,5609 ; 0,6656] |
+| F1 | 0,0000 | 0,6365 | [0,5920 ; 0,6815] |
+| **F2** (recall diutamakan) | 0,0000 | **0,6488** | [0,5963 ; 0,7007] |
+| True positive | 0 | 211 | dari 321 instance |
+| False negative | 321 | 110 | |
 
-Selang Wilson untuk recall: 0,6137 [0,5594 ; 0,6653], konsisten dengan BCa.
+Selang Wilson untuk recall: 0,6573 [0,6038 ; 0,7071], konsisten dengan BCa.
 
 | Metrik (tingkat gambar) | Baseline | Sesudah fine-tune |
 |---|---|---|
-| TP / FP / TN / FN | 185 / 27 / 12 / 77 | 219 / 10 / 29 / 43 |
-| Recall | 0,7061 | **0,8359** |
-| Specificity | 0,3077 | **0,7436** |
-| **MCC** | **0,0102** | **0,4562** |
+| TP / FP / TN / FN | 223 / 31 / 8 / 39 | 222 / 13 / 26 / 40 |
+| Recall | 0,8511 | **0,8473** |
+| Specificity | 0,2051 | **0,6667** |
+| **MCC** | **0,0521** | **0,4172** |
 
 Baseline tampak punya recall tingkat gambar 0,7061 hanya karena ia menghasilkan
 kotak COCO di mana-mana; specificity-nya 0,3077 memperlihatkan bahwa itu
@@ -244,7 +251,7 @@ per instance ground truth.
 | | Fine-tuned menangkap | Fine-tuned gagal |
 |---|---|---|
 | **Baseline menangkap** | a = 0 | b = 0 |
-| **Baseline gagal** | c = 197 | d = 124 |
+| **Baseline gagal** | c = 211 | d = 110 |
 
 | | Nilai |
 |---|---|
@@ -287,24 +294,25 @@ dipakai sebagai metrik utama pada data yang timpang.
 
 ### 3.5 Recall per kelas
 
-Diukur 21 Agustus 2026. Selang kepercayaan Wilson disertakan karena tanpa itu
-dua baris di tabel ini mudah disalahbaca.
+Diukur 24 Agustus 2026 pada model yang dilayani. Kolom terakhir memuat run
+21 Agustus sebagai pembanding.
 
-| Kelas | n (test) | Baseline | Sesudah fine-tune | 95% CI Wilson |
+| Kelas | n (test) | Baseline | Model dilayani | Run 21 Agu |
 |---|---|---|---|---|
-| `terbuka` | 72 | 0,000 | **0,708** | [0,595 ; 0,801] |
-| `noda` | 42 | 0,000 | 0,667 | [0,516 ; 0,790] |
-| `pecah` | 53 | 0,000 | 0,585 | [0,451 ; 0,707] |
-| `deformasi` | 39 | 0,000 | 0,564 | [0,410 ; 0,707] |
-| `gores` | 112 | 0,000 | 0,554 | [0,461 ; 0,642] |
-| `kotor` | **3** | 0,000 | 1,000 | **[0,438 ; 1,000]** |
+| `terbuka` | 72 | 0,000 | **0,764** | 0,708 |
+| `deformasi` | 39 | 0,000 | **0,692** | 0,564 |
+| `pecah` | 53 | 0,000 | **0,642** | 0,585 |
+| `gores` | 112 | 0,000 | **0,607** | 0,554 |
+| `noda` | 42 | 0,000 | 0,571 | 0,667 |
+| `kotor` | **3** | 0,000 | 1,000 | 1,000 |
 
-> **`kotor` belum dapat dinilai.** Recall 1,000 di baris terakhir **bukan**
-> bukti model sempurna pada kelas kritis. Dukungannya hanya 3 instance dan
-> selang kepercayaannya membentang dari 0,438 sampai 1,000, yang praktis tidak
-> memberi informasi. Angka ini dicantumkan demi kelengkapan, dan **tidak boleh
-> dipakai di proposal sebagai capaian**. Yang benar untuk ditulis: recall
-> `kotor` belum dapat dinilai karena dukungan uji terlalu kecil.
+Lima dari enam kelas naik; `noda` satu-satunya yang turun.
+
+> **`kotor` pada cacat NYATA tetap belum dapat dinilai.** Recall 1,000 di baris
+> terakhir **bukan** bukti model sempurna pada kelas kritis: dukungannya hanya
+> 3 instance dan selang Wilson-nya membentang [0,438 ; 1,000], praktis tanpa
+> informasi. Yang dapat diukur adalah kinerjanya pada set buatan yang ditahan,
+> dan itu dilaporkan di bagian 3.9.
 
 **Kelas `terbuka` justru yang terkuat.** Ini pembenaran empiris atas keputusan
 memisahkannya menjadi kelas keenam, bukan meleburkannya ke `deformasi`.
@@ -319,16 +327,18 @@ Diukur pada 301 gambar test, resolusi 640 px.
 
 | Tahap | ms/gambar (CPU) |
 |---|---|
-| Prapemrosesan | 4,0 |
-| Inferensi | 94,5 |
-| Pascapemrosesan | 1,3 |
-| **Total** | **99,8** |
+| Prapemrosesan | 2,3 |
+| Inferensi | 11,6 |
+| Pascapemrosesan | 1,5 |
+| **Total** | **15,4** |
 
-**Angka ini diukur di CPU, bukan GPU**, karena evaluasi sengaja dijalankan di
-CPU agar tidak berebut VRAM 4 GB dengan fine-tuning segmentasi yang berjalan
-bersamaan. Karena itu angka ini **tidak sebanding** dengan 15,0 ms milik run
-18 Agustus yang diukur pada GPU. Latensi ONNX di CPU, yang menjadi target
-penyajian sesungguhnya, diukur terpisah pada Step 9.
+**Angka ini diukur di GPU** (`prediction_settings.device: 0`), jadi ia bukan
+angka penyajian. Yang menjadi target penyajian sesungguhnya adalah latensi ONNX
+di CPU, diukur terpisah dan tercatat di `reports/metrics/latency_benchmark.json`:
+median **28,6 ms** untuk deteksi dan **42,9 ms** untuk segmentasi, total 71,4 ms.
+Pengukuran sebelumnya pada tabel ini dijalankan di CPU karena berebut VRAM 4 GB
+dengan fine-tuning yang berjalan bersamaan, sehingga angka 99,8 ms milik run
+21 Agustus **tidak sebanding** dengan tabel di atas.
 
 ### 3.7 Hyperparameter
 
@@ -353,6 +363,51 @@ imgsz 640, mosaic dimatikan pada 15 epoch terakhir, seed 42.
 **Gambar pendukung:** `reports/figures/detection_comparison.png`,
 `training_curves.png`, `detection_confusion_matrix.png`,
 `detection_pr_curve.png`.
+
+### 3.9 Data sintetik kelas `kotor` dan negatif keras (24 Agustus 2026)
+
+Kelas `kotor` adalah satu-satunya kelas kritis: ia memicu penolakan tanpa
+memandang luas cacat, karena kontaminasi berdampak langsung pada keamanan
+konsumsi. Dukungan latihnya hanya 16 instance dan dukungan ujinya 3, sehingga
+kinerjanya tidak pernah dapat dinilai dari data nyata.
+
+**Yang dibangkitkan.** `scripts/generate_synthetic_kotor.py` membuat 110 citra
+berisi 351 instance `kotor` di atas citra produk yang ada, memakai segmentasi
+latar depan GrabCut agar kontaminasi jatuh di atas produk, bukan di rak.
+`scripts/mine_hard_negatives.py` menambahkan 300 citra produk baik yang paling
+meyakinkan salah dideteksi model lama, dilabeli kosong sebagai contoh latar.
+Set eval 60 citra ditahan terpisah; citra dasarnya tidak pernah dipakai
+melatih maupun sebagai negatif keras, dan tumpang tindihnya diperiksa nol.
+
+**Pengukuran pada set eval yang ditahan.** Dijalankan dengan `YOLO.val` pada
+kedua bobot, kelas `kotor` saja:
+
+| | precision | recall | mAP50 |
+|---|---|---|---|
+| Run 21 Agu (`detect_goodsad`) | 0,2727 | **0,0160** | 0,0075 |
+| Model dilayani (`detect_balanced`) | 0,7370 | **0,4171** | 0,4829 |
+
+Model sebelumnya praktis buta terhadap kelas kritis: recall 1,6 persen.
+
+**Keputusan mengadopsi diambil di set kalibrasi, bukan set uji** (R7.5). Ambang
+biner dipilih ulang lewat `scripts/select_binary_threshold.py` dan jatuh pada
+0,195; biaya harapan pada set kalibrasi Rp438,1 per unit melawan Rp481,8 milik
+konfigurasi sebelumnya, yaitu **9,1 persen lebih murah**. Ambang penyaringan NMS
+ikut diturunkan 0,22 menjadi 0,12 supaya tetap berada di bawah ambang keputusan;
+tanpa itu ambang 0,195 tidak akan pernah tercapai.
+
+**Apa yang memburuk, dan tidak disembunyikan.** Pada set uji, spesifisitas
+gabungan turun dari 0,8643 menjadi 0,8378, dan pada PKU-GoodsAD dari 0,8051
+menjadi 0,7712 - artinya produk baik yang keliru ditolak naik dari sekitar 19,5
+menjadi 22,9 persen. Recall gabungan naik 0,7977 menjadi 0,8397 dan akurasi
+0,8353 menjadi 0,8386. Pertukaran ini dipilih oleh model biaya yang menetapkan
+cacat lolos 25 kali lebih mahal daripada salah tolak, bukan oleh selera.
+
+**Batas yang wajib dinyatakan.** Set eval `kotor` bersifat **buatan**, dan model
+ini dilatih atas cacat buatan dari generator yang sama. Citra dasarnya berbeda,
+sehingga angkanya sah sebagai uji generalisasi di dalam sebaran buatan itu -
+tetapi **bukan** bukti perbaikan pada kontaminasi dunia nyata. Untuk itu
+dibutuhkan citra kontaminasi nyata yang belum dimiliki proyek ini.
 
 ## 4. BUKTI FINE-TUNING - Segmentasi
 

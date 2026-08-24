@@ -60,7 +60,7 @@ from visionqc_ai.schemas import (
 # Angkanya mengikuti release_tag di models/models.json; keduanya harus
 # bergerak bersama, karena taksonomi enam kelas membuat bobot v1.0.0 tidak
 # lagi sepadan dengan configs/inference.yaml.
-MODEL_VERSION = "visionqc-models-v1.1.0-6class"
+MODEL_VERSION = "visionqc-models-v1.2.0-6class"
 
 ROOT_ENV_VAR = "VISIONQC_ROOT"
 
