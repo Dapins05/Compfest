@@ -173,9 +173,12 @@ Komponen mask di bawah 25 px² dianggap derau pelabelan.
 Angka `fryum` yang mencolok (280 dari 553 komponen) memperkuat keputusan
 mengeluarkannya dari dataset deteksi.
 
-**Verifikasi visual:** `reports/figures/dataset_samples_train.png` dan
-`dataset_samples_test.png` - kotak dan poligon digambar ulang dari berkas label
-yang sesungguhnya, lalu diperiksa mata. Validasi statistik bisa lulus sementara
+**Verifikasi visual:** dibangkitkan `scripts/preview_dataset.py` menjadi
+`reports/figures/dataset_samples_{train,test}.png`. Berkas gambarnya sengaja
+TIDAK ikut disimpan di repositori karena memuat potongan citra MVTec AD yang
+berlisensi CC BY-NC-SA; jalankan skrip itu setelah mengunduh himpunan datanya
+untuk membuatnya ulang. Pada gambar itu kotak dan poligon digambar ulang dari
+berkas label yang sesungguhnya, lalu diperiksa mata. Validasi statistik bisa lulus sementara
 koordinatnya tergeser; lembar kontak inilah yang menutup celah itu.
 
 ## 3. BUKTI FINE-TUNING - Deteksi

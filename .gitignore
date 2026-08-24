@@ -1,5 +1,11 @@
 # Bahan lomba dan dokumen yang tidak dibutuhkan untuk menjalankan sistem.
 Persyaratan/
+
+# Cuplikan himpunan data tidak ikut disebarkan: isinya potongan citra MVTec AD
+# yang berlisensi CC BY-NC-SA. Yang disertakan adalah skrip pembangkitnya,
+# AI_model/scripts/preview_dataset.py, sehingga gambarnya dapat dibuat ulang
+# oleh siapa pun yang sudah mengunduh sendiri himpunan datanya.
+AI_model/reports/figures/dataset_samples_*.png
 penilaian/
 
 # Naskah proposal beserta berkas jadinya tidak ikut; yang ikut hanya KODE
