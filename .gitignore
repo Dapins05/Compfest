@@ -1,6 +1,17 @@
-# Bahan lomba dan dokumen yang tidak dibutuhkan untuk menjalankan sistem
+# Bahan lomba dan dokumen yang tidak dibutuhkan untuk menjalankan sistem.
 Persyaratan/
-docs/
+penilaian/
+
+# Naskah proposal beserta berkas jadinya tidak ikut; yang ikut hanya KODE
+# pembangkit diagramnya, supaya setiap gambar pada naskah dapat ditelusuri ke
+# skrip yang menghasilkannya alih-alih muncul tanpa asal-usul.
+docs/*
+!docs/proposal/
+docs/proposal/*
+!docs/proposal/src/
+docs/proposal/src/*
+!docs/proposal/src/gen_diagrams.py
+!docs/proposal/src/flowchart.py
 
 # ── Bobot model & artefak training (R4.2) ────────────────────
 *.pt

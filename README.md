@@ -115,20 +115,28 @@ curl -X POST http://localhost:8000/api/v1/inspect \
 {
   "verdict": "REJECT",
   "reason": "luas cacat 11.11 persen melampaui batas 2.00 persen",
-  "confidence": 0.9359,
+  "confidence": 0.7781,
+  "batch_code": null,
   "defects": [
     {
       "type": "pecah",
       "label": "Pecah / Retak",
-      "bbox": { "x": 305, "y": 274, "w": 497, "h": 575 },
-      "confidence": 0.9359,
+      "bbox": { "x": 324, "y": 268, "w": 473, "h": 594 },
+      "confidence": 0.7781,
       "area_pct": 11.1115
+    },
+    {
+      "type": "pecah",
+      "label": "Pecah / Retak",
+      "bbox": { "x": 622, "y": 270, "w": 152, "h": 298 },
+      "confidence": 0.1684,
+      "area_pct": 3.1881
     }
   ],
   "defect_area_pct": 11.1115,
   "annotated_image_base64": "...",
-  "model_version": "visionqc-models-v1.1.0-6class",
-  "latency_ms": 272
+  "model_version": "visionqc-models-v1.2.0-6class",
+  "latency_ms": 297
 }
 ```
 
@@ -231,6 +239,29 @@ cd Frontend && pnpm gen:api      # layanan harus sedang berjalan
 Skema Zod pada antarmuka dikunci ke tipe hasil pembangkitan itu, sehingga
 kontrak yang berubah tanpa tipe ikut dibangkitkan ulang muncul sebagai galat
 kompilasi - bukan sebagai medan yang diam-diam kosong saat ditampilkan.
+
+---
+
+## Diagram pada proposal
+
+Ketujuh diagram alir pada naskah proposal tidak digambar tangan. Semuanya
+dihasilkan program, dan kodenya ikut disimpan di sini supaya setiap gambar dapat
+ditelusuri ke skrip yang menghasilkannya:
+
+```bash
+python docs/proposal/src/gen_diagrams.py
+```
+
+`gen_diagrams.py` menyusun diagramnya, `flowchart.py` memuat primitif bentuk dan
+paletnya mengikuti konvensi ISO 5807. Keluarannya ditulis ke
+`docs/proposal/figures/`, yang dibuat sendiri bila belum ada.
+
+Gambar yang berasal dari model - kurva PR, matriks kebingungan, sebaran skor
+anomali - dihasilkan skrip di `AI_model/scripts/` dan angkanya tersimpan di
+`AI_model/reports/metrics/`.
+
+Naskah proposalnya sendiri tidak disimpan di repositori ini karena dikumpulkan
+lewat situs penyelenggara, bukan lewat repositori.
 
 ---
 
