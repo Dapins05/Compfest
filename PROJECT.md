@@ -2,7 +2,7 @@
 **AI Smart Manufacturing Quality Control**
 COMPFEST 18 · AIC (AI Competition) · Tahap **Penyisihan**
 
-Dokumen teknis utama. Rules pengerjaan → [CLAUDE.md](./CLAUDE.md) · Progres → [LOG.md](./LOG.md)
+Dokumen teknis utama proyek.
 **Terakhir diperbarui:** 2026-08-18 (struktur repo diselaraskan dengan kenyataan; timeline dijadwal ulang)
 
 ---
@@ -413,7 +413,7 @@ periode lomba adalah preprocessing-nya**, dan itu harus dijelaskan di proposal (
 | 10 | **Render** | Gambar hasil beranotasi bbox + mask, encode base64 | ~25 ms |
 | 11 | **Respons** | JSON lengkap dikembalikan | ~10 ms |
 **Target total: ≤ 1 detik di CPU dengan ONNX.**
->  Ini **target**, bukan hasil pengukuran. Wajib diukur nyata dan dicatat di `LOG.md` sebelum
+>  Ini **target**, bukan hasil pengukuran. Wajib diukur nyata dan dicatat pada catatan progres tim sebelum
 > ditulis di proposal (R7.2).
 
 ### 8.2 Decision Engine
@@ -762,7 +762,7 @@ Ini **bukan peran pasif**. Tiga dari empat berkas wajib ada di tangan Anggota 3.
 | D14 | Diagram arsitektur & alur | Dipakai di proposal **dan** video | H-6 |
 | D15 | **QA — coba sistem sebagai orang awam** | Menemukan hal membingungkan yang tidak terlihat oleh yang membuatnya | H-4 |
 | D16 | **Uji `README.md`** — ikuti sendiri dari nol | Simulasi persis apa yang dilakukan panitia | H-3 |
-| D17 | **Kurator `LOG.md`** | Pastikan progres tercatat (R1.1); tanya anggota lain tiap hari | tiap hari |
+| D17 | **Kurator catatan progres** | Pastikan progres tercatat; tanya anggota lain tiap hari | tiap hari |
 | D18 | **Audit "tidak ada nama institusi"** | R9.4 — cek repo, kode, proposal, video, slide | H-1 |
 | D19 | **Pegang checklist submisi §3.2** | Diskualifikasi kalau ada yang kurang | H-1 |
 
@@ -787,7 +787,7 @@ Ini **bukan peran pasif**. Tiga dari empat berkas wajib ada di tangan Anggota 3.
 | Kapan | Apa | Durasi |
 |---|---|---|
 | Tiap pagi | Standup di grup: kemarin apa, hari ini apa, mentok di mana | 10 menit |
-| Tiap malam | Anggota 3 update `LOG.md` + papan status | 10 menit |
+| Tiap malam | Anggota 3 update catatan progres + papan status | 10 menit |
 | H-6 & H-3 | Demo internal: tunjukkan sistem **berjalan**, bukan bercerita | 20 menit |
 | H-1 | Jalankan checklist §3.2 bersama-sama | 45 menit |
 
@@ -1159,7 +1159,7 @@ proposal: menunjukkan tim punya visi jangka panjang, bukan sekadar demo sekali p
 | 7 | Auth & RBAC multi-peran | "otentikasi kompleks" |
 | 8 | Monitoring Prometheus + Grafana | — |
 
-> **Rancangan arsitektur async yang dibuang tetap disimpan** di riwayat git dan `LOG.md`.
+> **Rancangan arsitektur async yang dibuang tetap disimpan** di riwayat git.
 > Saat Final, tinggal diambil lagi.
 
 ---
@@ -1356,4 +1356,4 @@ docker compose up --build        # ← R5.6
 | 6 | **Apakah proyek ini sudah pernah dikerjakan sebelum 17 Juni 2026?** | Kalau ya, **melanggar aturan** — harus dimulai bersih |
 | 7 | **Siapa yang jadi PIC standby Discord 9–10 Sept, 20.00?** | Wajib ada yang siaga, balas maks 2 jam |
 
-Begitu diputuskan, catat di [LOG.md](./LOG.md).
+Begitu diputuskan, catat pada catatan progres tim.

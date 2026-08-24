@@ -1,6 +1,6 @@
-# Dokumen internal tim (tidak dipublikasikan)
-CLAUDE.md
-LOG.md
+# Bahan lomba dan dokumen yang tidak dibutuhkan untuk menjalankan sistem
+Persyaratan/
+docs/
 
 # ── Bobot model & artefak training (R4.2) ────────────────────
 *.pt

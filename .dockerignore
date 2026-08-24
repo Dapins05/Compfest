@@ -20,10 +20,6 @@ AI_model/reports/figures/
 **/*.onnx
 **/*.engine
 
-# Dokumen internal tim, tidak ikut dipublikasikan
-CLAUDE.md
-LOG.md
-
 # Lingkungan dan cache
 .git/
 .github/
