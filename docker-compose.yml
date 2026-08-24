@@ -2,9 +2,9 @@
 #
 #     docker compose up --build
 #
-# Hanya satu layanan pada tahap ini. Frontend akan menyusul sebagai layanan
-# kedua; tidak ada basis data, antrean, maupun pekerja latar, karena inspeksi
-# berjalan sinkron di dalam permintaan.
+# Dua kontainer, tidak lebih: `api` memuat layanan FastAPI beserta modul AI dan
+# empat bobot ONNX, `web` melayani antarmuka. Tidak ada basis data, antrean,
+# maupun pekerja latar, karena inspeksi berjalan sinkron di dalam permintaan.
 
 services:
   api:
@@ -19,4 +19,24 @@ services:
       - "8000:8000"
     environment:
       VISIONQC_ROOT: /app/AI_model
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./Frontend
+    image: visionqc-web:1.1.0
+    container_name: visionqc-web
+    ports:
+      - "3000:3000"
+    environment:
+      # Dibaca server Next ketika menyala, lalu dipakai meneruskan /api/* dan
+      # /samples/* ke kontainer api. Peramban sendiri tidak pernah melihat
+      # alamat ini; ia hanya berbicara dengan http://localhost:3000.
+      VISIONQC_API_ORIGIN: http://api:8000
+    depends_on:
+      # Menunggu sampai model benar-benar termuat, bukan sekadar sampai
+      # prosesnya menyala. Tanpa ini antarmuka terbuka lebih dulu dan
+      # pemeriksaan pertama gagal hanya karena bobot masih dimuat.
+      api:
+        condition: service_healthy
     restart: unless-stopped

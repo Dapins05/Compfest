@@ -132,3 +132,26 @@ def test_inspeksi_bersamaan_memberi_hasil_yang_sama() -> None:
         actual = [summarise(r) for r in pool.map(pipeline.inspect, payloads)]
 
     assert actual == expected
+
+
+def test_gambar_rusak_bertanda_tangan_sah_dilaporkan_sebagai_galat_masukan() -> None:
+    """Berkas rusak adalah kesalahan kiriman, bukan kegagalan sistem.
+
+    `validate_bytes` mengenali format dari tanda tangan berkas, sehingga PNG
+    yang tanda tangannya utuh tetapi isinya rusak lolos darinya. Kegagalannya
+    baru muncul di lapisan privasi, yang melempar `ValueError` polos. Tanpa
+    penerjemahan, Backend membacanya sebagai kegagalan tak terduga dan membalas
+    500 - menyalahkan server atas berkas yang memang tidak dapat dibaca.
+    """
+    from visionqc_ai.inference.pipeline import InspectionPipeline, default_project_root
+
+    root = default_project_root()
+    if not (root / "models" / "onnx" / "yolo11n-defect.onnx").is_file():
+        pytest.skip("bobot model belum diunduh; jalankan scripts/download_models.py")
+
+    rusak = b"\x89PNG\r\n\x1a\n" + bytes(4096)
+    assert sniff_format(rusak) == "png", "prasyarat: tanda tangannya memang terbaca sah"
+
+    pipeline = InspectionPipeline(project_root=root)
+    with pytest.raises(InvalidImageError):
+        pipeline.inspect(rusak)

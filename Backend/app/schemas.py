@@ -20,6 +20,8 @@ kehilangan medan diam-diam. Dengan mengimpor langsung, ketidakcocokan muncul
 sebagai galat impor pada saat startup.
 """
 
+from typing import Literal
+
 from pydantic import BaseModel, ConfigDict
 from visionqc_ai.schemas import (
     AnomalyResult,
@@ -35,11 +37,30 @@ __all__ = [
     "BBox",
     "DecisionDetail",
     "Defect",
+    "HealthStatus",
     "InspectionResult",
     "ModelInfo",
     "SampleImage",
     "VerdictLabel",
 ]
+
+
+class HealthStatus(BaseModel):
+    """Kesiapan layanan beserta lapisan model yang aktif.
+
+    Endpoint kesehatan sebelumnya mengembalikan `dict` telanjang. Selain
+    melanggar R3.6, akibatnya lebih praktis: FastAPI tidak dapat menurunkan
+    skema apa pun untuknya, sehingga endpoint ini tidak muncul di
+    `/openapi.json` dengan bentuk yang jelas dan Frontend tidak dapat
+    membangkitkan tipenya - padahal justru endpoint inilah yang dipakai
+    Frontend memutuskan apakah tombol Periksa layak diaktifkan.
+    """
+
+    status: Literal["ok", "degraded"]
+    components: dict[str, bool] = {}
+    # Terisi hanya ketika pipeline gagal dimuat sama sekali, sehingga daftar
+    # komponen tidak dapat ditanyakan.
+    detail: str | None = None
 
 
 class SampleImage(BaseModel):

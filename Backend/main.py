@@ -11,14 +11,16 @@ import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
-from app.config import get_settings
-from app.routers import inspect, meta
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from visionqc_ai import load_pipeline
+
+from app.config import get_settings
+from app.routers import inspect, meta
+from app.schemas import HealthStatus
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 log = logging.getLogger("visionqc.api")
@@ -113,8 +115,8 @@ async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONR
     )
 
 
-@app.get("/healthz")
-def health_check() -> dict[str, object]:
+@app.get("/healthz", response_model=HealthStatus)
+def health_check() -> HealthStatus:
     """Kesiapan layanan beserta lapisan mana yang aktif.
 
     `status` menjadi `degraded`, bukan `ok`, ketika model deteksi tidak
@@ -125,15 +127,15 @@ def health_check() -> dict[str, object]:
         pipeline = load_pipeline()
     except Exception as error:  # noqa: BLE001 - kesiapan harus tetap terjawab
         log.error("pipeline tidak dapat dimuat: %s", error)
-        return {"status": "degraded", "detail": "pipeline tidak dapat dimuat"}
+        return HealthStatus(status="degraded", detail="pipeline tidak dapat dimuat")
 
-    return {
-        "status": "ok" if pipeline.ready else "degraded",
-        "components": {
+    return HealthStatus(
+        status="ok" if pipeline.ready else "degraded",
+        components={
             "detection": pipeline.ready,
             "segmentation": pipeline.segmentation_available,
             "anomaly": pipeline.anomaly_available,
             "face_blur": pipeline.face_blur_available,
             "ocr": pipeline.ocr_available,
         },
-    }
+    )

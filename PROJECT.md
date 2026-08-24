@@ -272,6 +272,20 @@ seharusnya begitu. Panitia menilai **fokus dan reprodusibilitas**, bukan banyakn
 **Yang sengaja TIDAK dipakai:** TanStack Query/Table (tidak ada daftar data), Socket.IO (tidak ada
 realtime), Recharts (tidak ada dashboard analitik — dilarang R9.1), Zustand (state cukup `useState`).
 
+**Tiga keputusan rancangan antarmuka** (24 Agustus 2026, saat antarmuka dibangun):
+
+| Keputusan | Alasan |
+|---|---|
+| **Kamera adalah sumber citra, bukan jalur inferensi berkelanjutan** | Aliran video hanya ditampilkan; model berjalan ketika operator menekan Periksa. Memeriksa setiap bingkai berarti antarmuka tidak lagi menerima "input tunggal" dan sisi model menjalankan gelung otomatis — keduanya dilarang R9.1 |
+| **Permintaan diteruskan server Next, bukan dipanggil langsung dari peramban** | Alamat layanan dibaca saat container menyala, bukan ditanam saat `next build`. Kalau ditanam lewat `NEXT_PUBLIC_...`, image yang sudah jadi terkunci pada satu alamat dan tidak dapat diarahkan ke host lain tanpa dibangun ulang. Sekaligus menghapus ketergantungan pada CORS |
+| **Skema Zod dikunci ke tipe hasil pembangkitan** | Tipe TypeScript hilang setelah kompilasi, sehingga respons yang bentuknya berubah diam-diam baru ketahuan sebagai `undefined` di tengah penyajian. `src/lib/contract.ts` menuntut kedua tipe saling terisi, jadi kontrak yang menyimpang muncul sebagai galat kompilasi |
+
+Tab **Kamera** menyesuaikan diri pada konteks tidak aman. Peramban hanya menyediakan
+`getUserMedia` pada `localhost` atau HTTPS; ketika antarmuka dibuka dari ponsel lewat
+`http://alamat-ip:3000`, pengambilan dialihkan ke aplikasi kamera bawaan perangkat, yang tidak
+menuntut syarat itu dan tetap mengembalikan satu berkas gambar. Ini yang membuat pengujian dari
+ponsel di jaringan lokal tetap dapat dilakukan tanpa menyiapkan sertifikat.
+
 ### 6.2 Backend
 
 | Teknologi | Peran | Alasan |
@@ -323,15 +337,24 @@ periode lomba adalah preprocessing-nya**, dan itu harus dijelaskan di proposal (
 ┌─────────────────────────────────────────────────────────────────┐
 │                        BROWSER                                   │
 │  ┌───────────────────────────────────────────────────────────┐  │
-│  │  Next.js — satu halaman inti                              │  │
-│  │  [ Unggah gambar ]  →  [ Periksa ]  →  [ Hasil ]          │  │
+│  │  satu halaman inti                                        │  │
+│  │  [ Unggah | Kamera | Contoh ] → [ Periksa ] → [ Hasil ]   │  │
 │  └───────────────────────────────────────────────────────────┘  │
 └──────────────────────────┬──────────────────────────────────────┘
                            │ POST /api/v1/inspect  (multipart, 1 gambar)
+                           │ ke origin antarmuka sendiri
+                           ▼
+┌─────────────────────────────────────────────────────────────────┐
+│              container `web`  —  Next.js 15 (port 3000)         │
+│  menyajikan halaman, lalu meneruskan /api/* dan /samples/*      │
+│  ke container `api`. Peramban tidak pernah memanggil port 8000  │
+│  langsung, sehingga tidak ada CORS yang perlu dipercaya dan     │
+│  alamat internal container tidak ikut ke sisi klien.            │
+└──────────────────────────┬──────────────────────────────────────┘
                            │ ── menunggu (sinkron) ──
                            ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                    FastAPI  (Backend/)                          │
+│           container `api`  —  FastAPI (port 8000)               │
 │                                                                 │
 │   1. validasi gambar (format, ukuran maks)                      │
 │   2. preprocessing (resize, normalisasi)                        │
@@ -378,7 +401,7 @@ periode lomba adalah preprocessing-nya**, dan itu harus dijelaskan di proposal (
 
 | # | Tahap | Yang terjadi | Estimasi |
 |---|---|---|---|
-| 1 | **Unggah** | Pengguna pilih gambar; frontend validasi tipe & ukuran | — |
+| 1 | **Pilih citra** | Pengguna memilih satu citra - unggah berkas, tangkap dari kamera, atau ambil gambar contoh; antarmuka memvalidasi tipe, ukuran, dan dimensi | — |
 | 2 | **Kirim** | `POST /api/v1/inspect` multipart | ~30 ms |
 | 3 | **Validasi** | Cek format (JPG/PNG), ukuran maks 10 MB, dimensi minimum | ~5 ms |
 | 4 | **Preprocess** | Resize ke 640×640, normalisasi, konversi tensor | ~15 ms |
@@ -573,14 +596,21 @@ dulu, sebagaimana R6.5 mengaturnya untuk `packages/contracts/`.
 compfest/
 |-- README.md                      # setup guide + docker compose  [WAJIB R9.3]
 |-- PROJECT.md                     # dokumen teknis
-|-- docker-compose.yml             # service api; web menyusul
+|-- docker-compose.yml             # dua service: api dan web
 |-- .dockerignore                  # mempersempit konteks build
 |-- .gitignore
 |
-|-- Frontend/                      # Next.js                     [Anggota 1]
-| |-- app/page.tsx               #   halaman inti: unggah, hasil
-| |-- components/                #   UploadZone, ResultCard, DefectOverlay
-| |-- lib/api.ts                 #   client, tipe di-generate dari /openapi.json
+|-- Frontend/                      # Next.js 15                  [Anggota 1]
+| |-- Dockerfile                 #   build bertahap, keluaran standalone
+| |-- next.config.ts             #   penerusan /api/* dan /samples/* ke api
+| |-- src/app/page.tsx           #   halaman inti: pilih citra, tampilkan hasil
+| |-- src/components/            #   panel sumber citra + panel hasil
+| |   |-- source-panel.tsx       #     tab Unggah / Kamera / Contoh
+| |   |-- camera-capture.tsx     #     jendela bidik, satu tangkapan
+| |   |-- result-panel.tsx       #     pita putusan, gambar, metrik, rincian
+| |-- src/lib/contract.ts        #   skema Zod yang dikunci ke tipe OpenAPI
+| |-- src/lib/api.ts             #   klien; setiap respons divalidasi Zod
+| |-- src/types/api.d.ts         #   DIBANGKITKAN dari /openapi.json (R3.7)
 |
 |-- Backend/                       # FastAPI sinkron             [Anggota 2]
 | |-- main.py                    #   entrypoint, lifespan, penangan galat

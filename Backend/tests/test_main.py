@@ -17,6 +17,7 @@ from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
+
 from main import app
 
 client = TestClient(app)
@@ -134,3 +135,21 @@ def test_samples_mengembalikan_daftar() -> None:
     body = response.json()
     assert isinstance(body, list)
     assert all("name" in item and "url" in item for item in body)
+
+
+def test_gambar_rusak_bertanda_tangan_sah_dibalas_400_bukan_500() -> None:
+    """Berkas yang tanda tangannya sah tetapi isinya rusak tetap 400.
+
+    Pemeriksaan format modul AI membaca tanda tangan berkas, sehingga PNG
+    dengan header utuh dan isi rusak melewatinya dan baru gagal di lapisan
+    privasi. Kegagalan di sana sempat keluar sebagai `ValueError` polos, yang
+    dibaca layanan sebagai kegagalan tak terduga dan dibalas 500 - padahal
+    penyebabnya berkas kiriman, bukan server.
+    """
+    rusak = b"\x89PNG\r\n\x1a\n" + bytes(4096)
+    response = client.post(
+        "/api/v1/inspect",
+        files={"file": ("rusak.png", rusak, "image/png")},
+    )
+    assert response.status_code == 400, response.text
+    assert response.json()["detail"]

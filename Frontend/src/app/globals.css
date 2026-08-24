@@ -1,0 +1,79 @@
+@import "tailwindcss";
+
+/*
+ * Palet dan bentuk dasar antarmuka VisionQC.
+ *
+ * Satu tema terang yang dipakai konsisten, bukan sepasang tema terang dan
+ * gelap. Antarmuka ini akan dilihat lewat proyektor dan lewat video terkompresi,
+ * dan pada dua medium itu kontras tinggi di atas latar terang jauh lebih mudah
+ * dibaca daripada tema gelap yang warnanya cenderung menjadi rata.
+ *
+ * Warna putusan sengaja tidak diambil dari palet bawaan: hijau dan merah di
+ * sini harus tetap terbaca oleh mata yang sulit membedakan keduanya, sehingga
+ * perbedaan terangnya dibuat besar dan tidak pernah menjadi satu-satunya
+ * penanda - setiap putusan selalu disertai ikon dan kata.
+ */
+@theme {
+  --color-canvas: #f4f6f9;
+  --color-surface: #ffffff;
+  --color-surface-sunken: #f8fafc;
+  --color-line: #e3e7ee;
+  --color-line-strong: #cdd4e0;
+
+  --color-ink: #0f151f;
+  --color-ink-soft: #46505f;
+  --color-ink-faint: #78828f;
+
+  --color-brand: #1d4ed8;
+  --color-brand-soft: #eef3ff;
+  --color-brand-line: #c7d7fe;
+
+  --color-pass: #05704f;
+  --color-pass-soft: #e8f8f1;
+  --color-pass-line: #a7ddc7;
+
+  --color-reject: #b4231f;
+  --color-reject-soft: #fdeeed;
+  --color-reject-line: #f2bdb9;
+
+  --color-hold: #97591a;
+  --color-hold-soft: #fdf3e6;
+  --color-hold-line: #f0d3a8;
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", monospace;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background-color: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Angka metrik dibaca berjajar, jadi lebarnya dikunci supaya kolomnya tidak
+   bergoyang ketika nilainya berubah. */
+.tabular {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

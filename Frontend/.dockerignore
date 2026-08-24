@@ -1,0 +1,9 @@
+# Konteks build dipersempit ke yang dibutuhkan `next build`.
+node_modules
+.next
+out
+build
+npm-debug.log*
+.env*.local
+Dockerfile
+.dockerignore

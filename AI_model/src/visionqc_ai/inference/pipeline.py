@@ -316,7 +316,18 @@ class InspectionPipeline:
         # pernah melihat data yang bukan urusannya.
         stripped = self.privacy.get("strip_exif", True)
         if stripped:
-            image_bytes = strip_metadata(image_bytes)
+            try:
+                image_bytes = strip_metadata(image_bytes)
+            except ValueError as error:
+                # `strip_metadata` melempar ValueError polos, sedangkan pemanggil
+                # membedakan kesalahan masukan dari kegagalan sistem lewat
+                # InvalidImageError. Tanpa penerjemahan ini, berkas rusak yang
+                # tanda tangannya masih sah - PNG terpotong, misalnya - lolos dari
+                # `validate_bytes`, gagal di sini, lalu dilaporkan sebagai 500.
+                # Cabang InvalidImageError beberapa baris di bawah tidak pernah
+                # tercapai untuk berkas semacam itu karena lapisan privasi sudah
+                # menyentuh pikselnya lebih dulu.
+                raise InvalidImageError(str(error)) from error
 
         buffer = np.frombuffer(image_bytes, dtype=np.uint8)
         image = cv2.imdecode(buffer, cv2.IMREAD_COLOR)

@@ -1,0 +1,11 @@
+# Skrip build asli hanya dijalankan untuk paket yang memang membutuhkannya.
+# Sejak pnpm 10 skrip semacam itu diblokir secara bawaan, dan blokirnya membuat
+# `pnpm install` keluar dengan kode 1 - sehingga setiap `pnpm exec` dan setiap
+# build Docker ikut gagal, bukan sekadar memunculkan peringatan. Dua paket di
+# bawah dibuka dengan sengaja:
+#
+#   sharp         - pengoptimal gambar milik Next.js
+#   unrs-resolver - penyelesai modul yang dipakai eslint-plugin-import
+allowBuilds:
+  sharp: true
+  unrs-resolver: true
