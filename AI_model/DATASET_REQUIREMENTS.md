@@ -11,9 +11,17 @@ Preprocessing wajib dikerjakan dan dijelaskan selama periode lomba
 
 ---
 
-## 1. Status - SUDAH TERUNDUH
+## 1. Status - SUDAH TERUNDUH DAN SUDAH DIOLAH
 
 Diperbarui 21 Agustus 2026, setelah PKU-GoodsAD masuk.
+
+> **Berkas mentah tidak lagi ada di disk (24 Agustus 2026).** `data/raw/` dibuang
+> setelah konversi selesai; yang tersimpan adalah hasil olahannya di
+> `data/processed/`, dan itulah yang dibaca pelatihan, generator cacat sintetik,
+> serta penambang negatif keras. `data/raw/` hanya dibutuhkan `prepare_dataset.py`,
+> yaitu bila dataset olahan perlu dibangun ulang dari nol. Untuk mengembalikannya,
+> unduh ulang dari sumber pada bagian 2 lalu jalankan
+> `python scripts/prepare_dataset.py`.
 
 | Tier | Dataset | Status | Terpakai untuk |
 |---|---|---|---|
@@ -22,7 +30,7 @@ Diperbarui 21 Agustus 2026, setelah PKU-GoodsAD masuk.
 | **1** | **VisA** - 12 kategori penuh (12.021 gambar) | terunduh | `chewinggum`, `cashew`, `pipe_fryum` dipakai; `fryum` anomali saja |
 | **1** | **PKU-GoodsAD** - 5 kategori | terunduh (5.512 gambar, **1.413 cacat bermask**) | deteksi + segmentasi + anomali |
 | **1** | **MVTec LOCO** - 5 kategori | terunduh | **tidak dipakai** - alasan di bagian 4.2 |
-| **2** | **Sintetik** (Step 3) | belum dibuat | menyeimbangkan `kotor` |
+| **2** | **Sintetik** (Step 3) | sudah dibuat - 110 gambar / 351 instans, plus 300 negatif keras dan 60 gambar eval tertahan | menyeimbangkan `kotor` |
 | **3** | **Foto produk lokal** | opsional | gambar contoh & video demo |
 
 ### Yang berubah setelah PKU-GoodsAD masuk
