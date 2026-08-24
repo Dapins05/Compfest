@@ -148,7 +148,6 @@ AI_model/
 |-- data/                    # tidak masuk git
 |-- models/                  # tidak masuk git
 |-- reports/                 # metrik & gambar hasil evaluasi
-|-- notebooks/               # eksplorasi
 ```
 
 ---
