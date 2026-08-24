@@ -290,10 +290,11 @@ def alur_integrasi():
 
 
 if __name__ == "__main__":
+    # Ketujuh diagram dibangun seluruhnya. Versi sebelumnya menyisipkan
+    # `raise SystemExit(0)` di tengah blok ini untuk membangun ulang sebagian
+    # saja, dan sisipan itu tertinggal - akibatnya empat diagram diam-diam
+    # tidak pernah ikut diperbarui ketika isinya berubah.
     alur_pengguna()
-    pipeline_inferensi()
-    alur_model()
-    raise SystemExit(0)
     arsitektur_sistem()
     pipeline_inferensi()
     decision_engine()
