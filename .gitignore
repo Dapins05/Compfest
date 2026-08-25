@@ -1,6 +1,12 @@
 # Bahan lomba dan dokumen yang tidak dibutuhkan untuk menjalankan sistem.
 Persyaratan/
 
+# Berkas kerja di akar: tangkapan layar, catatan, dan bahan rapat. Bukan bagian
+# sistem, dan tidak boleh ikut terbawa oleh `git add -A`.
+/*.png
+/*.jpg
+/*.jpeg
+
 # Cuplikan himpunan data tidak ikut disebarkan: isinya potongan citra MVTec AD
 # yang berlisensi CC BY-NC-SA. Yang disertakan adalah skrip pembangkitnya,
 # AI_model/scripts/preview_dataset.py, sehingga gambarnya dapat dibuat ulang
